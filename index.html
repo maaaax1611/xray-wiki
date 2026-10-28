@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Röntgen-CT-Lernpfad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Lernpfad in sieben Bausteinen. Lesespalte mit klebrigem Inhaltsverzeichnis, jede Abbildung ein kleines Experiment. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #fbfcfd;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --rule: #d3dae1;
+  --grid: #e3e8ed;
+  --accent: #2448b8;
+  --accent-soft: #dfe6fa;
+  --elec: #2b66d9;
+  --hole: #c8424f;
+  --bin0: #3a6fd8;
+  --bin1: #14937f;
+  --bin2: #c9900e;
+  --bin3: #c8424f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px; }
+@media (min-width: 1100px) {
+  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1099px) { nav.toc { display: none; } }
+main { min-width: 0; max-width: 800px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
+h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
+p { margin: 0.9em 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; line-height: 1.5; max-width: 34em; margin-top: 18px; }
+.muted { color: var(--muted); }
+nav.toc { font-family: var(--font-display); font-size: 15px; }
+nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
+nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
+nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
+.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
+.toc-mobile summary { cursor: pointer; color: var(--muted); }
+.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
+section { padding-top: 64px; scroll-margin-top: 20px; }
+.step { display: flex; align-items: center; gap: 10px; }
+.step b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--surface); background: var(--accent); border-radius: 3px; padding: 1px 7px; }
+figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
+figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
+canvas { display: block; width: 100%; max-width: 100%; }
+.c-em { aspect-ratio: 2.4 / 1; } .c-tube { aspect-ratio: 2.1 / 1; } .c-att { aspect-ratio: 2.2 / 1; }
+.c-pair { aspect-ratio: 2.4 / 1; } .c-drift { aspect-ratio: 2 / 1; } .c-int { aspect-ratio: 2.6 / 1; } .c-sq { aspect-ratio: 1 / 1; }
+@media (max-width: 560px) { .c-em { aspect-ratio: 1.5 / 1; } .c-tube, .c-att, .c-drift { aspect-ratio: 0.85 / 1; } .c-pair { aspect-ratio: 1.4 / 1; } .c-int { aspect-ratio: 1.5 / 1; } }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.three .lbl { font-family: var(--font-display); font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+@media (max-width: 640px) { .three { grid-template-columns: minmax(0, 1fr); } }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
+.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
+.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+select { font-family: var(--font-display); font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 8px; }
+.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, input:focus-visible, select:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; flex: 0 0 auto; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 10px; line-height: 1.7; }
+.readout .k { color: var(--muted); }
+.tbl { overflow-x: auto; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
+td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
+mjx-container[display="true"] { margin: 0.6em 0 !important; }
+.sym { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 15px; margin: -4px 0 18px; padding-left: 4px; }
+.sym dt { font-family: var(--font-mono); font-size: 14px; }
+.sym dd { margin: 0; color: var(--muted); }
+.merke { background: var(--accent-soft); border-radius: 6px; padding: 12px 16px; margin: 26px 0; }
+.merke .eyebrow { color: var(--accent); }
+.merke p, .merke ul { margin: 0.35em 0; }
+.merke ul { padding-left: 1.2em; }
+ul.tight { padding-left: 1.2em; } ul.tight li { margin: 0.35em 0; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); } .d-surf { fill: var(--surface); } .d-soft { fill: var(--accent-soft); } .d-bg { fill: var(--bg); }
+.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
+.d-e { fill: var(--elec); } .d-h { fill: var(--hole); } .d-b2 { fill: var(--bin2); }
+.d-ste { stroke: var(--elec); fill: none; } .d-stb2 { stroke: var(--bin2); fill: none; }
+svg text { font-family: var(--font-display); }
+svg text.m { font-family: var(--font-mono); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14px; margin: 0 0 18px; } .backlink a { text-decoration: none; }
+
+body { margin: 0; }
+.wrap { display: block !important; max-width: 980px; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 28px 0 8px; }
+@media (max-width: 760px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card { display: block; text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+.card:hover { border-color: var(--accent); }
+.card h2 { font-size: 1.35rem; margin: 6px 0 4px; }
+.card p { margin: 0; font-size: 15px; color: var(--muted); }
+.meta { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+td.snip { min-width: 0; }
+td.snip code { font-family: var(--font-mono); font-size: 11.5px; word-break: break-all; color: var(--muted); }
+pre.ex { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; }
+</style>
+<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+<main style="max-width:none">
+<header>
+  <div class="eyebrow">Röntgenphysik · Detektoren · CT</div>
+  <h1>Röntgen-CT-Lernpfad</h1>
+  <p class="lede">Drei aufeinander aufbauende Seiten, von den Grundlagen bis zu Photon-Counting-Detektoren. Jede Abbildung gibt es zusätzlich als einzelnes Widget zum Einbetten.</p>
+</header>
+<div class="cards">
+<a class="card" href="grundlagen.html"><span class="eyebrow">Teil 1</span><h2>Vom Photon zum Bild</h2><p>Grundlagen in sieben Bausteinen: Photonen, Röntgenröhre, Wechselwirkung mit Materie, Halbleiter, Ladungstransport, Signal und CT-Bild.</p></a>
+<a class="card" href="rekonstruktion.html"><span class="eyebrow">Teil 2</span><h2>Vom Sinogramm zum Schnittbild</h2><p>Radon-Transformation, Fourier-Slice-Theorem, gefilterte Rückprojektion und iterative Rekonstruktion, hergeleitet und zum Ausprobieren.</p></a>
+<a class="card" href="photon-counting.html"><span class="eyebrow">Teil 3</span><h2>Photonen zählen</h2><p>Photon-Counting-Detektoren im CT: Sensorphysik, ASIC, Pile-up, Charge Sharing, Kalibrierung, Materialzerlegung und Bildqualität.</p></a>
+</div>
+<section id="widgets" style="padding-top:40px">
+  <h2>Widgets zum Einbetten</h2>
+  <p>Jede Abbildung liegt als eigene Datei im Ordner <code>widgets/</code>. In eine Obsidian-Notiz fügst du sie als <code>iframe</code> ein. Die Höhe ist für etwa 700 px Breite gemessen, bei schmaleren Notizen etwas erhöhen.</p>
+  <pre class="ex" id="ex"></pre>
+  <ul class="tight">
+    <li><code>?theme=dark</code> oder <code>?theme=light</code> erzwingt ein Farbschema, sonst folgt das Widget dem Betriebssystem.</li>
+    <li><code>?frame=0</code> entfernt Rahmen und Hintergrund der Abbildung.</li>
+    <li>Parameter lassen sich kombinieren: <code>…/rk-06-fbp-labor.html?theme=dark&amp;frame=0</code></li>
+  </ul>
+  <h3>Vom Photon zum Bild</h3><div class="tbl"><table><thead><tr><th>Widget</th><th>Einbettung in Obsidian</th><th></th></tr></thead><tbody><tr><td><a href="widgets/gl-00-messkette.html">Die Messkette im CT</a><div class="meta">Skizze · Höhe 340 px</div></td>
+<td class="snip"><code data-slug="gl-00-messkette" data-h="340"></code></td><td><button class="btn copy" type="button" data-slug="gl-00-messkette">Kopieren</button></td></tr><tr><td><a href="widgets/gl-01-em-spektrum.html">Elektromagnetisches Spektrum</a><div class="meta">interaktiv · Höhe 600 px</div></td>
+<td class="snip"><code data-slug="gl-01-em-spektrum" data-h="600"></code></td><td><button class="btn copy" type="button" data-slug="gl-01-em-spektrum">Kopieren</button></td></tr><tr><td><a href="widgets/gl-02-roentgenroehre.html">Röntgenröhre und Spektrum</a><div class="meta">interaktiv · Höhe 620 px</div></td>
+<td class="snip"><code data-slug="gl-02-roentgenroehre" data-h="620"></code></td><td><button class="btn copy" type="button" data-slug="gl-02-roentgenroehre">Kopieren</button></td></tr><tr><td><a href="widgets/gl-03-photoeffekt-compton.html">Photoeffekt und Compton-Streuung</a><div class="meta">Skizze · Höhe 440 px</div></td>
+<td class="snip"><code data-slug="gl-03-photoeffekt-compton" data-h="440"></code></td><td><button class="btn copy" type="button" data-slug="gl-03-photoeffekt-compton">Kopieren</button></td></tr><tr><td><a href="widgets/gl-04-schwaechung.html">Schwächung in Materie</a><div class="meta">interaktiv · Höhe 680 px</div></td>
+<td class="snip"><code data-slug="gl-04-schwaechung" data-h="680"></code></td><td><button class="btn copy" type="button" data-slug="gl-04-schwaechung">Kopieren</button></td></tr><tr><td><a href="widgets/gl-05-baendermodell.html">Bändermodell</a><div class="meta">Skizze · Höhe 460 px</div></td>
+<td class="snip"><code data-slug="gl-05-baendermodell" data-h="460"></code></td><td><button class="btn copy" type="button" data-slug="gl-05-baendermodell">Kopieren</button></td></tr><tr><td><a href="widgets/gl-06-paarerzeugung.html">Elektron-Loch-Paarerzeugung</a><div class="meta">interaktiv · Höhe 600 px</div></td>
+<td class="snip"><code data-slug="gl-06-paarerzeugung" data-h="600"></code></td><td><button class="btn copy" type="button" data-slug="gl-06-paarerzeugung">Kopieren</button></td></tr><tr><td><a href="widgets/gl-07-drift-signal.html">Drift und Signalentstehung</a><div class="meta">interaktiv · Höhe 760 px</div></td>
+<td class="snip"><code data-slug="gl-07-drift-signal" data-h="760"></code></td><td><button class="btn copy" type="button" data-slug="gl-07-drift-signal">Kopieren</button></td></tr><tr><td><a href="widgets/gl-08-integrieren-zaehlen.html">Integrieren oder zählen</a><div class="meta">interaktiv · Höhe 600 px</div></td>
+<td class="snip"><code data-slug="gl-08-integrieren-zaehlen" data-h="600"></code></td><td><button class="btn copy" type="button" data-slug="gl-08-integrieren-zaehlen">Kopieren</button></td></tr><tr><td><a href="widgets/gl-09-ct-rekonstruktion.html">Projektion, Sinogramm, Rekonstruktion</a><div class="meta">interaktiv · Höhe 580 px</div></td>
+<td class="snip"><code data-slug="gl-09-ct-rekonstruktion" data-h="580"></code></td><td><button class="btn copy" type="button" data-slug="gl-09-ct-rekonstruktion">Kopieren</button></td></tr></tbody></table></div>
+<h3>Vom Sinogramm zum Schnittbild</h3><div class="tbl"><table><thead><tr><th>Widget</th><th>Einbettung in Obsidian</th><th></th></tr></thead><tbody><tr><td><a href="widgets/rk-00-ablauf.html">Ablauf der gefilterten Rückprojektion</a><div class="meta">Skizze · Höhe 360 px</div></td>
+<td class="snip"><code data-slug="rk-00-ablauf" data-h="360"></code></td><td><button class="btn copy" type="button" data-slug="rk-00-ablauf">Kopieren</button></td></tr><tr><td><a href="widgets/rk-01-fourier-reihe.html">Fourier-Reihe einer Rechteckwelle</a><div class="meta">interaktiv · Höhe 560 px</div></td>
+<td class="snip"><code data-slug="rk-01-fourier-reihe" data-h="560"></code></td><td><button class="btn copy" type="button" data-slug="rk-01-fourier-reihe">Kopieren</button></td></tr><tr><td><a href="widgets/rk-02-radon-sinogramm.html">Radon-Transformation und Sinogramm</a><div class="meta">interaktiv · Höhe 680 px</div></td>
+<td class="snip"><code data-slug="rk-02-radon-sinogramm" data-h="680"></code></td><td><button class="btn copy" type="button" data-slug="rk-02-radon-sinogramm">Kopieren</button></td></tr><tr><td><a href="widgets/rk-03-rueckprojektion-punkt.html">Rückprojektion eines Punktes</a><div class="meta">interaktiv · Höhe 640 px</div></td>
+<td class="snip"><code data-slug="rk-03-rueckprojektion-punkt" data-h="640"></code></td><td><button class="btn copy" type="button" data-slug="rk-03-rueckprojektion-punkt">Kopieren</button></td></tr><tr><td><a href="widgets/rk-04-fourier-slice.html">Fourier-Slice-Theorem</a><div class="meta">interaktiv · Höhe 560 px</div></td>
+<td class="snip"><code data-slug="rk-04-fourier-slice" data-h="560"></code></td><td><button class="btn copy" type="button" data-slug="rk-04-fourier-slice">Kopieren</button></td></tr><tr><td><a href="widgets/rk-05-polare-abtastung.html">Polare Abtastung und Rampenfilter</a><div class="meta">interaktiv · Höhe 500 px</div></td>
+<td class="snip"><code data-slug="rk-05-polare-abtastung" data-h="500"></code></td><td><button class="btn copy" type="button" data-slug="rk-05-polare-abtastung">Kopieren</button></td></tr><tr><td><a href="widgets/rk-06-fbp-labor.html">FBP-Labor</a><div class="meta">interaktiv · Höhe 720 px</div></td>
+<td class="snip"><code data-slug="rk-06-fbp-labor" data-h="720"></code></td><td><button class="btn copy" type="button" data-slug="rk-06-fbp-labor">Kopieren</button></td></tr><tr><td><a href="widgets/rk-07-geometrien.html">Parallel-, Fächer- und Kegelstrahl</a><div class="meta">Skizze · Höhe 400 px</div></td>
+<td class="snip"><code data-slug="rk-07-geometrien" data-h="400"></code></td><td><button class="btn copy" type="button" data-slug="rk-07-geometrien">Kopieren</button></td></tr><tr><td><a href="widgets/rk-08-gleichungssystem.html">Rekonstruktion als Gleichungssystem</a><div class="meta">Skizze · Höhe 360 px</div></td>
+<td class="snip"><code data-slug="rk-08-gleichungssystem" data-h="360"></code></td><td><button class="btn copy" type="button" data-slug="rk-08-gleichungssystem">Kopieren</button></td></tr><tr><td><a href="widgets/rk-09-kaczmarz.html">Kaczmarz-Verfahren in 2D</a><div class="meta">interaktiv · Höhe 720 px</div></td>
+<td class="snip"><code data-slug="rk-09-kaczmarz" data-h="720"></code></td><td><button class="btn copy" type="button" data-slug="rk-09-kaczmarz">Kopieren</button></td></tr><tr><td><a href="widgets/rk-10-sart.html">SART gegen FBP</a><div class="meta">interaktiv · Höhe 660 px</div></td>
+<td class="snip"><code data-slug="rk-10-sart" data-h="660"></code></td><td><button class="btn copy" type="button" data-slug="rk-10-sart">Kopieren</button></td></tr></tbody></table></div>
+<h3>Photonen zählen</h3><div class="tbl"><table><thead><tr><th>Widget</th><th>Einbettung in Obsidian</th><th></th></tr></thead><tbody><tr><td><a href="widgets/pc-01-zaehlen-vs-integrieren.html">Zählen statt integrieren</a><div class="meta">interaktiv · Höhe 580 px</div></td>
+<td class="snip"><code data-slug="pc-01-zaehlen-vs-integrieren" data-h="580"></code></td><td><button class="btn copy" type="button" data-slug="pc-01-zaehlen-vs-integrieren">Kopieren</button></td></tr><tr><td><a href="widgets/pc-02-direkte-konversion.html">Indirekte und direkte Konversion</a><div class="meta">Skizze · Höhe 520 px</div></td>
+<td class="snip"><code data-slug="pc-02-direkte-konversion" data-h="520"></code></td><td><button class="btn copy" type="button" data-slug="pc-02-direkte-konversion">Kopieren</button></td></tr><tr><td><a href="widgets/pc-03-gewichtungspotential.html">Gewichtungspotential und Small-Pixel-Effekt</a><div class="meta">interaktiv · Höhe 540 px</div></td>
+<td class="snip"><code data-slug="pc-03-gewichtungspotential" data-h="540"></code></td><td><button class="btn copy" type="button" data-slug="pc-03-gewichtungspotential">Kopieren</button></td></tr><tr><td><a href="widgets/pc-04-asic-signalkette.html">Signalkette im ASIC</a><div class="meta">Skizze · Höhe 440 px</div></td>
+<td class="snip"><code data-slug="pc-04-asic-signalkette" data-h="440"></code></td><td><button class="btn copy" type="button" data-slug="pc-04-asic-signalkette">Kopieren</button></td></tr><tr><td><a href="widgets/pc-05-pulse-pileup.html">Pulse, Schwellen und Pile-up</a><div class="meta">interaktiv · Höhe 780 px</div></td>
+<td class="snip"><code data-slug="pc-05-pulse-pileup" data-h="780"></code></td><td><button class="btn copy" type="button" data-slug="pc-05-pulse-pileup">Kopieren</button></td></tr><tr><td><a href="widgets/pc-06-totzeit.html">Totzeitmodelle</a><div class="meta">interaktiv · Höhe 620 px</div></td>
+<td class="snip"><code data-slug="pc-06-totzeit" data-h="620"></code></td><td><button class="btn copy" type="button" data-slug="pc-06-totzeit">Kopieren</button></td></tr><tr><td><a href="widgets/pc-07-charge-sharing.html">Charge Sharing und K-Fluoreszenz</a><div class="meta">interaktiv · Höhe 700 px</div></td>
+<td class="snip"><code data-slug="pc-07-charge-sharing" data-h="700"></code></td><td><button class="btn copy" type="button" data-slug="pc-07-charge-sharing">Kopieren</button></td></tr><tr><td><a href="widgets/pc-08-spektrum-bins.html">Spektrum und Energie-Bins und Schwächungskoeffizienten</a><div class="meta">interaktiv · Höhe 1440 px</div></td>
+<td class="snip"><code data-slug="pc-08-spektrum-bins" data-h="1440"></code></td><td><button class="btn copy" type="button" data-slug="pc-08-spektrum-bins">Kopieren</button></td></tr></tbody></table></div>
+
+</section>
+<footer>Didaktische Modelle mit genäherten Literaturwerten. Alle Simulationen rechnen im Browser.</footer>
+</main>
+</div>
+<script>
+(() => {
+  const base = new URL('widgets/', location.href).href;
+  const snip = (s, h) => `<iframe src="${base}${s}.html" width="100%" height="${h}" style="border:0"></iframe>`;
+  document.querySelectorAll('code[data-slug]').forEach(c => c.textContent = snip(c.dataset.slug, c.dataset.h));
+  document.getElementById('ex').textContent = snip('rk-06-fbp-labor', 720);
+  document.querySelectorAll('button.copy').forEach(b => b.addEventListener('click', () => {
+    const c = document.querySelector(`code[data-slug="${b.dataset.slug}"]`), txt = c.textContent;
+    const ok = () => { b.textContent = 'Kopiert'; setTimeout(() => b.textContent = 'Kopieren', 1500); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(c); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch (e) { fallback(); }
+  }));
+})();
+</script>
+</body>
+</html>

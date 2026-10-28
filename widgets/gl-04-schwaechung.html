@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schwächung in Materie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Lernpfad in sieben Bausteinen. Lesespalte mit klebrigem Inhaltsverzeichnis, jede Abbildung ein kleines Experiment. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #fbfcfd;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --rule: #d3dae1;
+  --grid: #e3e8ed;
+  --accent: #2448b8;
+  --accent-soft: #dfe6fa;
+  --elec: #2b66d9;
+  --hole: #c8424f;
+  --bin0: #3a6fd8;
+  --bin1: #14937f;
+  --bin2: #c9900e;
+  --bin3: #c8424f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px; }
+@media (min-width: 1100px) {
+  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1099px) { nav.toc { display: none; } }
+main { min-width: 0; max-width: 800px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
+h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
+p { margin: 0.9em 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; line-height: 1.5; max-width: 34em; margin-top: 18px; }
+.muted { color: var(--muted); }
+nav.toc { font-family: var(--font-display); font-size: 15px; }
+nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
+nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
+nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
+.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
+.toc-mobile summary { cursor: pointer; color: var(--muted); }
+.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
+section { padding-top: 64px; scroll-margin-top: 20px; }
+.step { display: flex; align-items: center; gap: 10px; }
+.step b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--surface); background: var(--accent); border-radius: 3px; padding: 1px 7px; }
+figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
+figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
+canvas { display: block; width: 100%; max-width: 100%; }
+.c-em { aspect-ratio: 2.4 / 1; } .c-tube { aspect-ratio: 2.1 / 1; } .c-att { aspect-ratio: 2.2 / 1; }
+.c-pair { aspect-ratio: 2.4 / 1; } .c-drift { aspect-ratio: 2 / 1; } .c-int { aspect-ratio: 2.6 / 1; } .c-sq { aspect-ratio: 1 / 1; }
+@media (max-width: 560px) { .c-em { aspect-ratio: 1.5 / 1; } .c-tube, .c-att, .c-drift { aspect-ratio: 0.85 / 1; } .c-pair { aspect-ratio: 1.4 / 1; } .c-int { aspect-ratio: 1.5 / 1; } }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.three .lbl { font-family: var(--font-display); font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+@media (max-width: 640px) { .three { grid-template-columns: minmax(0, 1fr); } }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
+.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
+.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+select { font-family: var(--font-display); font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 8px; }
+.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, input:focus-visible, select:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; flex: 0 0 auto; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 10px; line-height: 1.7; }
+.readout .k { color: var(--muted); }
+.tbl { overflow-x: auto; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
+td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
+mjx-container[display="true"] { margin: 0.6em 0 !important; }
+.sym { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 15px; margin: -4px 0 18px; padding-left: 4px; }
+.sym dt { font-family: var(--font-mono); font-size: 14px; }
+.sym dd { margin: 0; color: var(--muted); }
+.merke { background: var(--accent-soft); border-radius: 6px; padding: 12px 16px; margin: 26px 0; }
+.merke .eyebrow { color: var(--accent); }
+.merke p, .merke ul { margin: 0.35em 0; }
+.merke ul { padding-left: 1.2em; }
+ul.tight { padding-left: 1.2em; } ul.tight li { margin: 0.35em 0; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); } .d-surf { fill: var(--surface); } .d-soft { fill: var(--accent-soft); } .d-bg { fill: var(--bg); }
+.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
+.d-e { fill: var(--elec); } .d-h { fill: var(--hole); } .d-b2 { fill: var(--bin2); }
+.d-ste { stroke: var(--elec); fill: none; } .d-stb2 { stroke: var(--bin2); fill: none; }
+svg text { font-family: var(--font-display); }
+svg text.m { font-family: var(--font-mono); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body { margin: 0; } .widget { padding: 4px; max-width: 900px; margin: 0 auto; } figure.fig { margin: 0 0 12px; } figure.fig + figure.fig { margin-top: 12px; }
+:root.noframe figure.fig { border: 0; padding: 4px; background: transparent; } :root.noframe body { background: transparent; }</style>
+<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<script>try{if(new URLSearchParams(location.search).get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+        <canvas id="cv-att" class="c-att" role="img" aria-label="Animation: Photonen fliegen von links durch eine Materialschicht. Manche werden absorbiert, manche gestreut. Daneben die Kurve des exponentiellen Abfalls."></canvas>
+        <div class="ctrls">
+          <div class="ctrl" style="flex:0 1 160px"><div class="lab"><label for="at-mat">Material</label></div>
+            <select id="at-mat"><option value="w">Wasser (≈ Weichteil)</option><option value="b">Knochen</option><option value="a">Aluminium</option></select></div>
+          <div class="ctrl"><div class="lab"><label for="at-e">Photonenenergie</label><output id="at-e-o"></output></div><input id="at-e" type="range" min="20" max="140" step="1" value="60"></div>
+          <div class="ctrl"><div class="lab"><label for="at-d">Dicke</label><output id="at-d-o"></output></div><input id="at-d" type="range" min="0" max="20" step="0.5" value="6"></div>
+        </div>
+        <div class="readout" id="at-read"></div>
+        <figcaption><b>Abb. 4</b> Links fliegen monoenergetische Photonen durch eine Schicht. Ein kurzer Blitz bedeutet Photoeffekt (Photon verschwindet), ein Knick bedeutet Compton-Streuung (Photon fliegt grau in neue Richtung weiter und zählt nicht mehr als ungestört). Rechts der Anteil ungestörter Photonen über der Dicke, mit Theorie und gezähltem Ergebnis. Schwächungsdaten genähert nach NIST.</figcaption>
+      </figure>
+</main>
+<script>
+(() => {
+
+'use strict';
+const $ = s => document.querySelector(s);
+const root = document.documentElement;
+const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
+const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
+const nf = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+function rgb(c) { c = c.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join(''); const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255]; }
+function rgba(c, a) { const [r, g, b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
+function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); }
+function fit(c) {
+  const r = c.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(1, r.width), h = Math.max(1, r.height), W = Math.round(w * dpr), H = Math.round(h * dpr);
+  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+function frame(ctx, x0px, y0px, w, h, o) {
+  const L = o.l ?? 48, R = o.r ?? 12, T = o.t ?? 12, B = o.b ?? 36;
+  const bx = x0px + L, by = y0px + T, bw = Math.max(10, w - L - R), bh = Math.max(10, h - T - B);
+  const X = v => bx + (v - o.x0) / (o.x1 - o.x0) * bw;
+  const Y = v => by + bh - (v - o.y0) / (o.y1 - o.y0) * bh;
+  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
+  const grid = tok('--grid'), muted = tok('--muted');
+  for (const v of (o.xt || [])) { const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by + bh); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by + bh + 15); }
+  for (const v of (o.yt || [])) { const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx + bw, y); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx - 6, y + 4); }
+  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.stroke();
+  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
+  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx + bw / 2, by + bh + 31); }
+  if (o.yl) { ctx.save(); ctx.translate(x0px + 12, by + bh / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
+  return { X, Y, bx, by, bw, bh };
+}
+function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
+const BINC = ['--bin0', '--bin1', '--bin2', '--bin3'];
+
+const mods = [];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
+function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
+const redrawAll = () => mods.forEach(m => m.draw());
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+let last = performance.now();
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); } requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+function playBtn(btn, m) { btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; }); if (!m.playing) btn.textContent = 'Abspielen'; }
+
+/* Schwächungsdaten (cm²/g), genähert nach NIST XCOM */
+const WATER = [[10,5.33],[15,1.67],[20,0.81],[30,0.376],[40,0.268],[50,0.227],[60,0.206],[80,0.184],[100,0.171],[150,0.150]];
+const BONE  = [[10,28.5],[15,9.0],[20,4.0],[30,1.33],[40,0.665],[50,0.424],[60,0.315],[80,0.223],[100,0.186],[150,0.148]];
+const AL    = [[10,26.2],[15,7.96],[20,3.44],[30,1.13],[40,0.568],[50,0.368],[60,0.278],[80,0.202],[100,0.170],[150,0.138]];
+function mu(t, E) {
+  if (E <= t[0][0]) return t[0][1];
+  for (let i = 0; i < t.length - 1; i++) if (E <= t[i + 1][0]) { const [e0, m0] = t[i], [e1, m1] = t[i + 1]; const f = Math.log(E / e0) / Math.log(e1 / e0); return Math.exp(Math.log(m0) + f * Math.log(m1 / m0)); }
+  return t[t.length - 1][1];
+}
+function kleinNishina(EkeV) { // cm² pro Elektron
+  const k = EkeV / 511, re2 = 7.9407e-26, l = Math.log(1 + 2 * k);
+  return 2 * Math.PI * re2 * ((1 + k) / (k * k) * (2 * (1 + k) / (1 + 2 * k) - l / k) + l / (2 * k) - (1 + 3 * k) / ((1 + 2 * k) ** 2));
+}
+const EG = []; for (let e = 10; e <= 150.001; e += 0.5) EG.push(Math.round(e * 10) / 10);
+function tube(kvp, alMm) {
+  const g = (E, c) => Math.exp(-0.5 * ((E - c) / 0.45) ** 2);
+  return EG.map(E => {
+    if (E >= kvp) return 0;
+    let n = (kvp - E) / E;
+    if (kvp > 69.5) { const a = 1.3 * (kvp - 69.5) / 50; n += a * (g(E, 59.3) + 0.55 * g(E, 58.0) + 0.32 * g(E, 67.2)); }
+    return n * Math.exp(-mu(AL, E) * 2.7 * (1 + alMm) / 10);
+  });
+}
+function sampler(spec) {
+  const cdf = []; let s = 0; for (const v of spec) { s += v; cdf.push(s); }
+  return () => { const u = Math.random() * s; let lo = 0, hi = cdf.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (cdf[m] < u) lo = m + 1; else hi = m; } return EG[lo] + (Math.random() - 0.5) * 0.5; };
+}
+const ebin = E => E < 40 ? 0 : E < 60 ? 1 : E < 80 ? 2 : 3;
+
+/* ---------- Abb. 4: Schwächung ---------- */
+(() => {
+  const c = $('#cv-att'), im = $('#at-mat'), ie = $('#at-e'), id = $('#at-d');
+  const MAT = { w: { t: WATER, rho: 1.0, ne: 3.343e23, n: 'Wasser' }, b: { t: BONE, rho: 1.92, ne: 3.10e23, n: 'Knochen' }, a: { t: AL, rho: 2.7, ne: 2.90e23, n: 'Aluminium' } };
+  let P = [], N0 = 0, Nt = 0, spawn = 0, flashes = [];
+  const DMAX = 20;
+  function par() { const M = MAT[im.value], E = +ie.value; const mm = mu(M.t, E); const sc = Math.min(mm * 0.98, kleinNishina(E) * M.ne); return { M, E, mu: mm * M.rho, fPhoto: Math.max(0, (mm - sc) / mm), d: +id.value }; }
+  function reset() { P = []; N0 = 0; Nt = 0; flashes = []; const q = par(); $('#at-e-o').textContent = `${q.E} keV`; $('#at-d-o').textContent = `${nf(q.d, 1)} cm`; read(); }
+  function read() {
+    const q = par(), T = Math.exp(-q.mu * q.d);
+    $('#at-read').innerHTML = `<span class="k">μ/ρ:</span> ${nf(q.mu / q.M.rho, 3)} cm²/g  <span class="k">·</span>  <span class="k">μ:</span> ${nf(q.mu, 3)} 1/cm  <span class="k">·</span>  <span class="k">Halbwertsdicke:</span> ${nf(Math.LN2 / q.mu, 2)} cm<br><span class="k">ungestört durch, Theorie:</span> ${nf(T * 100, T < 0.01 ? 2 : 1)} %  <span class="k">·</span>  <span class="k">gezählt:</span> ${N0 ? nf(Nt / N0 * 100, 1) + ' % (' + Nt + '/' + N0 + ')' : '–'}  <span class="k">·</span>  <span class="k">Anteil Photoeffekt an Wechselwirkungen ≈</span> ${nf(q.fPhoto * 100, 0)} %`;
+  }
+  function lay(w, h) { const narrow = w < 560; return narrow ? { a: [0, 0, w, h * 0.5], p: [0, h * 0.52, w, h * 0.48] } : { a: [0, 0, w * 0.55, h], p: [w * 0.57, 0, w * 0.43, h] }; }
+  let geo = null;
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (!geo) return;
+      const q = par(), { x0, x1, y0, y1, sx0, sw } = geo, cmPerPx = DMAX / sw, slabEnd = sx0 + q.d / DMAX * sw;
+      spawn += dt * 45;
+      while (spawn > 1) { spawn--; P.push({ x: x0, y: y0 + 8 + Math.random() * (y1 - y0 - 16), dx: 1, dy: 0, sc: false }); }
+      const v = (x1 - x0) / 1.4;
+      for (const p of P) {
+        const ds = v * dt;
+        p.x += p.dx * ds; p.y += p.dy * ds;
+        if (!p.sc && !p.dead && p.x > sx0 && p.x < slabEnd) {
+          if (Math.random() < 1 - Math.exp(-q.mu * ds * cmPerPx)) {
+            N0++; if (Math.random() < q.fPhoto) { p.dead = true; flashes.push({ x: p.x, y: p.y, t: 0 }); }
+            else { p.sc = true; const a = (Math.random() * 2 - 1) * Math.PI; p.dx = Math.cos(a); p.dy = Math.sin(a); }
+          }
+        }
+        if (!p.dead && !p.sc && p.x >= x1 - 2) { Nt++; N0++; p.dead = true; }
+        if (p.x < x0 - 5 || p.x > x1 + 5 || p.y < y0 || p.y > y1) p.dead = true;
+      }
+      P = P.filter(p => !p.dead);
+      flashes.forEach(f => f.t += dt); flashes = flashes.filter(f => f.t < 0.4);
+      if (N0 > 3000) { N0 = Math.round(N0 / 2); Nt = Math.round(Nt / 2); }
+      read();
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const q = par(), L = lay(w, h), [ax, ay, aw, ah] = L.a;
+      const fg = tok('--fg'), mut = tok('--muted'), acc = tok('--accent');
+      const x0 = ax + 10, x1 = ax + aw - 18, y0 = ay + 18, y1 = ay + ah - 22, sx0 = x0 + (x1 - x0) * 0.14, sw = (x1 - x0) * 0.72;
+      geo = { x0, x1, y0, y1, sx0, sw };
+      const slabW = q.d / DMAX * sw;
+      ctx.fillStyle = q.M === MAT.w ? rgba(tok('--elec'), 0.18) : q.M === MAT.b ? rgba(tok('--bin2'), 0.25) : rgba(mut, 0.3);
+      ctx.fillRect(sx0, y0, slabW, y1 - y0);
+      ctx.strokeStyle = tok('--rule'); ctx.strokeRect(sx0 + 0.5, y0 + 0.5, slabW, y1 - y0 - 1);
+      ctx.fillStyle = fg; ctx.fillRect(x1, y0, 5, y1 - y0);
+      ctx.font = `11px ${DISP}`; ctx.fillStyle = mut; ctx.textAlign = 'left';
+      ctx.fillText('Quelle', x0, y0 - 5); ctx.textAlign = 'right'; ctx.fillText('Detektor', x1 + 5, y0 - 5);
+      ctx.textAlign = 'center'; ctx.fillStyle = fg; ctx.fillText(`${q.M.n}, ${nf(q.d, 1)} cm`, sx0 + Math.max(slabW, 60) / 2, y1 + 15);
+      for (const p of P) {
+        ctx.fillStyle = p.sc ? rgba(mut, 0.7) : acc;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, 7); ctx.fill();
+      }
+      for (const f of flashes) { const a = 1 - f.t / 0.4; ctx.strokeStyle = rgba(tok('--hole'), a); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(f.x, f.y, 2 + 8 * f.t / 0.4, 0, 7); ctx.stroke(); }
+      ctx.lineWidth = 1;
+      // Kurve
+      const [px, py, pw, ph] = L.p;
+      const f = frame(ctx, px, py, pw, ph, { x0: 0, x1: DMAX, y0: 0, y1: 1, xt: [0, 5, 10, 15, 20], yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v * 100, 0) + '%', xl: 'Dicke (cm)', yl: 'ungestört durch', l: 48, t: 10 });
+      clipBox(ctx, f);
+      ctx.strokeStyle = acc; ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let k = 0; k <= 200; k++) { const x = DMAX * k / 200, y = Math.exp(-q.mu * x); k ? ctx.lineTo(f.X(x), f.Y(y)) : ctx.moveTo(f.X(x), f.Y(y)); } ctx.stroke();
+      const hv = Math.LN2 / q.mu;
+      if (hv < DMAX) { ctx.strokeStyle = mut; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(0), f.Y(0.5)); ctx.lineTo(f.X(hv), f.Y(0.5)); ctx.lineTo(f.X(hv), f.Y(0)); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(f.X(q.d), f.Y(Math.exp(-q.mu * q.d)), 4.5, 0, 7); ctx.fill();
+      if (N0 > 30) { ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 2; const yy = f.Y(Nt / N0); ctx.beginPath(); ctx.moveTo(f.X(q.d) - 8, yy); ctx.lineTo(f.X(q.d) + 8, yy); ctx.stroke(); }
+      ctx.restore();
+      ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillStyle = mut; ctx.fillText('— Theorie  ● eingestellt  ', f.bx + f.bw, f.by + 10);
+      ctx.fillStyle = tok('--hole'); ctx.fillText('— gezählt  ', f.bx + f.bw, f.by + 24);
+      if (hv < DMAX) { ctx.fillStyle = mut; ctx.textAlign = 'left'; ctx.fillText(`x½ = ${nf(hv, 1)} cm`, f.X(hv) + 4, f.Y(0.5) - 4); }
+    }
+  });
+  [im, ie, id].forEach(e => e.addEventListener('input', () => { reset(); m.draw(); }));
+  reset(); m.draw();
+})();
+
+})();
+</script>
+</body>
+</html>

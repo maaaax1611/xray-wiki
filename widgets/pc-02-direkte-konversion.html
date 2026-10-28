@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indirekte und direkte Konversion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lange Lektüre-Spalte mit klebrigem Inhaltsverzeichnis links; Abbildungen als "Messplätze" in der Spalte. Tiefe = Ebene 1–5. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #fbfcfd;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --rule: #d3dae1;
+  --grid: #e3e8ed;
+  --accent: #2448b8;
+  --accent-soft: #dfe6fa;
+  --elec: #2b66d9;
+  --hole: #c8424f;
+  --bin0: #3a6fd8;
+  --bin1: #14937f;
+  --bin2: #c9900e;
+  --bin3: #c8424f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1160px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+@media (min-width: 1100px) {
+  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1099px) { nav.toc { display: none; } }
+
+main { min-width: 0; max-width: 800px; }
+
+/* Typo */
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
+h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
+p { margin: 0.9em 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.mono, code { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; line-height: 1.5; color: var(--fg); max-width: 34em; margin-top: 18px; }
+.muted { color: var(--muted); }
+
+/* TOC */
+nav.toc { font-family: var(--font-display); font-size: 15px; }
+nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
+nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
+nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
+nav.toc .lv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 14px; padding-left: 8px; }
+.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
+.toc-mobile summary { cursor: pointer; color: var(--muted); }
+.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
+
+/* Abschnitte */
+section { padding-top: 64px; scroll-margin-top: 20px; }
+.level { display: flex; align-items: center; gap: 10px; }
+.depth { display: inline-flex; gap: 3px; }
+.depth i { display: block; width: 14px; height: 6px; border-radius: 1px; background: var(--rule); }
+.depth i.f { background: var(--accent); }
+
+/* Abbildungen */
+figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
+figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
+canvas { display: block; width: 100%; max-width: 100%; }
+.c-concept { aspect-ratio: 2.1 / 1; }
+.c-wp { aspect-ratio: 2 / 1; }
+.c-q { aspect-ratio: 2 / 1; }
+.c-pulse { aspect-ratio: 2.4 / 1; }
+.c-dead { aspect-ratio: 1.8 / 1; }
+.c-grid { aspect-ratio: 1 / 1; }
+.c-hist { aspect-ratio: 1.25 / 1; }
+.c-spec { aspect-ratio: 2 / 1; }
+.c-mu { aspect-ratio: 2.2 / 1; }
+@media (max-width: 560px) { .c-concept { aspect-ratio: 1.35 / 1; } .c-pulse { aspect-ratio: 1.6 / 1; } }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.two.mc { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
+@media (max-width: 640px) { .two, .two.mc { grid-template-columns: minmax(0, 1fr); } }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
+
+/* Bedienelemente */
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
+.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
+.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, input:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; color: var(--fg); flex: 0 0 auto; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); margin-top: 10px; line-height: 1.6; }
+.readout span.k { color: var(--muted); }
+
+/* Tabellen */
+.tbl { overflow-x: auto; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
+td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+table.small td, table.small th { padding: 4px 10px 4px 0; font-size: 13px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+/* Formeln, Hinweise */
+.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
+mjx-container[display="true"] { margin: 0.6em 0 !important; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; color: var(--fg); }
+.note p { margin: 0.4em 0; }
+ul.tight { padding-left: 1.2em; }
+ul.tight li { margin: 0.35em 0; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+
+/* SVG-Diagramme */
+.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); }
+.d-surf { fill: var(--surface); } .d-bg { fill: var(--bg); } .d-soft { fill: var(--accent-soft); }
+.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
+.d-ste { stroke: var(--elec); fill: none; } .d-sth { stroke: var(--hole); fill: none; }
+.d-e { fill: var(--elec); } .d-h { fill: var(--hole); }
+.d-b0 { fill: var(--bin0); } .d-b1 { fill: var(--bin1); } .d-b2 { fill: var(--bin2); } .d-b3 { fill: var(--bin3); }
+.d-scint { fill: var(--accent-soft); }
+svg text { font-family: var(--font-display); }
+svg text.m { font-family: var(--font-mono); }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+
+body { margin: 0; } .widget { padding: 4px; max-width: 900px; margin: 0 auto; } figure.fig { margin: 0 0 12px; } figure.fig + figure.fig { margin-top: 12px; }
+:root.noframe figure.fig { border: 0; padding: 4px; background: transparent; } :root.noframe body { background: transparent; }</style>
+<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<script>try{if(new URLSearchParams(location.search).get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+        <div class="svgbox">
+        <svg viewBox="0 0 760 330" role="img" aria-label="Vergleich indirekte Konversion mit Szintillator und Photodiode gegen direkte Konversion in CdTe mit Elektron-Loch-Paaren und Pixelanoden.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-fg"/></marker>
+            <marker id="are" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-e"/></marker>
+            <marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-h"/></marker>
+          </defs>
+          <!-- links: indirekt -->
+          <text x="20" y="24" class="d-fg" font-size="16" font-weight="600">Indirekt (EID)</text>
+          <text x="20" y="42" class="d-mut" font-size="13">Röntgen → Licht → Ladung, integriert</text>
+          <line x1="150" y1="58" x2="150" y2="118" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+          <text x="160" y="80" class="d-mut m" font-size="11">Röntgenquant</text>
+          <!-- Szintillatorzellen mit Septen -->
+          <rect x="40" y="122" width="300" height="80" class="d-scint"/>
+          <g class="d-fg">
+            <rect x="40" y="122" width="5" height="80"/><rect x="115" y="122" width="5" height="80"/><rect x="190" y="122" width="5" height="80"/><rect x="265" y="122" width="5" height="80"/><rect x="335" y="122" width="5" height="80"/>
+          </g>
+          <circle cx="150" cy="150" r="5" class="d-acc"/>
+          <g class="d-sta" stroke-width="1.3">
+            <line x1="150" y1="150" x2="125" y2="200"/><line x1="150" y1="150" x2="140" y2="200"/><line x1="150" y1="150" x2="160" y2="200"/><line x1="150" y1="150" x2="178" y2="200"/>
+            <path d="M150 150 L186 168 L170 200" /><path d="M150 150 L122 175 L132 200"/>
+          </g>
+          <text x="352" y="150" class="d-fg" font-size="13">Szintillator</text>
+          <text x="352" y="166" class="d-mut" font-size="12">(z. B. GOS)</text>
+          <text x="352" y="186" class="d-mut" font-size="12">Septen gegen</text>
+          <text x="352" y="200" class="d-mut" font-size="12">Lichtübersprechen</text>
+          <rect x="40" y="206" width="300" height="22" class="d-fg" opacity="0.85"/>
+          <g class="d-bg"><rect x="45" y="210" width="68" height="14"/><rect x="120" y="210" width="68" height="14"/><rect x="195" y="210" width="68" height="14"/><rect x="270" y="210" width="65" height="14"/></g>
+          <text x="352" y="222" class="d-fg" font-size="13">Photodioden</text>
+          <path d="M60 268 Q 80 268 95 252 T 140 248 T 190 256 T 240 246 T 300 254" class="d-sta" stroke-width="2"/>
+          <text x="40" y="296" class="d-mut" font-size="12">Strom ∝ Σ Energie, über das Frame integriert.</text>
+          <text x="40" y="312" class="d-mut" font-size="12">Einzelne Photonen nicht mehr unterscheidbar.</text>
+
+          <!-- rechts: direkt -->
+          <text x="420" y="24" class="d-fg" font-size="16" font-weight="600">Direkt (PCD)</text>
+          <text x="420" y="42" class="d-mut" font-size="13">Röntgen → Ladung, pro Photon ein Puls</text>
+          <rect x="430" y="104" width="250" height="5" class="d-fg"/>
+          <text x="688" y="111" class="d-fg" font-size="13">Kathode, −U</text>
+          <rect x="430" y="109" width="250" height="110" class="d-soft"/>
+          <text x="688" y="160" class="d-fg" font-size="13">CdTe</text>
+          <text x="688" y="176" class="d-mut" font-size="12">~1,6 mm</text>
+          <line x1="560" y1="58" x2="560" y2="140" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+          <g>
+            <circle cx="556" cy="150" r="3.4" class="d-e"/><circle cx="563" cy="146" r="3.4" class="d-e"/><circle cx="560" cy="156" r="3.4" class="d-e"/><circle cx="566" cy="154" r="3.4" class="d-e"/>
+            <circle cx="552" cy="144" r="3.4" class="d-h"/><circle cx="568" cy="147" r="3.4" class="d-h"/><circle cx="557" cy="140" r="3.4" class="d-h"/><circle cx="563" cy="159" r="3.4" class="d-h"/>
+          </g>
+          <line x1="560" y1="164" x2="560" y2="208" class="d-ste" stroke-width="2" marker-end="url(#are)"/>
+          <line x1="545" y1="140" x2="545" y2="118" class="d-sth" stroke-width="2" marker-end="url(#arh)"/>
+          <text x="572" y="196" class="d-fg" font-size="12">e⁻ zur Anode</text>
+          <text x="470" y="128" class="d-fg" font-size="12">Löcher</text>
+          <!-- Pixelanoden -->
+          <g class="d-fg"><rect x="436" y="219" width="54" height="6"/><rect x="498" y="219" width="54" height="6"/><rect x="560" y="219" width="54" height="6" class="d-acc"/><rect x="622" y="219" width="54" height="6"/></g>
+          <text x="688" y="227" class="d-fg" font-size="13">Pixelanoden</text>
+          <rect x="430" y="232" width="250" height="26" rx="2" class="d-fg" opacity="0.85"/>
+          <text x="555" y="250" class="d-bg" font-size="12" text-anchor="middle" style="fill:var(--bg)">ASIC: ein Kanal pro Pixel</text>
+          <path d="M440 300 L470 300 L476 274 L486 300 L540 300 L546 284 L556 300 L610 300 L616 268 L626 300 L670 300" class="d-sta" stroke-width="2"/>
+          <text x="430" y="320" class="d-mut" font-size="12">Pulshöhe ∝ Energie des einzelnen Photons</text>
+        </svg>
+        </div>
+        <figcaption><b>Abb. 2</b> Links: Im Szintillator wird das Quant in Licht umgewandelt, das sich ausbreitet und über Septen auf ein Pixel begrenzt wird. Die Photodiode integriert. Rechts: Im Halbleiter erzeugt das Quant direkt Elektron-Loch-Paare. Das Feld zieht die Elektronen zur Pixelanode, jedes Photon erzeugt einen eigenen Strompuls. Die Pixel sind nur durch die Elektrodenstruktur definiert.</figcaption>
+      </figure>
+</main>
+
+</body>
+</html>

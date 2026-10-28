@@ -1,0 +1,205 @@
+[
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-00-messkette",
+  "title": "Die Messkette im CT",
+  "interactive": false
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-01-em-spektrum",
+  "title": "Elektromagnetisches Spektrum",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-02-roentgenroehre",
+  "title": "Röntgenröhre und Spektrum",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-03-photoeffekt-compton",
+  "title": "Photoeffekt und Compton-Streuung",
+  "interactive": false
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-04-schwaechung",
+  "title": "Schwächung in Materie",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-05-baendermodell",
+  "title": "Bändermodell",
+  "interactive": false
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-06-paarerzeugung",
+  "title": "Elektron-Loch-Paarerzeugung",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-07-drift-signal",
+  "title": "Drift und Signalentstehung",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-08-integrieren-zaehlen",
+  "title": "Integrieren oder zählen",
+  "interactive": true
+ },
+ {
+  "page": "grundlagen.html",
+  "pageTitle": "Vom Photon zum Bild",
+  "slug": "gl-09-ct-rekonstruktion",
+  "title": "Projektion, Sinogramm, Rekonstruktion",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-00-ablauf",
+  "title": "Ablauf der gefilterten Rückprojektion",
+  "interactive": false
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-01-fourier-reihe",
+  "title": "Fourier-Reihe einer Rechteckwelle",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-02-radon-sinogramm",
+  "title": "Radon-Transformation und Sinogramm",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-03-rueckprojektion-punkt",
+  "title": "Rückprojektion eines Punktes",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-04-fourier-slice",
+  "title": "Fourier-Slice-Theorem",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-05-polare-abtastung",
+  "title": "Polare Abtastung und Rampenfilter",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-06-fbp-labor",
+  "title": "FBP-Labor",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-07-geometrien",
+  "title": "Parallel-, Fächer- und Kegelstrahl",
+  "interactive": false
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-08-gleichungssystem",
+  "title": "Rekonstruktion als Gleichungssystem",
+  "interactive": false
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-09-kaczmarz",
+  "title": "Kaczmarz-Verfahren in 2D",
+  "interactive": true
+ },
+ {
+  "page": "rekonstruktion.html",
+  "pageTitle": "Vom Sinogramm zum Schnittbild",
+  "slug": "rk-10-sart",
+  "title": "SART gegen FBP",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-01-zaehlen-vs-integrieren",
+  "title": "Zählen statt integrieren",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-02-direkte-konversion",
+  "title": "Indirekte und direkte Konversion",
+  "interactive": false
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-03-gewichtungspotential",
+  "title": "Gewichtungspotential und Small-Pixel-Effekt",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-04-asic-signalkette",
+  "title": "Signalkette im ASIC",
+  "interactive": false
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-05-pulse-pileup",
+  "title": "Pulse, Schwellen und Pile-up",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-06-totzeit",
+  "title": "Totzeitmodelle",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-07-charge-sharing",
+  "title": "Charge Sharing und K-Fluoreszenz",
+  "interactive": true
+ },
+ {
+  "page": "photon-counting.html",
+  "pageTitle": "Photonen zählen im CT",
+  "slug": "pc-08-spektrum-bins",
+  "title": "Spektrum und Energie-Bins und Schwächungskoeffizienten",
+  "interactive": true
+ }
+]
