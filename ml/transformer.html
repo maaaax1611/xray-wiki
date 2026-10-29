@@ -143,7 +143,7 @@ a_{ij} = \operatorname{softmax}_j(s_{ij}) = \frac{e^{s_{ij}}}{\sum_{k} e^{s_{ik}
 <button class="btn" id="a1-play" type="button">Abspielen</button>
 </div>
 <div class="readout" id="a1-read"></div>
-<figcaption><b>Abb. 3</b> Die einfachste Form von Attention, noch ohne gelernte Projektionen: Die Query ist das Embedding des gewählten Tokens selbst, \(\mathbf q = \mathbf x_i\). Jede Zeile von \(X\) wird mit ihr skalar multipliziert, die Softmax macht daraus Gewichte, und der Kontextvektor ist die gewichtete Summe der Zeilen. Mit „Weiter“ lässt sich die Rechnung Schritt für Schritt aufbauen. Auffällig: Jedes Token achtet hier am stärksten auf sich selbst oder auf Tokens mit fast gleichem Embedding. Genau das beheben die getrennten Query-, Key- und Value-Projektionen im nächsten Abschnitt.</figcaption>
+<figcaption><b>Abb. 3</b> Die einfachste Form von Attention, noch ohne gelernte Projektionen: Die Query ist das Embedding des gewählten Tokens selbst, \(\mathbf q = \mathbf x_i\). Die Farben von \(X\) zeigen die Werte der Embeddings (Zahlen nur für die Query-Zeile). Jede Zeile von \(X\) wird mit der Query skalar multipliziert, die Softmax macht daraus Gewichte, und der Kontextvektor ist die gewichtete Summe der Zeilen, seine Farben sind eine Mischung der Zeilen. Mit „Weiter“ lässt sich die Rechnung Schritt für Schritt aufbauen. Auffällig: Jedes Token achtet hier am stärksten auf sich selbst oder auf Tokens mit fast gleichem Embedding. Genau das beheben die getrennten Query-, Key- und Value-Projektionen im nächsten Abschnitt.</figcaption>
 </figure>
 <p>Wichtig ist, was hier <em>nicht</em> gelernt wird: Die Gewichte <span class="arithmatex">\(a_{ij}\)</span> sind keine Parameter, sondern werden für jede Eingabe neu aus den Daten berechnet. Dasselbe Modell achtet in jedem Satz auf andere Stellen.</p>
 </section>
@@ -170,7 +170,7 @@ a_{ij} = \operatorname{softmax}_j(s_{ij}) = \frac{e^{s_{ij}}}{\sum_{k} e^{s_{ik}
 <div class="ctrl"><div class="lab"><label for="a2-t">Temperatur</label><output id="a2-t-o"></output></div><input autocomplete="off" id="a2-t" max="2" min="-2" step="0.05" type="range" value="0"/></div>
 </div>
 <div class="readout" id="a2-read"></div>
-<figcaption><b>Abb. 4</b> Dieselbe Rechnung für alle Tokens auf einmal, mit von Hand gewählten Queries, Keys (\(d_k = 4\)) und zweidimensionalen Values. Oben entsteht jedes Feld der Score-Matrix aus einer Zeile von \(Q\) und einer Spalte von \(K^\top\), geteilt durch \(\sqrt{d_k} = 2\). Die Softmax läuft zeilenweise. Unten entsteht jede Zeile der Ausgabe aus einer Zeile der Gewichte und den Spalten von \(V\). Fährt man mit der Maus über ein Feld (oder tippt darauf), werden die beteiligten Zeilen und Spalten markiert und die Rechnung erscheint darunter.</figcaption>
+<figcaption><b>Abb. 4</b> Dieselbe Rechnung für alle Tokens auf einmal, mit von Hand gewählten Queries, Keys (\(d_k = 4\)) und zweidimensionalen Values. Oben entsteht jedes Feld der Score-Matrix aus einer Zeile von \(Q\) und einer Spalte von \(K^\top\), geteilt durch \(\sqrt{d_k} = 2\). Die Softmax läuft zeilenweise. Unten entsteht jede Zeile der Ausgabe aus einer Zeile der Gewichte und den Spalten von \(V\). Die Farben zeigen die Werte. Fährt man mit der Maus über ein Feld von Scores, Gewichten oder Ausgabe (oder tippt darauf), werden die beteiligten Zeilen und Spalten mit ihren Zahlen markiert, und die Rechnung erscheint darunter.</figcaption>
 </figure>
 <h3>Warum durch <span class="arithmatex">\(\sqrt{d_k}\)</span> teilen?</h3>
 <p>Haben die Komponenten von <span class="arithmatex">\(\mathbf q\)</span> und <span class="arithmatex">\(\mathbf k\)</span> Mittelwert 0 und Varianz 1 und sind unabhängig, dann hat ihr Skalarprodukt die Varianz <span class="arithmatex">\(d_k\)</span>. Bei <span class="arithmatex">\(d_k = 64\)</span> streuen die Werte also mit einer Standardabweichung von 8. Die Softmax solcher Werte ist fast immer eine harte Auswahl: Ein Eintrag bekommt nahezu das ganze Gewicht, alle anderen fast nichts. Dann sind auch die Gradienten der übrigen Einträge praktisch null, und das Training kommt kaum voran. Die Division durch <span class="arithmatex">\(\sqrt{d_k}\)</span> bringt die Varianz zurück auf 1, unabhängig von der Dimension.</p>
@@ -813,8 +813,8 @@ W = W_0 + \frac{\alpha}{r}\,BA, \qquad B \in \mathbb R^{d\times r}, \quad A \in 
       const xX = lw, xS = xX + D * cw + 64, xB = xS + sw + 30, bw = 66, xW = xB + bw + 30, xP = xW + sw + 52, xC = xP + 34 + 12;
       const accent = tok('--accent'), muted = tok('--muted');
       // X
-      mgrid(ctx, TR_X, { x: xX, y: y0, cw, ch, rows: TR_TOKENS, hlRow: qi, fill: (v, i) => i === qi ? rgba(tok('--bin2'), 0.18) : tok('--surface') });
-      ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('X', xX + D * cw / 2, y0 - 14);
+      mgrid(ctx, TR_X, { x: xX, y: y0, cw, ch, rows: TR_TOKENS, hlRow: qi, fill: v => heat(0.85 * v), text: v => textOn(0.85 * v), num: i => i === qi });
+      ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(`X  (${n} × ${D})`, xX + D * cw / 2, y0 - 14);
       // · q
       for (let i = 0; i < n; i++) { const on = stage >= 1; arrowPx(ctx, xX + D * cw + 6, gy(i), xS - 6, gy(i), on ? accent : rgba(muted, 0.4));
         ctx.fillStyle = on ? accent : muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('· q', xX + D * cw + 32, gy(i) - 6); }
@@ -838,13 +838,14 @@ W = W_0 + \frac{\alpha}{r}\,BA, \qquad B \in \mathbb R^{d\times r}, \quad A \in 
       ctx.beginPath(); ctx.moveTo(pcx - 8, pcy); ctx.lineTo(pcx + 8, pcy); ctx.moveTo(pcx, pcy - 8); ctx.lineTo(pcx, pcy + 8); ctx.stroke();
       ctx.fillStyle = muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('Σ aⱼ xⱼ', pcx, pcy + 32);
       arrowPx(ctx, pcx + 16, pcy, xC - 4, pcy, accent, 1.6); ctx.globalAlpha = 1;
-      mgrid(ctx, [ctxv.map(v => stage >= 3 ? v : null)], { x: xC, y: pcy - ch / 2, cw, ch, dim: () => stage < 3, fill: () => stage >= 3 ? rgba(accent, 0.12) : tok('--surface'), border: stage >= 3 ? accent : undefined });
+      mgrid(ctx, [ctxv.map(v => stage >= 3 ? v : null)], { x: xC, y: pcy - ch / 2, cw, ch, dim: () => stage < 3, fill: v => stage >= 3 ? heat(0.85 * v) : tok('--surface'), num: () => false, border: stage >= 3 ? accent : undefined });
+      if (stage >= 3) { ctx.fillStyle = muted; ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(`1 × ${D}`, xC + D * cw / 2, pcy + ch / 2 + 16); }
       // Fortschritt
       ctx.fillStyle = muted; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Schritt ${stage + 1}/4 · ${STAGES[stage]}`, 6, h - 6);
       const top = a.map((v, j) => [v, j]).sort((p, r) => r[0] - p[0]);
       $('#a1-read').innerHTML = `<span class="k">q = x(${TR_TOKENS[qi]}) =</span> (${q.map(v => nf(v, 2)).join('; ')})` +
         (stage >= 1 ? `  <span class="k">·</span>  <span class="k">Beispiel:</span> x(${TR_TOKENS[top[1][1]]}) · q = ${TR_X[top[1][1]].map((v, k) => `${nf(v, 2)}·${nf(q[k], 2)}`).join(' + ')} = ${nf(s[top[1][1]], 3)}` : '') +
-        (stage >= 2 ? `<br><span class="k">Größte Gewichte:</span> ${top.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 3)}</b>`).join(', ')}  <span class="k">·</span>  <span class="k">Summe:</span> ${nf(a.reduce((p, v) => p + v, 0), 3)}` : '');
+        (stage >= 3 ? `<br><span class="k">Kontext =</span> (${ctxv.map(v => nf(v, 2)).join('; ')})` : '') + (stage >= 2 ? `<br><span class="k">Größte Gewichte:</span> ${top.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 3)}</b>`).join(', ')}  <span class="k">·</span>  <span class="k">Summe:</span> ${nf(a.reduce((p, v) => p + v, 0), 3)}` : '');
     } });
   const go = d => { stage = Math.max(0, Math.min(3, stage + d)); acc = 0; m.draw(); };
   $('#a1-prev').addEventListener('click', () => go(-1)); $('#a1-next').addEventListener('click', () => { if (stage === 3) stage = 0; else go(1); m.draw(); });
@@ -873,12 +874,13 @@ W = W_0 + \frac{\alpha}{r}\,BA, \qquad B \in \mathbb R^{d\times r}, \quad A \in 
         if (s.m === 'A') return (mat === 'S' && i === s.i) || (mat === 'A' && i === s.i);
         if (s.m === 'Y') return (mat === 'A' && i === s.i) || (mat === 'V' && j === s.j) || (mat === 'Y' && i === s.i && j === s.j);
         return false; };
-      const mark = (mat, base) => (v, i, j) => hl(mat, i, j) ? rgba(tok('--bin2'), 0.32) : base(v, i, j);
-      const plain = () => tok('--surface');
-      G.Q = mgrid(ctx, TR_Q, { x: xQ, y: y1, cw, ch, rows: TR_TOKENS, fmt: v => nf(v, 1), label: 'Q', fill: mark('Q', plain) });
-      G.K = mgrid(ctx, KT, { x: xK, y: y1, cw, ch, cols: TR_TOKENS, fmt: v => nf(v, 1), label: 'Kᵀ', fill: mark('K', plain) });
-      G.S = mgrid(ctx, S.map(r => r.map(v => stage >= 1 ? v : null)), { x: xS, y: y1, cw, ch, cols: TR_TOKENS, label: 'Scores ÷ √d_k', dim: () => stage < 1,
-        fill: mark('S', v => stage >= 1 ? heat(0.75 * v / smax, tok('--bin2')) : tok('--surface')), text: v => textOn(0.75 * v / smax) });
+      const qkmax = Math.max(...TR_Q.flat(), ...TR_K.flat()), vmax = Math.max(...TR_V.flat().map(Math.abs));
+      const qk = v => heat(0.85 * v / qkmax), vv = v => div(0.85 * v / vmax);
+      const show = (mat, i, j) => hl(mat, i, j);
+      G.Q = mgrid(ctx, TR_Q, { x: xQ, y: y1, cw, ch, rows: TR_TOKENS, fmt: v => nf(v, 1), label: `Q  (${n} × ${dk})`, fill: qk, text: v => textOn(0.85 * v / qkmax), num: (i, j) => show('Q', i, j), hlRow: sel.m === 'S' ? sel.i : null });
+      G.K = mgrid(ctx, KT, { x: xK, y: y1, cw, ch, cols: TR_TOKENS, fmt: v => nf(v, 1), label: `Kᵀ  (${dk} × ${n})`, fill: qk, text: v => textOn(0.85 * v / qkmax), num: (i, j) => show('K', i, j), hlCol: sel.m === 'S' ? sel.j : null });
+      G.S = mgrid(ctx, S.map(r => r.map(v => stage >= 1 ? v : null)), { x: xS, y: y1, cw, ch, cols: TR_TOKENS, label: `Scores ÷ √d_k  (${n} × ${n})`, dim: () => stage < 1, num: (i, j) => show('S', i, j), hlRow: sel.m === 'A' ? sel.i : null,
+        fill: v => stage >= 1 ? heat(0.75 * v / smax, tok('--bin2')) : tok('--surface'), text: v => textOn(0.75 * v / smax) });
       ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center';
       ctx.fillText('@', xK - op / 2, y1 + n * ch / 2 + 6); ctx.fillText('=', xS - op / 2, y1 + n * ch / 2 + 6);
             // Softmax-Pfeil von S nach A
@@ -887,11 +889,11 @@ W = W_0 + \frac{\alpha}{r}\,BA, \qquad B \in \mathbb R^{d\times r}, \quad A \in 
       ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(sx, y1 + n * ch + 24); ctx.lineTo(sx, y1 + n * ch + 40); ctx.lineTo(xA + n * cw / 2, y1 + n * ch + 40); ctx.stroke();
       arrowPx(ctx, xA + n * cw / 2, y1 + n * ch + 40, xA + n * cw / 2, ay, tok('--accent'), 1.8);
       ctx.fillStyle = tok('--accent'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('softmax, zeilenweise', (sx + xA + n * cw / 2) / 2, y1 + n * ch + 34); ctx.globalAlpha = 1;
-      G.A = mgrid(ctx, A.map(r => r.map(v => stage >= 2 ? v : null)), { x: xA, y: y2, cw, ch, rows: TR_TOKENS, cols: TR_TOKENS, label: 'Gewichte', dim: () => stage < 2,
-        fill: mark('A', v => stage >= 2 ? heat(0.85 * v / amax) : tok('--surface')), text: v => textOn(0.85 * v / amax) });
-      G.V = mgrid(ctx, TR_V, { x: xV, y: y2, cw, ch, cols: ['1', '2'], fmt: v => nf(v, 1), label: 'V', fill: mark('V', plain) });
-      G.Y = mgrid(ctx, Y.map(r => r.map(v => stage >= 3 ? v : null)), { x: xY, y: y2, cw, ch, cols: ['1', '2'], label: 'Ausgabe', dim: () => stage < 3,
-        fill: mark('Y', () => stage >= 3 ? rgba(tok('--accent'), 0.12) : tok('--surface')), border: stage >= 3 ? tok('--accent') : undefined });
+      G.A = mgrid(ctx, A.map(r => r.map(v => stage >= 2 ? v : null)), { x: xA, y: y2, cw, ch, rows: TR_TOKENS, cols: TR_TOKENS, label: `Gewichte  (${n} × ${n})`, dim: () => stage < 2, num: (i, j) => show('A', i, j), hlRow: sel.m === 'A' || sel.m === 'Y' ? sel.i : null,
+        fill: v => stage >= 2 ? heat(0.85 * v / amax) : tok('--surface'), text: v => textOn(0.85 * v / amax) });
+      G.V = mgrid(ctx, TR_V, { x: xV, y: y2, cw, ch, cols: ['1', '2'], fmt: v => nf(v, 1), label: `V  (${n} × 2)`, fill: vv, text: v => textOn(0.85 * Math.abs(v) / vmax), num: (i, j) => show('V', i, j), hlCol: sel.m === 'Y' ? sel.j : null });
+      G.Y = mgrid(ctx, Y.map(r => r.map(v => stage >= 3 ? v : null)), { x: xY, y: y2, cw, ch, cols: ['1', '2'], label: `Ausgabe  (${n} × 2)`, dim: () => stage < 3, num: (i, j) => show('Y', i, j),
+        fill: v => stage >= 3 ? vv(v) : tok('--surface'), text: v => textOn(0.85 * Math.abs(v) / vmax), border: stage >= 3 ? tok('--accent') : undefined });
       ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center';
       ctx.fillText('@', xV - op / 2, y2 + n * ch / 2 + 6); ctx.fillText('=', xY - op / 2, y2 + n * ch / 2 + 6);
       ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Schritt ${stage + 1}/4 · ${STAGES[stage]}`, 6, h - 6);

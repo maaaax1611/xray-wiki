@@ -112,7 +112,7 @@ const TR_V = [[-1.6, 1.2], [1.6, 1.5], [0.2, -1.6], [-1.2, -0.7], [-1.8, 0.5], [
 const trScores = (scale = true) => TR_Q.map(q => TR_K.map(k => dotv(q, k) / (scale ? Math.sqrt(q.length) : 1)));
 
 /* ---------- Matrix als Kästchengitter mit Zahlen ---------- */
-// o: {x, y, cw, ch, rows, cols, fmt, fill(v,i,j), dim(i,j) -> true = abgeblendet, hlRow, hlCol, label (unter dem Gitter), border}
+// o: {x, y, cw, ch, rows, cols, fmt, fill(v,i,j), num(i,j) -> Zahl zeigen?, dim(i,j) -> true = abgeblendet, hlRow, hlCol, label (unter dem Gitter), border}
 function mgrid(ctx, M, o) {
   const n = M.length, m = M[0].length, cw = o.cw, ch = o.ch ?? o.cw, x0 = o.x, y0 = o.y;
   const fs = Math.max(9, Math.min(12.5, cw * 0.27, ch * 0.42));
@@ -122,7 +122,7 @@ function mgrid(ctx, M, o) {
     ctx.globalAlpha = off ? 0.28 : 1;
     ctx.fillStyle = o.fill ? o.fill(v, i, j) : tok('--surface'); ctx.fillRect(x, y, cw, ch);
     ctx.strokeStyle = o.border || tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1);
-    if (v !== null && v !== undefined && cw >= 26) { ctx.fillStyle = o.text ? o.text(v, i, j) : tok('--fg'); ctx.font = `${fs}px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(o.fmt ? o.fmt(v) : nf(v, 2), x + cw / 2, y + ch / 2 + 0.5); }
+    if (v !== null && v !== undefined && cw >= 26 && (!o.num || o.num(i, j))) { ctx.fillStyle = o.text ? o.text(v, i, j) : tok('--fg'); ctx.font = `${fs}px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(o.fmt ? o.fmt(v) : nf(v, 2), x + cw / 2, y + ch / 2 + 0.5); }
     ctx.globalAlpha = 1;
   }
   ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 2;

@@ -31,7 +31,7 @@ window.MathJax = {
     <button class="btn" type="button" id="a1-play">Abspielen</button>
   </div>
   <div class="readout" id="a1-read"></div>
-  <figcaption><b>Abb. 3</b> Die einfachste Form von Attention, noch ohne gelernte Projektionen: Die Query ist das Embedding des gewählten Tokens selbst, \(\mathbf q = \mathbf x_i\). Jede Zeile von \(X\) wird mit ihr skalar multipliziert, die Softmax macht daraus Gewichte, und der Kontextvektor ist die gewichtete Summe der Zeilen. Mit „Weiter“ lässt sich die Rechnung Schritt für Schritt aufbauen. Auffällig: Jedes Token achtet hier am stärksten auf sich selbst oder auf Tokens mit fast gleichem Embedding. Genau das beheben die getrennten Query-, Key- und Value-Projektionen im nächsten Abschnitt.</figcaption>
+  <figcaption><b>Abb. 3</b> Die einfachste Form von Attention, noch ohne gelernte Projektionen: Die Query ist das Embedding des gewählten Tokens selbst, \(\mathbf q = \mathbf x_i\). Die Farben von \(X\) zeigen die Werte der Embeddings (Zahlen nur für die Query-Zeile). Jede Zeile von \(X\) wird mit der Query skalar multipliziert, die Softmax macht daraus Gewichte, und der Kontextvektor ist die gewichtete Summe der Zeilen, seine Farben sind eine Mischung der Zeilen. Mit „Weiter“ lässt sich die Rechnung Schritt für Schritt aufbauen. Auffällig: Jedes Token achtet hier am stärksten auf sich selbst oder auf Tokens mit fast gleichem Embedding. Genau das beheben die getrennten Query-, Key- und Value-Projektionen im nächsten Abschnitt.</figcaption>
 </figure>
 </main>
 <script src="../assets/ui.js"></script>
@@ -52,8 +52,8 @@ window.MathJax = {
       const xX = lw, xS = xX + D * cw + 64, xB = xS + sw + 30, bw = 66, xW = xB + bw + 30, xP = xW + sw + 52, xC = xP + 34 + 12;
       const accent = tok('--accent'), muted = tok('--muted');
       // X
-      mgrid(ctx, TR_X, { x: xX, y: y0, cw, ch, rows: TR_TOKENS, hlRow: qi, fill: (v, i) => i === qi ? rgba(tok('--bin2'), 0.18) : tok('--surface') });
-      ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('X', xX + D * cw / 2, y0 - 14);
+      mgrid(ctx, TR_X, { x: xX, y: y0, cw, ch, rows: TR_TOKENS, hlRow: qi, fill: v => heat(0.85 * v), text: v => textOn(0.85 * v), num: i => i === qi });
+      ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(`X  (${n} × ${D})`, xX + D * cw / 2, y0 - 14);
       // · q
       for (let i = 0; i < n; i++) { const on = stage >= 1; arrowPx(ctx, xX + D * cw + 6, gy(i), xS - 6, gy(i), on ? accent : rgba(muted, 0.4));
         ctx.fillStyle = on ? accent : muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('· q', xX + D * cw + 32, gy(i) - 6); }
@@ -77,13 +77,14 @@ window.MathJax = {
       ctx.beginPath(); ctx.moveTo(pcx - 8, pcy); ctx.lineTo(pcx + 8, pcy); ctx.moveTo(pcx, pcy - 8); ctx.lineTo(pcx, pcy + 8); ctx.stroke();
       ctx.fillStyle = muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('Σ aⱼ xⱼ', pcx, pcy + 32);
       arrowPx(ctx, pcx + 16, pcy, xC - 4, pcy, accent, 1.6); ctx.globalAlpha = 1;
-      mgrid(ctx, [ctxv.map(v => stage >= 3 ? v : null)], { x: xC, y: pcy - ch / 2, cw, ch, dim: () => stage < 3, fill: () => stage >= 3 ? rgba(accent, 0.12) : tok('--surface'), border: stage >= 3 ? accent : undefined });
+      mgrid(ctx, [ctxv.map(v => stage >= 3 ? v : null)], { x: xC, y: pcy - ch / 2, cw, ch, dim: () => stage < 3, fill: v => stage >= 3 ? heat(0.85 * v) : tok('--surface'), num: () => false, border: stage >= 3 ? accent : undefined });
+      if (stage >= 3) { ctx.fillStyle = muted; ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(`1 × ${D}`, xC + D * cw / 2, pcy + ch / 2 + 16); }
       // Fortschritt
       ctx.fillStyle = muted; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Schritt ${stage + 1}/4 · ${STAGES[stage]}`, 6, h - 6);
       const top = a.map((v, j) => [v, j]).sort((p, r) => r[0] - p[0]);
       $('#a1-read').innerHTML = `<span class="k">q = x(${TR_TOKENS[qi]}) =</span> (${q.map(v => nf(v, 2)).join('; ')})` +
         (stage >= 1 ? `  <span class="k">·</span>  <span class="k">Beispiel:</span> x(${TR_TOKENS[top[1][1]]}) · q = ${TR_X[top[1][1]].map((v, k) => `${nf(v, 2)}·${nf(q[k], 2)}`).join(' + ')} = ${nf(s[top[1][1]], 3)}` : '') +
-        (stage >= 2 ? `<br><span class="k">Größte Gewichte:</span> ${top.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 3)}</b>`).join(', ')}  <span class="k">·</span>  <span class="k">Summe:</span> ${nf(a.reduce((p, v) => p + v, 0), 3)}` : '');
+        (stage >= 3 ? `<br><span class="k">Kontext =</span> (${ctxv.map(v => nf(v, 2)).join('; ')})` : '') + (stage >= 2 ? `<br><span class="k">Größte Gewichte:</span> ${top.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 3)}</b>`).join(', ')}  <span class="k">·</span>  <span class="k">Summe:</span> ${nf(a.reduce((p, v) => p + v, 0), 3)}` : '');
     } });
   const go = d => { stage = Math.max(0, Math.min(3, stage + d)); acc = 0; m.draw(); };
   $('#a1-prev').addEventListener('click', () => go(-1)); $('#a1-next').addEventListener('click', () => { if (stage === 3) stage = 0; else go(1); m.draw(); });
