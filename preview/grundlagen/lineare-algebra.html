@@ -1,0 +1,2473 @@
+
+<!doctype html>
+<html lang="de" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://maaaax1611.github.io/xray-wiki/grundlagen/lineare-algebra.html">
+      
+      
+        <link rel="prev" href="e-technik.html">
+      
+      
+        <link rel="next" href="../physik/roentgen.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Lineare Algebra - xray-wiki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Serif+4:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Source Serif 4";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/wiki.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lineare-algebra" class="md-skip">
+          Zum Inhalt
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Kopfzeile">
+    <a href="../index.html" title="xray-wiki" class="md-header__button md-logo" aria-label="xray-wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xray-wiki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lineare Algebra
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Dunkel"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dunkel" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Hell"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Hell" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Suche" placeholder="Suche" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Suche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Zurücksetzen" aria-label="Zurücksetzen" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Suche wird initialisiert
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/maaaax1611/xray-wiki" title="Zum Repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Hauptnavigation" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="e-technik.html" class="md-tabs__link">
+          
+  
+  
+  Grundlagen
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../physik/roentgen.html" class="md-tabs__link">
+          
+  
+  
+  Physik
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../widgets.html" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Widgets
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="xray-wiki" class="md-nav__button md-logo" aria-label="xray-wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xray-wiki
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/maaaax1611/xray-wiki" title="Zum Repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grundlagen
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Grundlagen
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e-technik.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E-Technik kompakt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineare Algebra
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="lineare-algebra.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineare Algebra
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-vektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1 Vektoren
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1 Vektoren">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skalarprodukt-lange-winkel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skalarprodukt, Länge, Winkel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allgemeine-skalarprodukte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allgemeine Skalarprodukte
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funktionen-als-vektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funktionen als Vektoren
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-matrizen-als-abbildungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2 Matrizen als Abbildungen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2 Matrizen als Abbildungen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-spalten-sind-die-bilder-der-basisvektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die Spalten sind die Bilder der Basisvektoren
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rechenregeln" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rechenregeln
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lineare-unabhangigkeit-basis-und-rang" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3 Lineare Unabhängigkeit, Basis und Rang
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3 Lineare Unabhängigkeit, Basis und Rang">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-vier-unterraume-einer-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die vier Unterräume einer Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basiswechsel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basiswechsel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-determinante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 Determinante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4 Determinante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#spur" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spur
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-lineare-gleichungssysteme-losen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5 Lineare Gleichungssysteme lösen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5 Lineare Gleichungssysteme lösen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#struktur-der-losungsmenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Struktur der Lösungsmenge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gau-elimination-und-lu-zerlegung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gauß-Elimination und LU-Zerlegung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-kondition-wie-empfindlich-ist-die-losung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6 Kondition: Wie empfindlich ist die Lösung?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-uberbestimmte-systeme-kleinste-quadrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7 Überbestimmte Systeme: kleinste Quadrate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7 Überbestimmte Systeme: kleinste Quadrate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#beispiel-kurvenanpassung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beispiel: Kurvenanpassung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regularisierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regularisierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-iterative-verfahren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8 Iterative Verfahren
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-eigenwerte-und-eigenvektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9 Eigenwerte und Eigenvektoren
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9 Eigenwerte und Eigenvektoren">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vielfachheiten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vielfachheiten
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diagonalisierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagonalisierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symmetrische-matrizen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symmetrische Matrizen
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-orthogonalitat-projektionen-und-qr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10 Orthogonalität, Projektionen und QR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10 Orthogonalität, Projektionen und QR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#drehungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drehungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projektionen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projektionen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gram-schmidt-und-qr-zerlegung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gram-Schmidt und QR-Zerlegung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-singularwertzerlegung-svd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11 Singulärwertzerlegung (SVD)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11 Singulärwertzerlegung (SVD)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zusammenhang-mit-eigenwerten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zusammenhang mit Eigenwerten
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#niedrigrang-approximation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Niedrigrang-Approximation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hauptkomponentenanalyse-pca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hauptkomponentenanalyse (PCA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anhang-a-matrix-kalkul" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anhang A: Matrix-Kalkül
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anhang A: Matrix-Kalkül">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jacobi-und-hesse-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jacobi- und Hesse-Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anhang-b-formeln-und-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anhang B: Formeln und Notation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anhang B: Formeln und Notation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matrixklassen-und-ihre-zerlegungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrixklassen und ihre Zerlegungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physik
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Physik
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../physik/roentgen.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vom Photon zum Bild
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../physik/rekonstruktion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vom Sinogramm zum Schnittbild
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../physik/photon-counting.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Photonen zählen im CT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../widgets.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Widgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-vektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1 Vektoren
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1 Vektoren">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skalarprodukt-lange-winkel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skalarprodukt, Länge, Winkel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allgemeine-skalarprodukte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allgemeine Skalarprodukte
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funktionen-als-vektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funktionen als Vektoren
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-matrizen-als-abbildungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2 Matrizen als Abbildungen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2 Matrizen als Abbildungen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-spalten-sind-die-bilder-der-basisvektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die Spalten sind die Bilder der Basisvektoren
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rechenregeln" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rechenregeln
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lineare-unabhangigkeit-basis-und-rang" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3 Lineare Unabhängigkeit, Basis und Rang
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3 Lineare Unabhängigkeit, Basis und Rang">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-vier-unterraume-einer-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die vier Unterräume einer Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basiswechsel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basiswechsel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-determinante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 Determinante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4 Determinante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#spur" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spur
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-lineare-gleichungssysteme-losen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5 Lineare Gleichungssysteme lösen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5 Lineare Gleichungssysteme lösen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#struktur-der-losungsmenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Struktur der Lösungsmenge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gau-elimination-und-lu-zerlegung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gauß-Elimination und LU-Zerlegung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-kondition-wie-empfindlich-ist-die-losung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6 Kondition: Wie empfindlich ist die Lösung?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-uberbestimmte-systeme-kleinste-quadrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7 Überbestimmte Systeme: kleinste Quadrate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7 Überbestimmte Systeme: kleinste Quadrate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#beispiel-kurvenanpassung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beispiel: Kurvenanpassung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regularisierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regularisierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-iterative-verfahren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8 Iterative Verfahren
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-eigenwerte-und-eigenvektoren" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9 Eigenwerte und Eigenvektoren
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9 Eigenwerte und Eigenvektoren">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vielfachheiten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vielfachheiten
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diagonalisierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagonalisierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symmetrische-matrizen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symmetrische Matrizen
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-orthogonalitat-projektionen-und-qr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10 Orthogonalität, Projektionen und QR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10 Orthogonalität, Projektionen und QR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#drehungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drehungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projektionen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projektionen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gram-schmidt-und-qr-zerlegung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gram-Schmidt und QR-Zerlegung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-singularwertzerlegung-svd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11 Singulärwertzerlegung (SVD)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11 Singulärwertzerlegung (SVD)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zusammenhang-mit-eigenwerten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zusammenhang mit Eigenwerten
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#niedrigrang-approximation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Niedrigrang-Approximation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hauptkomponentenanalyse-pca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hauptkomponentenanalyse (PCA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anhang-a-matrix-kalkul" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anhang A: Matrix-Kalkül
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anhang A: Matrix-Kalkül">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jacobi-und-hesse-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jacobi- und Hesse-Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anhang-b-formeln-und-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anhang B: Formeln und Notation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anhang B: Formeln und Notation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matrixklassen-und-ihre-zerlegungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matrixklassen und ihre Zerlegungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/maaaax1611/xray-wiki/edit/main/docs/grundlagen/lineare-algebra.md" title="Seite editieren" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="lineare-algebra">Lineare Algebra<a class="headerlink" href="#lineare-algebra" title="Permanent link">&para;</a></h1>
+<p>Vektoren, Matrizen und Gleichungssysteme, bis zu Eigenwerten und Singulärwertzerlegung. Mit dem Blick, den man für Rekonstruktion, Bildverarbeitung und Machine Learning braucht: Eine Matrix ist eine Abbildung, und fast jedes Verfahren ist eine geschickte Zerlegung davon.</p>
+<h2 id="1-vektoren">1 Vektoren<a class="headerlink" href="#1-vektoren" title="Permanent link">&para;</a></h2>
+<p>Ein <strong>Vektor</strong> <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span> ist eine Liste von <span class="arithmatex">\(n\)</span> Zahlen. Man kann ihn als Pfeil im Raum lesen, als Punkt oder einfach als Datensatz: ein Pixelbild mit 512 × 512 Pixeln ist ein Vektor mit 262 144 Einträgen, ein Embedding eines Netzes einer mit 768. Vektoren werden in diesem Text als Spalten geschrieben.</p>
+<div class="arithmatex">\[
+\mathbf x = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix}, \qquad \mathbf x + \mathbf y = \begin{pmatrix} x_1 + y_1 \\ \vdots \\ x_n + y_n \end{pmatrix}, \qquad \alpha\mathbf x = \begin{pmatrix} \alpha x_1 \\ \vdots \\ \alpha x_n \end{pmatrix}
+\]</div>
+<p>Addition und Skalierung sind die beiden Operationen, aus denen alles Weitere gebaut ist. Eine Summe <span class="arithmatex">\(\alpha_1\mathbf v_1 + \dots + \alpha_k\mathbf v_k\)</span> heißt <strong>Linearkombination</strong>.</p>
+<div class="admonition info">
+<p class="admonition-title">Vektorraum</p>
+<p>Ein <strong>Vektorraum</strong> ist eine Menge, in der man Elemente addieren und mit Zahlen multiplizieren kann und dabei immer wieder in der Menge landet. Deshalb sind nicht nur Zahlenlisten Vektoren, sondern auch Bilder, Signale oder Funktionen: Zwei Bilder kann man pixelweise addieren, und heraus kommt wieder ein Bild.</p>
+<p>Ein <strong>Unterraum</strong> ist ein Teil davon, aus dem Addieren und Skalieren nicht herausführen, zum Beispiel eine Ebene durch den Ursprung. Eine verschobene Ebene ist keiner, weil sie die Null nicht enthält (mehr dazu in Abschnitt 5).</p>
+</div>
+<h3 id="skalarprodukt-lange-winkel">Skalarprodukt, Länge, Winkel<a class="headerlink" href="#skalarprodukt-lange-winkel" title="Permanent link">&para;</a></h3>
+<p>Das <strong>Skalarprodukt</strong> multipliziert zwei Vektoren eintragsweise und summiert. Es misst, wie stark zwei Vektoren in dieselbe Richtung zeigen:</p>
+<div class="arithmatex">\[
+\mathbf x^\top\mathbf y = \sum_{i=1}^n x_i y_i = \|\mathbf x\|\,\|\mathbf y\|\cos\theta, \qquad \|\mathbf x\| = \sqrt{\mathbf x^\top\mathbf x}
+\]</div>
+<ul>
+<li>Positiv: gleiche Richtung (spitzer Winkel). Null: <strong>orthogonal</strong>. Negativ: entgegengesetzt.</li>
+<li>Teilt man durch die Längen, bleibt <span class="arithmatex">\(\cos\theta\)</span>, die <strong>Kosinus-Ähnlichkeit</strong>. Mit ihr vergleicht man z. B. Embeddings, unabhängig von ihrer Länge.</li>
+<li>Die <strong>Projektion</strong> von <span class="arithmatex">\(\mathbf y\)</span> auf die Richtung von <span class="arithmatex">\(\mathbf x\)</span> ist <span class="arithmatex">\(\dfrac{\mathbf x^\top\mathbf y}{\mathbf x^\top\mathbf x}\,\mathbf x\)</span>. Der Rest <span class="arithmatex">\(\mathbf y - \text{Projektion}\)</span> steht senkrecht auf <span class="arithmatex">\(\mathbf x\)</span>. Diese Zerlegung taucht in Abschnitt 7 und 10 wieder auf.</li>
+</ul>
+<iframe class="xw-widget" src="../widgets/la-01-vektoren.html" loading="lazy" title="la-01-vektoren"></iframe>
+
+<h3 id="normen">Normen<a class="headerlink" href="#normen" title="Permanent link">&para;</a></h3>
+<p>Die Länge <span class="arithmatex">\(\|\mathbf x\|\)</span> oben ist die euklidische oder <strong>L2-Norm</strong>. Je nach Anwendung misst man Größe auch anders:</p>
+<table>
+<thead>
+<tr>
+<th>Norm</th>
+<th>Formel</th>
+<th>Typische Verwendung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>$\Vert \mathbf x\Vert _1 = \sum_i \vert x_i\vert $</td>
+<td>robuste Fehlermaße, Sparsity-Regularisierung (Lasso)</td>
+</tr>
+<tr>
+<td>L2</td>
+<td><span class="arithmatex">\(\Vert \mathbf x\Vert _2 = \sqrt{\sum_i x_i^2}\)</span></td>
+<td>Abstand, kleinste Quadrate, Energie eines Signals</td>
+</tr>
+<tr>
+<td>L∞</td>
+<td>$\Vert \mathbf x\Vert _\infty = \max_i \vert x_i\vert $</td>
+<td>größte Einzelabweichung, Toleranzen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="allgemeine-skalarprodukte">Allgemeine Skalarprodukte<a class="headerlink" href="#allgemeine-skalarprodukte" title="Permanent link">&para;</a></h3>
+<p>Das Standard-Skalarprodukt <span class="arithmatex">\(\mathbf x^\top\mathbf y\)</span> ist nur eine Möglichkeit. Allgemein ist ein <strong>Skalarprodukt</strong> <span class="arithmatex">\(\langle\mathbf x, \mathbf y\rangle\)</span> jede Abbildung, die linear in jedem Argument, symmetrisch und positiv definit ist (<span class="arithmatex">\(\langle\mathbf x, \mathbf x\rangle &gt; 0\)</span> für <span class="arithmatex">\(\mathbf x \neq \mathbf 0\)</span>). Im <span class="arithmatex">\(\mathbb R^n\)</span> sind das genau die Ausdrücke</p>
+<div class="arithmatex">\[
+\langle\mathbf x, \mathbf y\rangle_M = \mathbf x^\top M\mathbf y, \qquad M \text{ symmetrisch positiv definit}
+\]</div>
+<p>Jedes Skalarprodukt bringt seine eigene Länge <span class="arithmatex">\(\|\mathbf x\| = \sqrt{\langle\mathbf x, \mathbf x\rangle}\)</span> und seinen eigenen Begriff von „senkrecht“ mit. Ein Beispiel ist die Mahalanobis-Distanz <span class="arithmatex">\(\sqrt{(\mathbf x - \boldsymbol\mu)^\top C^{-1}(\mathbf x - \boldsymbol\mu)}\)</span>, die Abstände relativ zur Streuung einer Verteilung misst (Kovarianz <span class="arithmatex">\(C\)</span>). Ein anderes ist das gewichtete Residuum, wenn Messwerte unterschiedlich genau sind.</p>
+<h3 id="funktionen-als-vektoren">Funktionen als Vektoren<a class="headerlink" href="#funktionen-als-vektoren" title="Permanent link">&para;</a></h3>
+<p>Lässt man den Index <span class="arithmatex">\(i\)</span> kontinuierlich werden, wird aus der Summe ein Integral. Das ist das Skalarprodukt zweier Funktionen auf einem Intervall:</p>
+<div class="arithmatex">\[
+\langle f, g\rangle = \int_a^b f(x)\,g(x)\,\mathrm dx
+\]</div>
+<p>Damit gibt es auch für Funktionen Längen, Winkel und Orthogonalität. Zum Beispiel sind <span class="arithmatex">\(\sin(kx)\)</span> und <span class="arithmatex">\(\cos(lx)\)</span> auf <span class="arithmatex">\([-\pi, \pi]\)</span> für alle ganzen <span class="arithmatex">\(k, l\)</span> paarweise orthogonal. Die Fourier-Reihe ist dann nichts anderes als die Koordinatendarstellung einer Funktion in dieser Orthogonalbasis (Abschnitt 10), und die Fourier-Koeffizienten sind Projektionen.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li><span class="arithmatex">\(\mathbf x^\top\mathbf y = \|\mathbf x\|\|\mathbf y\|\cos\theta\)</span>. Null heißt orthogonal.</li>
+<li>Projektion auf <span class="arithmatex">\(\mathbf x\)</span>: <span class="arithmatex">\(\frac{\mathbf x^\top\mathbf y}{\mathbf x^\top\mathbf x}\mathbf x\)</span>, der Rest steht senkrecht.</li>
+<li>Skalarprodukte allgemein: <span class="arithmatex">\(\mathbf x^\top M\mathbf y\)</span> mit SPD-Matrix <span class="arithmatex">\(M\)</span>, für Funktionen <span class="arithmatex">\(\int fg\)</span>.</li>
+</ul>
+</div>
+<h2 id="2-matrizen-als-abbildungen">2 Matrizen als Abbildungen<a class="headerlink" href="#2-matrizen-als-abbildungen" title="Permanent link">&para;</a></h2>
+<p>Eine <span class="arithmatex">\(m\times n\)</span>-Matrix <span class="arithmatex">\(A\)</span> ist eine Tabelle mit <span class="arithmatex">\(m\)</span> Zeilen und <span class="arithmatex">\(n\)</span> Spalten. Wichtiger als die Tabelle ist, was sie <em>tut</em>: Sie bildet einen Vektor <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span> auf einen Vektor <span class="arithmatex">\(A\mathbf x \in \mathbb R^m\)</span> ab, und zwar <strong>linear</strong>:</p>
+<div class="arithmatex">\[
+A(\alpha\mathbf x + \beta\mathbf y) = \alpha A\mathbf x + \beta A\mathbf y
+\]</div>
+<p>Gitterlinien bleiben dabei Geraden und parallel, der Ursprung bleibt fest. Umgekehrt lässt sich jede lineare Abbildung als Matrix schreiben.</p>
+<h3 id="die-spalten-sind-die-bilder-der-basisvektoren">Die Spalten sind die Bilder der Basisvektoren<a class="headerlink" href="#die-spalten-sind-die-bilder-der-basisvektoren" title="Permanent link">&para;</a></h3>
+<p>Der wichtigste Satz zum Lesen einer Matrix: Die erste Spalte ist das, worauf <span class="arithmatex">\(\mathbf e_1 = (1, 0, \dots)^\top\)</span> abgebildet wird, die zweite Spalte das Bild von <span class="arithmatex">\(\mathbf e_2\)</span>, und so weiter. Weil jeder Vektor eine Linearkombination der <span class="arithmatex">\(\mathbf e_i\)</span> ist, ist <span class="arithmatex">\(A\mathbf x\)</span> dieselbe Linearkombination der Spalten:</p>
+<div class="arithmatex">\[
+A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &amp; \cdots \\ | &amp; | &amp; \end{pmatrix}\begin{pmatrix} x_1 \\ x_2 \\ \vdots\end{pmatrix} = x_1\mathbf a_1 + x_2\mathbf a_2 + \dots
+\]</div>
+<p>Die zweite Lesart, die man zum Rechnen braucht: Eintrag <span class="arithmatex">\(i\)</span> von <span class="arithmatex">\(A\mathbf x\)</span> ist das Skalarprodukt der Zeile <span class="arithmatex">\(i\)</span> mit <span class="arithmatex">\(\mathbf x\)</span>. Beide Lesarten liefern dasselbe, die Spaltensicht ist die geometrische, die Zeilensicht die rechnerische.</p>
+<iframe class="xw-widget" src="../widgets/la-02-matrix-als-abbildung.html" loading="lazy" title="la-02-matrix-als-abbildung"></iframe>
+
+<h3 id="rechenregeln">Rechenregeln<a class="headerlink" href="#rechenregeln" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Matrixprodukt</strong> <span class="arithmatex">\(AB\)</span> ist die Hintereinanderausführung: erst <span class="arithmatex">\(B\)</span>, dann <span class="arithmatex">\(A\)</span>. Es gilt <span class="arithmatex">\((AB)\mathbf x = A(B\mathbf x)\)</span>. Dafür muss die Spaltenzahl von <span class="arithmatex">\(A\)</span> gleich der Zeilenzahl von <span class="arithmatex">\(B\)</span> sein. Eintrag <span class="arithmatex">\((i,j)\)</span> ist Zeile <span class="arithmatex">\(i\)</span> von <span class="arithmatex">\(A\)</span> mal Spalte <span class="arithmatex">\(j\)</span> von <span class="arithmatex">\(B\)</span>.</li>
+<li>Die Reihenfolge zählt: im Allgemeinen ist <span class="arithmatex">\(AB \neq BA\)</span>. Erst drehen, dann scheren ergibt etwas anderes als umgekehrt.</li>
+<li><strong>Transponierte</strong> <span class="arithmatex">\(A^\top\)</span>: Zeilen und Spalten vertauscht. <span class="arithmatex">\((AB)^\top = B^\top A^\top\)</span>. Ist <span class="arithmatex">\(A = A^\top\)</span>, heißt <span class="arithmatex">\(A\)</span> <strong>symmetrisch</strong>.</li>
+<li><strong>Inverse</strong> <span class="arithmatex">\(A^{-1}\)</span>: macht die Abbildung rückgängig, <span class="arithmatex">\(A^{-1}A = I\)</span>. Sie existiert nur für quadratische Matrizen, die nichts „plattdrücken“ (Abschnitt 4). <span class="arithmatex">\((AB)^{-1} = B^{-1}A^{-1}\)</span>. Für 2×2:</li>
+</ul>
+<div class="arithmatex">\[
+\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}^{-1} = \frac{1}{ad - bc}\begin{pmatrix} d &amp; -b \\ -c &amp; a \end{pmatrix}
+\]</div>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Spalte <span class="arithmatex">\(j\)</span> von <span class="arithmatex">\(A\)</span> ist <span class="arithmatex">\(A\mathbf e_j\)</span>. <span class="arithmatex">\(A\mathbf x\)</span> ist die Linearkombination der Spalten mit den Gewichten <span class="arithmatex">\(x_j\)</span>.</li>
+<li><span class="arithmatex">\(AB\)</span> = erst <span class="arithmatex">\(B\)</span>, dann <span class="arithmatex">\(A\)</span>. Nicht kommutativ. <span class="arithmatex">\((AB)^\top = B^\top A^\top\)</span>, <span class="arithmatex">\((AB)^{-1} = B^{-1}A^{-1}\)</span>.</li>
+</ul>
+</div>
+<h2 id="3-lineare-unabhangigkeit-basis-und-rang">3 Lineare Unabhängigkeit, Basis und Rang<a class="headerlink" href="#3-lineare-unabhangigkeit-basis-und-rang" title="Permanent link">&para;</a></h2>
+<p>Vektoren <span class="arithmatex">\(\mathbf v_1, \dots, \mathbf v_k\)</span> sind <strong>linear unabhängig</strong>, wenn keiner sich als Linearkombination der anderen schreiben lässt. Gleichwertig: Die einzige Lösung von <span class="arithmatex">\(\alpha_1\mathbf v_1 + \dots + \alpha_k\mathbf v_k = \mathbf 0\)</span> ist <span class="arithmatex">\(\alpha_1 = \dots = \alpha_k = 0\)</span>. Jeder abhängige Vektor ist überflüssig, er fügt keine neue Richtung hinzu.</p>
+<ul>
+<li>Der <strong>Span</strong> einer Menge von Vektoren ist alles, was man aus ihnen kombinieren kann. Zwei unabhängige Vektoren im <span class="arithmatex">\(\mathbb R^3\)</span> spannen eine Ebene auf, drei unabhängige den ganzen Raum.</li>
+<li>Eine <strong>Basis</strong> ist eine minimale Menge, die den ganzen Raum aufspannt: unabhängig und vollständig. Jeder Vektor hat in ihr genau eine Darstellung, seine <strong>Koordinaten</strong>. Die Anzahl der Basisvektoren ist die <strong>Dimension</strong>.</li>
+<li>Basen sind nicht eindeutig. Die Standardbasis <span class="arithmatex">\(\mathbf e_1, \dots, \mathbf e_n\)</span> ist nur eine Wahl. Eigenvektoren (Abschnitt 9), Fourier-Moden oder Hauptkomponenten (Abschnitt 11) sind andere, oft besser zum Problem passende.</li>
+</ul>
+<h3 id="die-vier-unterraume-einer-matrix">Die vier Unterräume einer Matrix<a class="headerlink" href="#die-vier-unterraume-einer-matrix" title="Permanent link">&para;</a></h3>
+<p>Zu jeder <span class="arithmatex">\(m\times n\)</span>-Matrix gehören vier Räume. Zwei davon braucht man ständig:</p>
+<table>
+<thead>
+<tr>
+<th>Raum</th>
+<th>Definition</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spaltenraum (Bild)</td>
+<td><span class="arithmatex">\(\{A\mathbf x\}\)</span>, Span der Spalten, in <span class="arithmatex">\(\mathbb R^m\)</span></td>
+<td>alle <span class="arithmatex">\(\mathbf b\)</span>, für die <span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> lösbar ist</td>
+</tr>
+<tr>
+<td>Nullraum (Kern)</td>
+<td><span class="arithmatex">\(\{\mathbf x : A\mathbf x = \mathbf 0\}\)</span>, in <span class="arithmatex">\(\mathbb R^n\)</span></td>
+<td>Richtungen, die <span class="arithmatex">\(A\)</span> „nicht sieht“; Mehrdeutigkeit der Lösung</td>
+</tr>
+<tr>
+<td>Zeilenraum</td>
+<td>Span der Zeilen, in <span class="arithmatex">\(\mathbb R^n\)</span></td>
+<td>steht senkrecht auf dem Nullraum</td>
+</tr>
+<tr>
+<td>Linker Nullraum</td>
+<td><span class="arithmatex">\(\{\mathbf y : A^\top\mathbf y = \mathbf 0\}\)</span>, in <span class="arithmatex">\(\mathbb R^m\)</span></td>
+<td>steht senkrecht auf dem Spaltenraum; hier liegt das Residuum bei kleinsten Quadraten</td>
+</tr>
+</tbody>
+</table>
+<p>Der <strong>Rang</strong> <span class="arithmatex">\(r = \operatorname{rang}(A)\)</span> ist die Dimension des Spaltenraums. Er ist gleich der Anzahl unabhängiger Spalten und, nicht offensichtlich, auch gleich der Anzahl unabhängiger Zeilen. Die <strong>Dimensionsformel</strong> verbindet Rang und Nullraum:</p>
+<div class="arithmatex">\[
+\operatorname{rang}(A) + \dim\ker(A) = n
+\]</div>
+<p>Jede Spalte, die keine neue Richtung bringt, erzeugt eine Dimension im Nullraum. Eine Matrix mit <span class="arithmatex">\(r = \min(m, n)\)</span> hat <strong>vollen Rang</strong>. In der Praxis ist eine Matrix selten exakt rangdefizient, aber oft <em>fast</em>. Wie man das misst, zeigen Kondition (Abschnitt 6) und Singulärwerte (Abschnitt 11).</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Rang = Anzahl unabhängiger Spalten = Anzahl unabhängiger Zeilen = <span class="arithmatex">\(\dim\)</span> Spaltenraum.</li>
+<li><span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> ist lösbar genau dann, wenn <span class="arithmatex">\(\mathbf b\)</span> im Spaltenraum liegt. Eindeutig genau dann, wenn der Nullraum nur <span class="arithmatex">\(\mathbf 0\)</span> enthält.</li>
+</ul>
+</div>
+<h3 id="basiswechsel">Basiswechsel<a class="headerlink" href="#basiswechsel" title="Permanent link">&para;</a></h3>
+<p>Derselbe Vektor hat in verschiedenen Basen verschiedene Koordinaten. Schreibt man die neuen Basisvektoren <span class="arithmatex">\(\mathbf b_1, \dots, \mathbf b_n\)</span> (in Standardkoordinaten) als Spalten in eine Matrix <span class="arithmatex">\(B\)</span>, dann gilt für die neuen Koordinaten <span class="arithmatex">\(\mathbf c\)</span> eines Vektors <span class="arithmatex">\(\mathbf x\)</span>:</p>
+<div class="arithmatex">\[
+\mathbf x = B\mathbf c \qquad\Longleftrightarrow\qquad \mathbf c = B^{-1}\mathbf x
+\]</div>
+<p><span class="arithmatex">\(B\)</span> übersetzt also von den neuen in die alten Koordinaten, <span class="arithmatex">\(B^{-1}\)</span> zurück. Bei einer Orthonormalbasis ist <span class="arithmatex">\(B^{-1} = B^\top\)</span>, und die neuen Koordinaten sind einfach Skalarprodukte <span class="arithmatex">\(c_i = \mathbf b_i^\top\mathbf x\)</span>.</p>
+<iframe class="xw-widget" src="../widgets/la-03-basiswechsel.html" loading="lazy" title="la-03-basiswechsel"></iframe>
+
+<p>Auch eine lineare Abbildung sieht in einer anderen Basis anders aus. Wirkt <span class="arithmatex">\(A\)</span> in Standardkoordinaten, dann wirkt sie in der neuen Basis als</p>
+<div class="arithmatex">\[
+\tilde A = B^{-1}AB
+\]</div>
+<p>Lesen von rechts: neue Koordinaten in alte übersetzen, <span class="arithmatex">\(A\)</span> anwenden, zurückübersetzen. Matrizen, die so zusammenhängen, heißen <strong>ähnlich</strong>. Sie beschreiben dieselbe Abbildung und haben deshalb dieselbe Determinante, Spur und dieselben Eigenwerte. Für Abbildungen zwischen verschiedenen Räumen (<span class="arithmatex">\(\mathbb R^n \to \mathbb R^m\)</span>) wechselt man in beiden Räumen getrennt die Basis, <span class="arithmatex">\(\tilde A = T^{-1}AS\)</span>. Der Kern von Abschnitt 9 und 11 ist genau diese Frage: Gibt es eine Basis, in der <span class="arithmatex">\(\tilde A\)</span> diagonal ist? Bei der Eigenzerlegung ist <span class="arithmatex">\(B = V\)</span>, bei der SVD sind <span class="arithmatex">\(S = V\)</span> und <span class="arithmatex">\(T = U\)</span>.</p>
+<h2 id="4-determinante">4 Determinante<a class="headerlink" href="#4-determinante" title="Permanent link">&para;</a></h2>
+<p>Die <strong>Determinante</strong> einer quadratischen Matrix ist der Faktor, um den die Abbildung Flächen (in 2D) oder Volumina (in 3D und höher) ändert. Das Einheitsquadrat wird auf das Parallelogramm aus den beiden Spalten abgebildet, und dessen vorzeichenbehaftete Fläche ist <span class="arithmatex">\(\det A\)</span>:</p>
+<div class="arithmatex">\[
+\det\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix} = ad - bc
+\]</div>
+<ul>
+<li><strong>Vorzeichen:</strong> Negativ heißt, die Abbildung spiegelt, die Orientierung kehrt sich um (im Uhrzeigersinn wird gegen den Uhrzeigersinn).</li>
+<li><strong>Null:</strong> Der Raum wird auf eine niedrigere Dimension plattgedrückt, die Spalten sind abhängig. Dann gibt es keine Inverse, denn verlorene Information lässt sich nicht zurückholen.</li>
+<li><strong>Produkt:</strong> <span class="arithmatex">\(\det(AB) = \det A\,\det B\)</span>, Flächenfaktoren multiplizieren sich. Daraus folgt <span class="arithmatex">\(\det A^{-1} = 1/\det A\)</span>.</li>
+<li><span class="arithmatex">\(\det A\)</span> ist das Produkt der Eigenwerte (Abschnitt 9), <span class="arithmatex">\(\det A^\top = \det A\)</span>.</li>
+</ul>
+<iframe class="xw-widget" src="../widgets/la-04-determinante.html" loading="lazy" title="la-04-determinante"></iframe>
+
+<p>Für größere Matrizen berechnet man die Determinante nie über die Formel mit <span class="arithmatex">\(n!\)</span> Summanden, sondern über die LU-Zerlegung (Abschnitt 5): <span class="arithmatex">\(\det A\)</span> ist dann das Produkt der Diagonalelemente von <span class="arithmatex">\(U\)</span>, mal <span class="arithmatex">\(\pm 1\)</span> für Zeilenvertauschungen. Als Maß dafür, ob eine Matrix „fast singulär“ ist, taugt die Determinante übrigens nicht: <span class="arithmatex">\(\det(0{,}1\cdot I_{10}) = 10^{-10}\)</span>, obwohl diese Matrix perfekt gutartig ist. Dafür gibt es die Konditionszahl.</p>
+<h3 id="spur">Spur<a class="headerlink" href="#spur" title="Permanent link">&para;</a></h3>
+<p>Die <strong>Spur</strong> einer quadratischen Matrix ist die Summe ihrer Diagonalelemente, <span class="arithmatex">\(\operatorname{tr}A = \sum_i a_{ii}\)</span>. Sie ist linear und hat drei Eigenschaften, die in Herleitungen ständig gebraucht werden:</p>
+<div class="arithmatex">\[
+\operatorname{tr}(AB) = \operatorname{tr}(BA), \qquad \operatorname{tr}A = \sum_i\lambda_i, \qquad \|A\|_F^2 = \sum_{i,j}a_{ij}^2 = \operatorname{tr}(A^\top A)
+\]</div>
+<p>Die erste Regel heißt Zyklizität: Produkte darf man in der Spur zyklisch verschieben, <span class="arithmatex">\(\operatorname{tr}(ABC) = \operatorname{tr}(CAB)\)</span>, aber nicht beliebig vertauschen. Ein Skalar ist seine eigene Spur, deshalb gilt der Trick <span class="arithmatex">\(\mathbf x^\top A\mathbf x = \operatorname{tr}(\mathbf x^\top A\mathbf x) = \operatorname{tr}(A\mathbf x\mathbf x^\top)\)</span>. So bekommt man z. B. den Erwartungswert einer quadratischen Form, <span class="arithmatex">\(\mathbb E[\mathbf x^\top A\mathbf x] = \operatorname{tr}(A C) + \boldsymbol\mu^\top A\boldsymbol\mu\)</span>. Weil die Spur die Summe der Eigenwerte ist, ändert sie sich bei einem Basiswechsel nicht. Für <span class="arithmatex">\(\operatorname{tr}A\)</span> gilt dasselbe wie für <span class="arithmatex">\(\det A\)</span>: Beide sind Invarianten der Abbildung, nicht der Matrixdarstellung.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li><span class="arithmatex">\(\det A\)</span> = vorzeichenbehafteter Volumenfaktor. <span class="arithmatex">\(\det A = 0\)</span> ⇔ Spalten abhängig ⇔ nicht invertierbar.</li>
+<li><span class="arithmatex">\(\det(AB) = \det A\det B\)</span>. Kleine Determinante heißt nicht schlecht konditioniert.</li>
+<li><span class="arithmatex">\(\operatorname{tr}A = \sum\lambda_i\)</span>, <span class="arithmatex">\(\operatorname{tr}(AB) = \operatorname{tr}(BA)\)</span>, <span class="arithmatex">\(\|A\|_F^2 = \operatorname{tr}(A^\top A)\)</span>.</li>
+</ul>
+</div>
+<h2 id="5-lineare-gleichungssysteme-losen">5 Lineare Gleichungssysteme lösen<a class="headerlink" href="#5-lineare-gleichungssysteme-losen" title="Permanent link">&para;</a></h2>
+<p>Ein lineares Gleichungssystem mit <span class="arithmatex">\(m\)</span> Gleichungen und <span class="arithmatex">\(n\)</span> Unbekannten schreibt man kompakt als <span class="arithmatex">\(A\mathbf x = \mathbf b\)</span>. Die Zeilensicht: Jede Gleichung ist eine Gerade (2D), Ebene (3D) oder Hyperebene, und die Lösung ist ihr gemeinsamer Schnitt. Die Spaltensicht: Gesucht sind die Gewichte, mit denen die Spalten von <span class="arithmatex">\(A\)</span> zusammen <span class="arithmatex">\(\mathbf b\)</span> ergeben.</p>
+<table>
+<thead>
+<tr>
+<th>Fall</th>
+<th>Bedingung</th>
+<th>Geometrisch (2D)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>genau eine Lösung</td>
+<td><span class="arithmatex">\(A\)</span> quadratisch, <span class="arithmatex">\(\det A \neq 0\)</span></td>
+<td>zwei Geraden schneiden sich in einem Punkt</td>
+</tr>
+<tr>
+<td>keine Lösung</td>
+<td><span class="arithmatex">\(\mathbf b\)</span> nicht im Spaltenraum</td>
+<td>parallele Geraden; bei mehr Gleichungen als Unbekannten der Normalfall</td>
+</tr>
+<tr>
+<td>unendlich viele</td>
+<td><span class="arithmatex">\(\mathbf b\)</span> im Spaltenraum, Nullraum nicht trivial</td>
+<td>beide Gleichungen beschreiben dieselbe Gerade</td>
+</tr>
+</tbody>
+</table>
+<h3 id="struktur-der-losungsmenge">Struktur der Lösungsmenge<a class="headerlink" href="#struktur-der-losungsmenge" title="Permanent link">&para;</a></h3>
+<p>Ist das System lösbar, aber nicht eindeutig, dann haben alle Lösungen dieselbe Form: eine beliebige <strong>spezielle Lösung</strong> <span class="arithmatex">\(\mathbf x_p\)</span> plus irgendein Element des Nullraums.</p>
+<div class="arithmatex">\[
+\{\mathbf x : A\mathbf x = \mathbf b\} = \mathbf x_p + \ker A = \{\mathbf x_p + \mathbf z : A\mathbf z = \mathbf 0\}
+\]</div>
+<p>Der Grund ist die Linearität: Sind <span class="arithmatex">\(\mathbf x_1\)</span> und <span class="arithmatex">\(\mathbf x_2\)</span> Lösungen, dann ist <span class="arithmatex">\(A(\mathbf x_1 - \mathbf x_2) = \mathbf b - \mathbf b = \mathbf 0\)</span>, ihre Differenz liegt also im Nullraum. Beispiel: <span class="arithmatex">\(x_1 + x_2 = 2\)</span> hat die spezielle Lösung <span class="arithmatex">\((1, 1)\)</span> und den Nullraum <span class="arithmatex">\(\{t(1, -1)\}\)</span>, die Lösungsmenge ist die Gerade <span class="arithmatex">\((1, 1) + t(1, -1)\)</span>.</p>
+<p>Eine solche verschobene Kopie eines Unterraums heißt <strong>affiner Unterraum</strong>. Er ist selbst kein Unterraum, weil er die Null nicht enthält (außer bei <span class="arithmatex">\(\mathbf b = \mathbf 0\)</span>). Affine Unterräume sind die natürlichen Objekte der Geometrie: Geraden und Ebenen, die nicht durch den Ursprung gehen, Hyperebenen <span class="arithmatex">\(\{\mathbf x : \mathbf w^\top\mathbf x = c\}\)</span> als Entscheidungsgrenzen eines linearen Klassifikators. Eine <strong>affine Abbildung</strong> <span class="arithmatex">\(\mathbf x \mapsto A\mathbf x + \mathbf t\)</span> ist eine lineare Abbildung mit anschließender Verschiebung, genau das, was eine Schicht eines neuronalen Netzes vor der Aktivierungsfunktion tut.</p>
+<h3 id="gau-elimination-und-lu-zerlegung">Gauß-Elimination und LU-Zerlegung<a class="headerlink" href="#gau-elimination-und-lu-zerlegung" title="Permanent link">&para;</a></h3>
+<p>Das Standardverfahren für quadratische Systeme: Man zieht Vielfache einer Zeile von den darunterliegenden ab, bis unter der Diagonale nur Nullen stehen. Das obere Dreieckssystem löst man dann von unten nach oben (Rückwärtseinsetzen).</p>
+<div class="arithmatex">\[
+\left(\begin{array}{ccc|c} 2 &amp; 1 &amp; 1 &amp; 5 \\ 4 &amp; 3 &amp; 3 &amp; 13 \\ 2 &amp; 3 &amp; 4 &amp; 13 \end{array}\right) \;\to\; \left(\begin{array}{ccc|c} 2 &amp; 1 &amp; 1 &amp; 5 \\ 0 &amp; 1 &amp; 1 &amp; 3 \\ 0 &amp; 2 &amp; 3 &amp; 8 \end{array}\right) \;\to\; \left(\begin{array}{ccc|c} 2 &amp; 1 &amp; 1 &amp; 5 \\ 0 &amp; 1 &amp; 1 &amp; 3 \\ 0 &amp; 0 &amp; 1 &amp; 2 \end{array}\right)
+\]</div>
+<p>Rückwärts: <span class="arithmatex">\(x_3 = 2\)</span>, <span class="arithmatex">\(x_2 = 3 - 2 = 1\)</span>, <span class="arithmatex">\(x_1 = (5 - 1 - 2)/2 = 1\)</span>.</p>
+<p>Merkt man sich die Faktoren der Eliminationsschritte in einer unteren Dreiecksmatrix <span class="arithmatex">\(L\)</span>, erhält man die <strong>LU-Zerlegung</strong> <span class="arithmatex">\(A = LU\)</span> (mit Zeilenvertauschungen <span class="arithmatex">\(PA = LU\)</span>). Der Vorteil: Die teure Zerlegung kostet etwa <span class="arithmatex">\(\tfrac23 n^3\)</span> Operationen und wird einmal gemacht. Danach kostet jede neue rechte Seite <span class="arithmatex">\(\mathbf b\)</span> nur noch <span class="arithmatex">\(\sim n^2\)</span> (Vorwärts- und Rückwärtseinsetzen).</p>
+<p>Für symmetrisch positiv definite Matrizen gibt es die <strong>Cholesky-Zerlegung</strong> <span class="arithmatex">\(A = LL^\top\)</span> mit einer unteren Dreiecksmatrix <span class="arithmatex">\(L\)</span> mit positiver Diagonale. Sie braucht nur halb so viele Operationen wie LU, kommt ohne Pivotisierung aus und ist der schnellste Test, ob eine Matrix positiv definit ist: Die Zerlegung bricht genau dann ab, wenn sie es nicht ist. Für 2×2 sieht man die Konstruktion direkt:</p>
+<div class="arithmatex">\[
+\begin{pmatrix} a &amp; b \\ b &amp; c \end{pmatrix} = \begin{pmatrix} \ell_{11} &amp; 0 \\ \ell_{21} &amp; \ell_{22} \end{pmatrix}\begin{pmatrix} \ell_{11} &amp; \ell_{21} \\ 0 &amp; \ell_{22} \end{pmatrix}, \qquad \ell_{11} = \sqrt a, \quad \ell_{21} = \frac{b}{\ell_{11}}, \quad \ell_{22} = \sqrt{c - \ell_{21}^2}
+\]</div>
+<p>Cholesky ist das Standardwerkzeug für Normalengleichungen, Kovarianzmatrizen und Gauß-Prozesse. Will man Stichproben aus einer Normalverteilung mit Kovarianz <span class="arithmatex">\(C\)</span> ziehen, nimmt man <span class="arithmatex">\(\mathbf x = \boldsymbol\mu + L\mathbf z\)</span> mit <span class="arithmatex">\(C = LL^\top\)</span> und standardnormalverteiltem <span class="arithmatex">\(\mathbf z\)</span>, denn dann ist <span class="arithmatex">\(\operatorname{Cov}(\mathbf x) = L\,I\,L^\top = C\)</span>.</p>
+<p>Die Inverse berechnet man dafür praktisch nie: <span class="arithmatex">\(\mathbf x = A^{-1}\mathbf b\)</span> ist eine Schreibweise, gerechnet wird mit einer Zerlegung. In NumPy heißt das <code>np.linalg.solve(A, b)</code> statt <code>np.linalg.inv(A) @ b</code>, das ist schneller und genauer.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Lösungsmenge = spezielle Lösung + Nullraum, ein affiner Unterraum.</li>
+<li>Lösen = Zerlegen + Einsetzen. LU kostet <span class="arithmatex">\(O(n^3)\)</span> einmal, jede rechte Seite dann <span class="arithmatex">\(O(n^2)\)</span>. SPD: Cholesky.</li>
+<li>Nie explizit invertieren, wenn man nur <span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> lösen will.</li>
+</ul>
+</div>
+<h2 id="6-kondition-wie-empfindlich-ist-die-losung">6 Kondition: Wie empfindlich ist die Lösung?<a class="headerlink" href="#6-kondition-wie-empfindlich-ist-die-losung" title="Permanent link">&para;</a></h2>
+<p>In der Praxis ist <span class="arithmatex">\(\mathbf b\)</span> gemessen und damit verrauscht. Die Frage ist, wie stark sich ein kleiner Fehler in <span class="arithmatex">\(\mathbf b\)</span> auf <span class="arithmatex">\(\mathbf x\)</span> auswirkt. Die Antwort gibt die <strong>Konditionszahl</strong>:</p>
+<div class="arithmatex">\[
+\frac{\|\delta\mathbf x\|}{\|\mathbf x\|} \;\le\; \kappa(A)\,\frac{\|\delta\mathbf b\|}{\|\mathbf b\|}, \qquad \kappa(A) = \|A\|\,\|A^{-1}\| = \frac{\sigma_{\max}}{\sigma_{\min}}
+\]</div>
+<p><span class="arithmatex">\(\sigma_{\max}\)</span> und <span class="arithmatex">\(\sigma_{\min}\)</span> sind der größte und kleinste Singulärwert (Abschnitt 11): die stärkste und schwächste Streckung, die <span class="arithmatex">\(A\)</span> auf irgendeinen Vektor anwendet. Ist <span class="arithmatex">\(\kappa = 10^6\)</span>, kann ein relativer Messfehler von <span class="arithmatex">\(10^{-4}\)</span> die Lösung um bis zu 100 % verfälschen. Als Faustregel verliert man etwa <span class="arithmatex">\(\log_{10}\kappa\)</span> gültige Stellen.</p>
+<iframe class="xw-widget" src="../widgets/la-05-gleichungssystem-und-kondition.html" loading="lazy" title="la-05-gleichungssystem-und-kondition"></iframe>
+
+<p>Schlechte Kondition ist kein Rechenfehler, sondern eine Eigenschaft des Problems. Bessere Algorithmen helfen nur gegen Rundungsfehler, nicht gegen fehlende Information. Gegenmittel sind bessere Messungen (eine steilere zweite Gerade) oder <strong>Regularisierung</strong>, die Vorwissen über die Lösung einbringt (Abschnitt 7). Typische schlecht konditionierte Probleme sind Entfaltung (Deblurring), Rekonstruktion aus wenigen Projektionen und Polynomfits hohen Grades.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li><span class="arithmatex">\(\kappa(A) = \sigma_{\max}/\sigma_{\min}\)</span> verstärkt relative Fehler. <span class="arithmatex">\(\kappa \approx 1\)</span>: gutartig. <span class="arithmatex">\(\kappa \gg 1\)</span>: fast singulär.</li>
+<li>Gegen schlechte Kondition hilft Information (Messung, Vorwissen), nicht Rechengenauigkeit.</li>
+</ul>
+</div>
+<h2 id="7-uberbestimmte-systeme-kleinste-quadrate">7 Überbestimmte Systeme: kleinste Quadrate<a class="headerlink" href="#7-uberbestimmte-systeme-kleinste-quadrate" title="Permanent link">&para;</a></h2>
+<p>Hat man mehr Gleichungen als Unbekannte, <span class="arithmatex">\(m &gt; n\)</span>, gibt es wegen Messrauschen fast nie eine exakte Lösung: <span class="arithmatex">\(\mathbf b\)</span> liegt nicht im Spaltenraum. Man sucht dann das <span class="arithmatex">\(\mathbf x\)</span>, dessen <strong>Residuum</strong> <span class="arithmatex">\(\mathbf r = \mathbf b - A\mathbf x\)</span> möglichst klein ist:</p>
+<div class="arithmatex">\[
+\hat{\mathbf x} = \arg\min_{\mathbf x}\,\|A\mathbf x - \mathbf b\|_2^2
+\]</div>
+<p>Geometrisch ist <span class="arithmatex">\(A\hat{\mathbf x}\)</span> die <strong>Projektion</strong> von <span class="arithmatex">\(\mathbf b\)</span> auf den Spaltenraum. Das Residuum steht dann senkrecht auf allen Spalten, also <span class="arithmatex">\(A^\top(\mathbf b - A\hat{\mathbf x}) = \mathbf 0\)</span>. Umgestellt ergibt das die <strong>Normalengleichung</strong>:</p>
+<div class="arithmatex">\[
+A^\top A\,\hat{\mathbf x} = A^\top\mathbf b \qquad\Longrightarrow\qquad \hat{\mathbf x} = (A^\top A)^{-1}A^\top\mathbf b
+\]</div>
+<p>Dasselbe Ergebnis bekommt man, wenn man den Gradienten von <span class="arithmatex">\(\|A\mathbf x - \mathbf b\|^2\)</span> null setzt (Anhang A). <span class="arithmatex">\((A^\top A)^{-1}A^\top\)</span> heißt <strong>Pseudoinverse</strong> <span class="arithmatex">\(A^+\)</span> (für Spalten mit vollem Rang). Numerisch löst man nicht über <span class="arithmatex">\(A^\top A\)</span>, weil dabei die Kondition quadriert wird, <span class="arithmatex">\(\kappa(A^\top A) = \kappa(A)^2\)</span>, sondern über QR (Abschnitt 10) oder SVD.</p>
+<h3 id="beispiel-kurvenanpassung">Beispiel: Kurvenanpassung<a class="headerlink" href="#beispiel-kurvenanpassung" title="Permanent link">&para;</a></h3>
+<p>Ein Polynom <span class="arithmatex">\(y = c_0 + c_1 x + \dots + c_d x^d\)</span> durch <span class="arithmatex">\(m\)</span> Messpunkte ist ein lineares Problem in den Koeffizienten, auch wenn die Kurve gekrümmt ist. Jede Zeile von <span class="arithmatex">\(A\)</span> ist <span class="arithmatex">\((1, x_i, x_i^2, \dots, x_i^d)\)</span>, <span class="arithmatex">\(\mathbf b\)</span> enthält die <span class="arithmatex">\(y_i\)</span>. Linear heißt hier: linear in den Unbekannten.</p>
+<iframe class="xw-widget" src="../widgets/la-06-kleinste-quadrate.html" loading="lazy" title="la-06-kleinste-quadrate"></iframe>
+
+<h3 id="regularisierung">Regularisierung<a class="headerlink" href="#regularisierung" title="Permanent link">&para;</a></h3>
+<p>Ist <span class="arithmatex">\(A^\top A\)</span> schlecht konditioniert, addiert man einen Strafterm, der große Lösungen bestraft. Das ist die <strong>Tikhonov-Regularisierung</strong>, in der Statistik <strong>Ridge-Regression</strong>, im Deep Learning Weight Decay:</p>
+<div class="arithmatex">\[
+\hat{\mathbf x}_\lambda = \arg\min_{\mathbf x}\,\|A\mathbf x - \mathbf b\|^2 + \lambda\|\mathbf x\|^2 = (A^\top A + \lambda I)^{-1}A^\top\mathbf b
+\]</div>
+<p>Das <span class="arithmatex">\(\lambda I\)</span> hebt alle Eigenwerte von <span class="arithmatex">\(A^\top A\)</span> um <span class="arithmatex">\(\lambda\)</span> an, die Kondition verbessert sich drastisch. Der Preis ist ein kleiner systematischer Fehler (Bias). Welches λ richtig ist, entscheidet man über Validierung oder das Rauschniveau.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Kleinste Quadrate = Projektion von <span class="arithmatex">\(\mathbf b\)</span> auf den Spaltenraum. Normalengleichung <span class="arithmatex">\(A^\top A\hat{\mathbf x} = A^\top\mathbf b\)</span>.</li>
+<li>Numerisch über QR oder SVD lösen, nicht über <span class="arithmatex">\(A^\top A\)</span>. Ridge: <span class="arithmatex">\(+\lambda I\)</span> stabilisiert.</li>
+</ul>
+</div>
+<h2 id="8-iterative-verfahren">8 Iterative Verfahren<a class="headerlink" href="#8-iterative-verfahren" title="Permanent link">&para;</a></h2>
+<p>LU und QR brauchen <span class="arithmatex">\(O(n^3)\)</span> Operationen und die ganze Matrix im Speicher. Für eine CT-Rekonstruktion mit <span class="arithmatex">\(512^2\)</span> Unbekannten und Millionen Messungen ist das unmöglich, die Systemmatrix ist aber <strong>dünn besetzt</strong> (jeder Strahl trifft nur wenige Pixel). Iterative Verfahren brauchen nur Matrix-Vektor-Produkte <span class="arithmatex">\(A\mathbf x\)</span> und <span class="arithmatex">\(A^\top\mathbf y\)</span> und nähern sich der Lösung schrittweise.</p>
+<ul>
+<li><strong>Jacobi und Gauß-Seidel:</strong> Gleichung <span class="arithmatex">\(i\)</span> wird nach <span class="arithmatex">\(x_i\)</span> aufgelöst, mit den aktuellen Werten der anderen Unbekannten. Gauß-Seidel verwendet neue Werte sofort. Konvergiert sicher für diagonaldominante Matrizen.</li>
+<li><strong>Kaczmarz / ART:</strong> Der Schätzwert wird reihum auf die Hyperebene jeder einzelnen Gleichung projiziert. Das ist die klassische algebraische CT-Rekonstruktion, interaktiv auf der Seite <a href="../physik/rekonstruktion.html#iterativ">„Vom Sinogramm zum Schnittbild“</a>.</li>
+<li><strong>Gradientenabstieg</strong> auf <span class="arithmatex">\(f(\mathbf x) = \tfrac12\|A\mathbf x - \mathbf b\|^2\)</span>: Der Gradient ist <span class="arithmatex">\(A^\top(A\mathbf x - \mathbf b)\)</span>, also geht man schrittweise bergab.</li>
+<li><strong>Konjugierte Gradienten (CG):</strong> für symmetrisch positiv definite Systeme. Wählt die Suchrichtungen so, dass keine frühere Richtung „verdorben“ wird, und ist in exakter Arithmetik nach höchstens <span class="arithmatex">\(n\)</span> Schritten fertig. Der Standard für große, dünne Systeme.</li>
+</ul>
+<div class="arithmatex">\[
+\mathbf x_{k+1} = \mathbf x_k - \eta\,A^\top(A\mathbf x_k - \mathbf b), \qquad \text{konvergent für } 0 &lt; \eta &lt; \frac{2}{\sigma_{\max}^2}
+\]</div>
+<iframe class="xw-widget" src="../widgets/la-07-gradientenabstieg.html" loading="lazy" title="la-07-gradientenabstieg"></iframe>
+
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Iterative Verfahren brauchen nur <span class="arithmatex">\(A\mathbf x\)</span> und <span class="arithmatex">\(A^\top\mathbf y\)</span>: ideal für große, dünn besetzte Systeme.</li>
+<li>Die Konvergenzgeschwindigkeit hängt an der Kondition. Vorkonditionierung formt das Problem so um, dass κ kleiner wird.</li>
+</ul>
+</div>
+<h2 id="9-eigenwerte-und-eigenvektoren">9 Eigenwerte und Eigenvektoren<a class="headerlink" href="#9-eigenwerte-und-eigenvektoren" title="Permanent link">&para;</a></h2>
+<p>Die meisten Vektoren werden von einer Matrix gedreht und gestreckt. Einige wenige Richtungen werden nur gestreckt, ihre Richtung bleibt erhalten. Das sind die <strong>Eigenvektoren</strong>, und der Streckfaktor ist der <strong>Eigenwert</strong> λ:</p>
+<div class="arithmatex">\[
+A\mathbf v = \lambda\mathbf v, \qquad \mathbf v \neq \mathbf 0
+\]</div>
+<p>Die Eigenwerte sind die Nullstellen des charakteristischen Polynoms <span class="arithmatex">\(\det(A - \lambda I) = 0\)</span>. Für 2×2-Matrizen mit Spur <span class="arithmatex">\(\operatorname{tr}A = a + d\)</span>:</p>
+<div class="arithmatex">\[
+\lambda_{1,2} = \frac{\operatorname{tr}A}{2} \pm \sqrt{\left(\frac{\operatorname{tr}A}{2}\right)^2 - \det A}, \qquad \lambda_1 + \lambda_2 = \operatorname{tr}A, \quad \lambda_1\lambda_2 = \det A
+\]</div>
+<p>Eine reine Drehung hat keine reellen Eigenvektoren, keine Richtung bleibt erhalten, die Eigenwerte sind komplex. Eine Scherung hat nur einen, eine Spiegelung zwei mit λ = +1 und −1.</p>
+<iframe class="xw-widget" src="../widgets/la-08-eigenvektoren.html" loading="lazy" title="la-08-eigenvektoren"></iframe>
+
+<h3 id="vielfachheiten">Vielfachheiten<a class="headerlink" href="#vielfachheiten" title="Permanent link">&para;</a></h3>
+<p>Ein Eigenwert kann mehrfach auftreten. Seine <strong>algebraische Vielfachheit</strong> ist, wie oft er Nullstelle des charakteristischen Polynoms ist. Seine <strong>geometrische Vielfachheit</strong> ist die Dimension des zugehörigen Eigenraums <span class="arithmatex">\(\ker(A - \lambda I)\)</span>, also wie viele unabhängige Eigenvektoren es dazu gibt. Es gilt immer: geometrisch ≤ algebraisch.</p>
+<ul>
+<li><span class="arithmatex">\(I\)</span> hat den Eigenwert 1 doppelt, und jeder Vektor ist Eigenvektor: geometrisch = algebraisch = 2.</li>
+<li>Die Scherung <span class="arithmatex">\(\begin{pmatrix} 1 &amp; 1 \\ 0 &amp; 1\end{pmatrix}\)</span> hat ebenfalls den Eigenwert 1 doppelt, aber nur eine Eigenrichtung <span class="arithmatex">\((1, 0)\)</span>: geometrisch 1 &lt; algebraisch 2. Probier es in Abbildung 8 aus.</li>
+</ul>
+<p>Matrizen, bei denen für irgendeinen Eigenwert die geometrische Vielfachheit kleiner ist, heißen <strong>defekt</strong>. Ihnen fehlen Eigenvektoren für eine vollständige Basis, sie sind nicht diagonalisierbar. Für sie gibt es die Jordan-Normalform, die numerisch aber kaum eine Rolle spielt. Sind alle <span class="arithmatex">\(n\)</span> Eigenwerte verschieden, ist die Matrix immer diagonalisierbar.</p>
+<h3 id="diagonalisierung">Diagonalisierung<a class="headerlink" href="#diagonalisierung" title="Permanent link">&para;</a></h3>
+<p>Hat eine <span class="arithmatex">\(n\times n\)</span>-Matrix <span class="arithmatex">\(n\)</span> unabhängige Eigenvektoren, schreibt man sie in die Spalten von <span class="arithmatex">\(V\)</span> und die Eigenwerte auf die Diagonale von <span class="arithmatex">\(\Lambda\)</span>:</p>
+<div class="arithmatex">\[
+A = V\Lambda V^{-1} \qquad\Longrightarrow\qquad A^k = V\Lambda^k V^{-1}
+\]</div>
+<p>In der Eigenbasis wirkt <span class="arithmatex">\(A\)</span> wie eine reine Streckung entlang der Achsen. Potenzen, Matrixexponential und Stabilitätsanalyse werden dadurch einfach: <span class="arithmatex">\(A^k\mathbf x\)</span> wird für große <span class="arithmatex">\(k\)</span> vom betragsgrößten Eigenwert dominiert. Das nutzt die <strong>Potenzmethode</strong>, die einfachste Art, den größten Eigenwert zu finden (und die Idee hinter PageRank).</p>
+<h3 id="symmetrische-matrizen">Symmetrische Matrizen<a class="headerlink" href="#symmetrische-matrizen" title="Permanent link">&para;</a></h3>
+<p>Für symmetrische Matrizen <span class="arithmatex">\(A = A^\top\)</span> gilt der <strong>Spektralsatz</strong>: Alle Eigenwerte sind reell, und es gibt eine Orthonormalbasis aus Eigenvektoren. Dann ist <span class="arithmatex">\(V\)</span> orthogonal, <span class="arithmatex">\(V^{-1} = V^\top\)</span>:</p>
+<div class="arithmatex">\[
+A = Q\Lambda Q^\top = \sum_{i=1}^n \lambda_i\,\mathbf q_i\mathbf q_i^\top
+\]</div>
+<p>Kovarianzmatrizen, <span class="arithmatex">\(A^\top A\)</span>, Hesse-Matrizen und Graph-Laplace-Matrizen sind alle symmetrisch. Sind zusätzlich alle <span class="arithmatex">\(\lambda_i &gt; 0\)</span>, heißt <span class="arithmatex">\(A\)</span> <strong>positiv definit</strong>: <span class="arithmatex">\(\mathbf x^\top A\mathbf x &gt; 0\)</span> für alle <span class="arithmatex">\(\mathbf x \neq \mathbf 0\)</span>. Die Höhenlinien von <span class="arithmatex">\(\mathbf x^\top A\mathbf x\)</span> sind dann Ellipsen mit Halbachsen entlang der Eigenvektoren, genau die Ellipsen aus Abbildung 7. <span class="arithmatex">\(A^\top A\)</span> ist immer positiv semidefinit.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Diagonalisierbar ⇔ <span class="arithmatex">\(n\)</span> unabhängige Eigenvektoren ⇔ für jeden Eigenwert geometrische = algebraische Vielfachheit.</li>
+<li><span class="arithmatex">\(A\mathbf v = \lambda\mathbf v\)</span>: Richtung bleibt, Länge ändert sich um λ. <span class="arithmatex">\(\sum\lambda_i = \operatorname{tr}A\)</span>, <span class="arithmatex">\(\prod\lambda_i = \det A\)</span>.</li>
+<li>Symmetrisch ⇒ reelle Eigenwerte, orthogonale Eigenvektoren, <span class="arithmatex">\(A = Q\Lambda Q^\top\)</span>.</li>
+</ul>
+</div>
+<h2 id="10-orthogonalitat-projektionen-und-qr">10 Orthogonalität, Projektionen und QR<a class="headerlink" href="#10-orthogonalitat-projektionen-und-qr" title="Permanent link">&para;</a></h2>
+<p>Vektoren <span class="arithmatex">\(\mathbf q_1, \dots, \mathbf q_k\)</span> sind <strong>orthonormal</strong>, wenn sie paarweise senkrecht stehen und Länge 1 haben: <span class="arithmatex">\(\mathbf q_i^\top\mathbf q_j = 0\)</span> für <span class="arithmatex">\(i \neq j\)</span>, <span class="arithmatex">\(\mathbf q_i^\top\mathbf q_i = 1\)</span>. In einer Orthonormalbasis sind Koordinaten einfach Skalarprodukte, es gibt kein Gleichungssystem zu lösen: <span class="arithmatex">\(\mathbf x = \sum_i (\mathbf q_i^\top\mathbf x)\,\mathbf q_i\)</span>. Die Fourier-Zerlegung ist genau das, mit Sinus- und Kosinusfunktionen als Basis.</p>
+<p>Eine quadratische Matrix <span class="arithmatex">\(Q\)</span> mit orthonormalen Spalten heißt <strong>orthogonal</strong>. Sie ist eine Drehung oder Spiegelung und erhält Längen und Winkel:</p>
+<div class="arithmatex">\[
+Q^\top Q = I, \qquad Q^{-1} = Q^\top, \qquad \|Q\mathbf x\| = \|\mathbf x\|, \qquad \kappa(Q) = 1, \qquad \det Q = \pm 1
+\]</div>
+<p>Weil sie perfekt konditioniert sind, verstärken orthogonale Matrizen keine Fehler. Deshalb bauen stabile Algorithmen auf ihnen auf.</p>
+<h3 id="drehungen">Drehungen<a class="headerlink" href="#drehungen" title="Permanent link">&para;</a></h3>
+<p>Orthogonale Matrizen mit <span class="arithmatex">\(\det Q = +1\)</span> sind <strong>Drehungen</strong>, mit <span class="arithmatex">\(\det Q = -1\)</span> enthalten sie eine Spiegelung. In 2D dreht</p>
+<div class="arithmatex">\[
+R(\theta) = \begin{pmatrix} \cos\theta &amp; -\sin\theta \\ \sin\theta &amp; \cos\theta \end{pmatrix}, \qquad R(\alpha)R(\beta) = R(\alpha + \beta), \qquad R(\theta)^{-1} = R(-\theta) = R(\theta)^\top
+\]</div>
+<p>gegen den Uhrzeigersinn um <span class="arithmatex">\(\theta\)</span>. Die Spalten sind die gedrehten Basisvektoren, wie in Abschnitt 2. In 3D gibt es die Drehungen um die drei Koordinatenachsen, z. B. um die <span class="arithmatex">\(z\)</span>-Achse</p>
+<div class="arithmatex">\[
+R_z(\theta) = \begin{pmatrix} \cos\theta &amp; -\sin\theta &amp; 0 \\ \sin\theta &amp; \cos\theta &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}
+\]</div>
+<p>und entsprechend <span class="arithmatex">\(R_x\)</span>, <span class="arithmatex">\(R_y\)</span>. Jede 3D-Drehung lässt sich als Produkt solcher Achsendrehungen schreiben (Euler-Winkel). Weil Matrizen nicht kommutieren, kommt es dabei auf die Reihenfolge an. Jede 3D-Drehung hat außerdem eine Achse, die fest bleibt: einen Eigenvektor mit Eigenwert 1. In höheren Dimensionen dreht eine <strong>Givens-Rotation</strong> nur in der Ebene zweier Koordinaten <span class="arithmatex">\(i\)</span> und <span class="arithmatex">\(j\)</span> und lässt alle anderen fest. Mit ihr kann man gezielt einzelne Einträge einer Matrix zu null machen, eine Alternative zu Householder für QR. Auch das Jacobi-Verfahren, mit dem Abbildung 11 die Singulärwerte des Testbilds berechnet, besteht aus solchen Drehungen.</p>
+<h3 id="projektionen">Projektionen<a class="headerlink" href="#projektionen" title="Permanent link">&para;</a></h3>
+<p>Die orthogonale Projektion auf den Spaltenraum einer Matrix <span class="arithmatex">\(A\)</span> (mit vollem Spaltenrang) ist selbst eine Matrix:</p>
+<div class="arithmatex">\[
+P = A(A^\top A)^{-1}A^\top, \qquad\text{bei orthonormalen Spalten } Q:\; P = QQ^\top
+\]</div>
+<p>Sie ist symmetrisch und idempotent, <span class="arithmatex">\(P^2 = P\)</span>: Was schon projiziert ist, bleibt, wo es ist. <span class="arithmatex">\(I - P\)</span> projiziert auf das orthogonale Komplement. Kleinste Quadrate aus Abschnitt 7 sind genau <span class="arithmatex">\(A\hat{\mathbf x} = P\mathbf b\)</span>.</p>
+<h3 id="gram-schmidt-und-qr-zerlegung">Gram-Schmidt und QR-Zerlegung<a class="headerlink" href="#gram-schmidt-und-qr-zerlegung" title="Permanent link">&para;</a></h3>
+<p>Aus beliebigen unabhängigen Vektoren <span class="arithmatex">\(\mathbf a_1, \mathbf a_2, \dots\)</span> macht <strong>Gram-Schmidt</strong> eine Orthonormalbasis desselben Raums: Man nimmt jeden Vektor, zieht seine Projektionen auf alle bisherigen <span class="arithmatex">\(\mathbf q\)</span> ab und normiert den Rest.</p>
+<div class="arithmatex">\[
+\mathbf u_k = \mathbf a_k - \sum_{j&lt;k}(\mathbf q_j^\top\mathbf a_k)\,\mathbf q_j, \qquad \mathbf q_k = \frac{\mathbf u_k}{\|\mathbf u_k\|}
+\]</div>
+<p><iframe class="xw-widget" src="../widgets/la-09-gram-schmidt.html" loading="lazy" title="la-09-gram-schmidt"></iframe></p>
+<p>Schreibt man die Koeffizienten mit, ergibt sich die <strong>QR-Zerlegung</strong> <span class="arithmatex">\(A = QR\)</span> mit orthonormalen Spalten in <span class="arithmatex">\(Q\)</span> und oberer Dreiecksmatrix <span class="arithmatex">\(R\)</span>. Damit wird kleinste Quadrate stabil: <span class="arithmatex">\(A^\top A\hat{\mathbf x} = A^\top\mathbf b\)</span> vereinfacht sich zu <span class="arithmatex">\(R\hat{\mathbf x} = Q^\top\mathbf b\)</span>, ohne die Kondition zu quadrieren. In der Praxis rechnet man QR nicht mit klassischem Gram-Schmidt (das verliert bei fast abhängigen Spalten die Orthogonalität), sondern mit Householder-Spiegelungen. Dasselbe Prinzip steckt im QR-Algorithmus, mit dem Bibliotheken Eigenwerte berechnen.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Drehung <span class="arithmatex">\(R(\theta)\)</span>: orthogonal mit <span class="arithmatex">\(\det = 1\)</span>, <span class="arithmatex">\(R^{-1} = R^\top\)</span>. In 3D nicht kommutativ.</li>
+<li>Orthogonal: <span class="arithmatex">\(Q^\top Q = I\)</span>, erhält Längen, <span class="arithmatex">\(\kappa = 1\)</span>. Koordinaten in Orthonormalbasis = Skalarprodukte.</li>
+<li>Projektion <span class="arithmatex">\(P = QQ^\top\)</span>, <span class="arithmatex">\(P^2 = P\)</span>. QR: <span class="arithmatex">\(A = QR\)</span>, kleinste Quadrate über <span class="arithmatex">\(R\hat{\mathbf x} = Q^\top\mathbf b\)</span>.</li>
+</ul>
+</div>
+<h2 id="11-singularwertzerlegung-svd">11 Singulärwertzerlegung (SVD)<a class="headerlink" href="#11-singularwertzerlegung-svd" title="Permanent link">&para;</a></h2>
+<p>Eigenwerte gibt es nur für quadratische Matrizen, und reelle orthogonale Eigenvektoren nur für symmetrische. Die <strong>Singulärwertzerlegung</strong> funktioniert für <em>jede</em> <span class="arithmatex">\(m\times n\)</span>-Matrix:</p>
+<div class="arithmatex">\[
+A = U\Sigma V^\top = \sum_{i=1}^{r}\sigma_i\,\mathbf u_i\mathbf v_i^\top, \qquad \sigma_1 \ge \sigma_2 \ge \dots \ge \sigma_r &gt; 0
+\]</div>
+<p><span class="arithmatex">\(U\)</span> (<span class="arithmatex">\(m\times m\)</span>) und <span class="arithmatex">\(V\)</span> (<span class="arithmatex">\(n\times n\)</span>) sind orthogonal, <span class="arithmatex">\(\Sigma\)</span> ist diagonal mit den <strong>Singulärwerten</strong> <span class="arithmatex">\(\sigma_i\)</span>. Geometrisch zerlegt die SVD jede lineare Abbildung in drei einfache Schritte: drehen (<span class="arithmatex">\(V^\top\)</span>), entlang der Achsen strecken (<span class="arithmatex">\(\Sigma\)</span>), drehen (<span class="arithmatex">\(U\)</span>). Der Einheitskreis wird dabei zu einer Ellipse mit den Halbachsen <span class="arithmatex">\(\sigma_i\mathbf u_i\)</span>.</p>
+<iframe class="xw-widget" src="../widgets/la-10-svd-in-drei-schritten.html" loading="lazy" title="la-10-svd-in-drei-schritten"></iframe>
+
+<h3 id="zusammenhang-mit-eigenwerten">Zusammenhang mit Eigenwerten<a class="headerlink" href="#zusammenhang-mit-eigenwerten" title="Permanent link">&para;</a></h3>
+<p>Die Singulärwerte sind die Wurzeln der Eigenwerte von <span class="arithmatex">\(A^\top A\)</span>, die Spalten von <span class="arithmatex">\(V\)</span> dessen Eigenvektoren, die von <span class="arithmatex">\(U\)</span> die Eigenvektoren von <span class="arithmatex">\(AA^\top\)</span>:</p>
+<div class="arithmatex">\[
+A^\top A = V\Sigma^\top\Sigma V^\top, \qquad AA^\top = U\Sigma\Sigma^\top U^\top
+\]</div>
+<p>Für symmetrisch positiv semidefinite Matrizen fallen SVD und Eigenzerlegung zusammen. Die SVD liefert auf einen Schlag fast alles aus den vorigen Abschnitten: den Rang (Anzahl der <span class="arithmatex">\(\sigma_i &gt; 0\)</span>), die Konditionszahl <span class="arithmatex">\(\sigma_1/\sigma_r\)</span>, Orthonormalbasen aller vier Unterräume, die Norm <span class="arithmatex">\(\|A\|_2 = \sigma_1\)</span> und die Pseudoinverse:</p>
+<div class="arithmatex">\[
+A^+ = V\Sigma^+U^\top, \qquad \Sigma^+ = \operatorname{diag}(1/\sigma_1, \dots, 1/\sigma_r, 0, \dots)
+\]</div>
+<p><span class="arithmatex">\(A^+\mathbf b\)</span> ist die Lösung der kleinsten Quadrate mit der kleinsten Norm, auch wenn <span class="arithmatex">\(A\)</span> keinen vollen Rang hat. Bei schlechter Kondition sind es die kleinen <span class="arithmatex">\(\sigma_i\)</span>, deren Kehrwert das Rauschen verstärkt. Lässt man sie weg (<strong>abgeschnittene SVD</strong>) oder dämpft sie (Tikhonov ersetzt <span class="arithmatex">\(1/\sigma_i\)</span> durch <span class="arithmatex">\(\sigma_i/(\sigma_i^2 + \lambda)\)</span>), ist das Regularisierung.</p>
+<h3 id="niedrigrang-approximation">Niedrigrang-Approximation<a class="headerlink" href="#niedrigrang-approximation" title="Permanent link">&para;</a></h3>
+<p>Bricht man die Summe nach <span class="arithmatex">\(k\)</span> Termen ab, erhält man die beste Approximation vom Rang <span class="arithmatex">\(k\)</span> (Satz von Eckart-Young):</p>
+<div class="arithmatex">\[
+A_k = \sum_{i=1}^{k}\sigma_i\,\mathbf u_i\mathbf v_i^\top, \qquad \|A - A_k\|_F^2 = \sum_{i&gt;k}\sigma_i^2
+\]</div>
+<p>Ein Bild ist eine Matrix. Fallen die Singulärwerte schnell ab, reichen wenige Terme für fast das ganze Bild. Statt <span class="arithmatex">\(mn\)</span> Zahlen speichert man <span class="arithmatex">\(k(m + n + 1)\)</span>.</p>
+<iframe class="xw-widget" src="../widgets/la-11-bildkompression-mit-svd.html" loading="lazy" title="la-11-bildkompression-mit-svd"></iframe>
+
+<h3 id="hauptkomponentenanalyse-pca">Hauptkomponentenanalyse (PCA)<a class="headerlink" href="#hauptkomponentenanalyse-pca" title="Permanent link">&para;</a></h3>
+<p>Stehen <span class="arithmatex">\(N\)</span> Datenpunkte mit <span class="arithmatex">\(d\)</span> Merkmalen als Zeilen in einer Matrix <span class="arithmatex">\(X\)</span> und zieht man von jeder Spalte ihren Mittelwert ab, dann ist <span class="arithmatex">\(C = \frac{1}{N-1}X^\top X\)</span> die Kovarianzmatrix. Ihre Eigenvektoren sind die <strong>Hauptkomponenten</strong>: die Richtungen größter Varianz, paarweise orthogonal. Die Eigenwerte sind die Varianzen entlang dieser Richtungen. Gerechnet wird über die SVD von <span class="arithmatex">\(X\)</span> direkt, denn <span class="arithmatex">\(C = V\frac{\Sigma^2}{N-1}V^\top\)</span>.</p>
+<iframe class="xw-widget" src="../widgets/la-12-pca.html" loading="lazy" title="la-12-pca"></iframe>
+
+<div class="admonition abstract">
+<p class="admonition-title">Merke</p>
+<ul>
+<li>Jede Matrix: <span class="arithmatex">\(A = U\Sigma V^\top\)</span>, drehen, strecken, drehen. <span class="arithmatex">\(\sigma_i = \sqrt{\lambda_i(A^\top A)}\)</span>.</li>
+<li>Rang, Kondition, Norm, Pseudoinverse und beste Rang-k-Näherung stehen alle in der SVD. PCA ist die SVD der zentrierten Daten.</li>
+</ul>
+</div>
+<h2 id="anhang-a-matrix-kalkul">Anhang A: Matrix-Kalkül<a class="headerlink" href="#anhang-a-matrix-kalkul" title="Permanent link">&para;</a></h2>
+<p>Für Optimierung braucht man Ableitungen nach Vektoren. Der <strong>Gradient</strong> <span class="arithmatex">\(\nabla f(\mathbf x)\)</span> einer skalaren Funktion ist der Vektor der partiellen Ableitungen, er zeigt in Richtung des steilsten Anstiegs. Die wichtigsten Regeln (Konvention: Gradient als Spaltenvektor):</p>
+<table>
+<thead>
+<tr>
+<th>Funktion <span class="arithmatex">\(f(\mathbf x)\)</span></th>
+<th>Gradient <span class="arithmatex">\(\nabla_{\mathbf x} f\)</span></th>
+<th>Bemerkung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\mathbf a^\top\mathbf x\)</span></td>
+<td><span class="arithmatex">\(\mathbf a\)</span></td>
+<td>wie <span class="arithmatex">\(ax\)</span> im Eindimensionalen</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathbf x^\top\mathbf x = \Vert \mathbf x\Vert ^2\)</span></td>
+<td><span class="arithmatex">\(2\mathbf x\)</span></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathbf x^\top A\mathbf x\)</span></td>
+<td><span class="arithmatex">\((A + A^\top)\mathbf x\)</span></td>
+<td><span class="arithmatex">\(= 2A\mathbf x\)</span> für symmetrisches <span class="arithmatex">\(A\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Vert A\mathbf x - \mathbf b\Vert ^2\)</span></td>
+<td><span class="arithmatex">\(2A^\top(A\mathbf x - \mathbf b)\)</span></td>
+<td>null setzen ⇒ Normalengleichung</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Vert A\mathbf x - \mathbf b\Vert ^2 + \lambda\Vert \mathbf x\Vert ^2\)</span></td>
+<td><span class="arithmatex">\(2A^\top(A\mathbf x - \mathbf b) + 2\lambda\mathbf x\)</span></td>
+<td>⇒ Ridge-Lösung</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(g(A\mathbf x)\)</span></td>
+<td><span class="arithmatex">\(A^\top\nabla g\)</span></td>
+<td>Kettenregel: Backpropagation durch eine lineare Schicht</td>
+</tr>
+</tbody>
+</table>
+<h3 id="jacobi-und-hesse-matrix">Jacobi- und Hesse-Matrix<a class="headerlink" href="#jacobi-und-hesse-matrix" title="Permanent link">&para;</a></h3>
+<p>Die <strong>Jacobi-Matrix</strong> einer Funktion <span class="arithmatex">\(\mathbf f: \mathbb R^n \to \mathbb R^m\)</span> enthält alle ersten Ableitungen. Zeile <span class="arithmatex">\(i\)</span> gehört zur Ausgabe <span class="arithmatex">\(f_i\)</span>, Spalte <span class="arithmatex">\(j\)</span> zur Eingabe <span class="arithmatex">\(x_j\)</span>:</p>
+<div class="arithmatex">\[
+J = \begin{pmatrix} \dfrac{\partial f_1}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_1}{\partial x_n} \\[1ex] \vdots &amp; \ddots &amp; \vdots \\[1ex] \dfrac{\partial f_m}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_m}{\partial x_n} \end{pmatrix} \in \mathbb R^{m\times n}
+\]</div>
+<p>Sie ist die beste lineare Näherung von <span class="arithmatex">\(\mathbf f\)</span> an einer Stelle, <span class="arithmatex">\(\mathbf f(\mathbf x + \boldsymbol\delta) \approx \mathbf f(\mathbf x) + J\boldsymbol\delta\)</span>. Lokal verhält sich die Funktion also wie eine Matrix. Die Kettenregel wird zum Produkt der Jacobi-Matrizen, und genau das rechnet Backpropagation.</p>
+<p>Die <strong>Hesse-Matrix</strong> einer skalaren Funktion <span class="arithmatex">\(f: \mathbb R^n \to \mathbb R\)</span> enthält alle zweiten Ableitungen:</p>
+<div class="arithmatex">\[
+H = \begin{pmatrix} \dfrac{\partial^2 f}{\partial x_1^2} &amp; \cdots &amp; \dfrac{\partial^2 f}{\partial x_1\,\partial x_n} \\[1ex] \vdots &amp; \ddots &amp; \vdots \\[1ex] \dfrac{\partial^2 f}{\partial x_n\,\partial x_1} &amp; \cdots &amp; \dfrac{\partial^2 f}{\partial x_n^2} \end{pmatrix} \in \mathbb R^{n\times n}
+\]</div>
+<p>Sie beschreibt die Krümmung und ist symmetrisch. Am Punkt mit <span class="arithmatex">\(\nabla f = \mathbf 0\)</span> entscheiden ihre Eigenwerte: alle positiv heißt Minimum, alle negativ Maximum, gemischt Sattelpunkt. Für <span class="arithmatex">\(f = \tfrac12\|A\mathbf x - \mathbf b\|^2\)</span> ist <span class="arithmatex">\(H = A^\top A\)</span>, und deren Eigenwerte bestimmen die Höhenlinien und die Konvergenz in Abbildung 7.</p>
+<p>Ausführlicher, mit Kettenregel, Backpropagation, Taylor-Entwicklung und Optimierung, soll das eine eigene Seite „Vektoranalysis und Optimierung“ werden.</p>
+<p>Eine Faustregel zum Prüfen: Die Dimensionen müssen passen. Ist <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span>, muss der Gradient auch in <span class="arithmatex">\(\mathbb R^n\)</span> liegen. Bei <span class="arithmatex">\(\|A\mathbf x - \mathbf b\|^2\)</span> mit <span class="arithmatex">\(A \in \mathbb R^{m\times n}\)</span> ist <span class="arithmatex">\(A\mathbf x - \mathbf b \in \mathbb R^m\)</span>, und erst <span class="arithmatex">\(A^\top\)</span> bringt es zurück nach <span class="arithmatex">\(\mathbb R^n\)</span>.</p>
+<h2 id="anhang-b-formeln-und-notation">Anhang B: Formeln und Notation<a class="headerlink" href="#anhang-b-formeln-und-notation" title="Permanent link">&para;</a></h2>
+<h3 id="matrixklassen-und-ihre-zerlegungen">Matrixklassen und ihre Zerlegungen<a class="headerlink" href="#matrixklassen-und-ihre-zerlegungen" title="Permanent link">&para;</a></h3>
+<p>Welche Zerlegung existiert, hängt davon ab, was man über die Matrix weiß. Die Tabelle geht grob vom Allgemeinen zum Speziellen, ist aber keine strenge Kette: Symmetrisch heißt z. B. diagonalisierbar, aber nicht invertierbar. Erst positiv definit ist beides. Die Sonderzweige liegen quer dazu.</p>
+<table>
+<thead>
+<tr>
+<th>Klasse</th>
+<th>Definition</th>
+<th>Eigenschaften</th>
+<th>Zerlegung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>beliebig <span class="arithmatex">\(m\times n\)</span></td>
+<td></td>
+<td>Rang <span class="arithmatex">\(r \le \min(m, n)\)</span></td>
+<td>SVD <span class="arithmatex">\(U\Sigma V^\top\)</span>, QR</td>
+</tr>
+<tr>
+<td>quadratisch</td>
+<td><span class="arithmatex">\(m = n\)</span></td>
+<td><span class="arithmatex">\(\det\)</span>, <span class="arithmatex">\(\operatorname{tr}\)</span>, Eigenwerte (evtl. komplex)</td>
+<td><span class="arithmatex">\(PA = LU\)</span>, Schur</td>
+</tr>
+<tr>
+<td>invertierbar</td>
+<td><span class="arithmatex">\(\det A \neq 0\)</span></td>
+<td><span class="arithmatex">\(\operatorname{rang} = n\)</span>, <span class="arithmatex">\(\ker A = \{\mathbf 0\}\)</span>, alle <span class="arithmatex">\(\sigma_i &gt; 0\)</span></td>
+<td>LU ohne Nullpivot (mit <span class="arithmatex">\(P\)</span>)</td>
+</tr>
+<tr>
+<td>diagonalisierbar</td>
+<td><span class="arithmatex">\(n\)</span> unabhängige Eigenvektoren</td>
+<td>geom. = alg. Vielfachheit</td>
+<td><span class="arithmatex">\(V\Lambda V^{-1}\)</span></td>
+</tr>
+<tr>
+<td>symmetrisch</td>
+<td><span class="arithmatex">\(A = A^\top\)</span></td>
+<td>reelle Eigenwerte, orthogonale Eigenvektoren</td>
+<td><span class="arithmatex">\(Q\Lambda Q^\top\)</span></td>
+</tr>
+<tr>
+<td>positiv semidefinit</td>
+<td>symmetrisch, <span class="arithmatex">\(\mathbf x^\top A\mathbf x \ge 0\)</span></td>
+<td><span class="arithmatex">\(\lambda_i \ge 0\)</span>, z. B. <span class="arithmatex">\(A^\top A\)</span>, Kovarianzen</td>
+<td><span class="arithmatex">\(Q\Lambda Q^\top\)</span> = SVD</td>
+</tr>
+<tr>
+<td>positiv definit</td>
+<td>symmetrisch, <span class="arithmatex">\(\mathbf x^\top A\mathbf x &gt; 0\)</span></td>
+<td><span class="arithmatex">\(\lambda_i &gt; 0\)</span>, invertierbar</td>
+<td>Cholesky <span class="arithmatex">\(LL^\top\)</span></td>
+</tr>
+<tr>
+<td>diagonal (Sonderzweig)</td>
+<td><span class="arithmatex">\(a_{ij} = 0\)</span> für <span class="arithmatex">\(i \neq j\)</span></td>
+<td>Eigenwerte = Diagonale</td>
+<td>ist schon zerlegt</td>
+</tr>
+<tr>
+<td>orthogonal (Sonderzweig)</td>
+<td><span class="arithmatex">\(Q^\top Q = I\)</span></td>
+<td><span class="arithmatex">\(\vert \lambda_i\vert = 1\)</span>, <span class="arithmatex">\(\sigma_i = 1\)</span>, <span class="arithmatex">\(\det = \pm 1\)</span></td>
+<td>Drehung (ggf. mit Spiegelung)</td>
+</tr>
+<tr>
+<td>Projektion (Sonderzweig)</td>
+<td><span class="arithmatex">\(P^2 = P\)</span>, orthogonal: <span class="arithmatex">\(P = P^\top\)</span></td>
+<td><span class="arithmatex">\(\lambda_i \in \{0, 1\}\)</span></td>
+<td><span class="arithmatex">\(QQ^\top\)</span></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\mathbf x, \mathbf b\)</span></td>
+<td>Spaltenvektoren (fett, klein)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(A \in \mathbb R^{m\times n}\)</span></td>
+<td>Matrix mit <span class="arithmatex">\(m\)</span> Zeilen, <span class="arithmatex">\(n\)</span> Spalten</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathbf a_j\)</span>, <span class="arithmatex">\(a_{ij}\)</span></td>
+<td>Spalte <span class="arithmatex">\(j\)</span>, Eintrag in Zeile <span class="arithmatex">\(i\)</span>, Spalte <span class="arithmatex">\(j\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(I\)</span>, <span class="arithmatex">\(\mathbf e_j\)</span></td>
+<td>Einheitsmatrix, <span class="arithmatex">\(j\)</span>-ter Standardbasisvektor</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(A^\top\)</span>, <span class="arithmatex">\(A^{-1}\)</span>, <span class="arithmatex">\(A^+\)</span></td>
+<td>Transponierte, Inverse, Pseudoinverse</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Vert \cdot\Vert _2\)</span>, <span class="arithmatex">\(\Vert \cdot\Vert _F\)</span></td>
+<td>euklidische bzw. Spektralnorm, Frobeniusnorm <span class="arithmatex">\(\sqrt{\sum a_{ij}^2}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\lambda_i\)</span>, <span class="arithmatex">\(\sigma_i\)</span></td>
+<td>Eigenwerte, Singulärwerte (absteigend sortiert)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\kappa(A)\)</span></td>
+<td>Konditionszahl <span class="arithmatex">\(\sigma_{\max}/\sigma_{\min}\)</span></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Formel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skalarprodukt, Winkel</td>
+<td><span class="arithmatex">\(\mathbf x^\top\mathbf y = \Vert \mathbf x\Vert \Vert \mathbf y\Vert \cos\theta\)</span></td>
+</tr>
+<tr>
+<td>Projektion auf <span class="arithmatex">\(\mathbf a\)</span></td>
+<td><span class="arithmatex">\(\frac{\mathbf a^\top\mathbf y}{\mathbf a^\top\mathbf a}\mathbf a\)</span></td>
+</tr>
+<tr>
+<td>Rechenregeln</td>
+<td><span class="arithmatex">\((AB)^\top = B^\top A^\top\)</span>, <span class="arithmatex">\((AB)^{-1} = B^{-1}A^{-1}\)</span>, <span class="arithmatex">\(\det(AB) = \det A\det B\)</span></td>
+</tr>
+<tr>
+<td>2×2</td>
+<td><span class="arithmatex">\(\det = ad - bc\)</span>, <span class="arithmatex">\(A^{-1} = \frac{1}{ad-bc}\begin{pmatrix} d &amp; -b\\ -c &amp; a\end{pmatrix}\)</span></td>
+</tr>
+<tr>
+<td>Dimensionsformel</td>
+<td><span class="arithmatex">\(\operatorname{rang}A + \dim\ker A = n\)</span></td>
+</tr>
+<tr>
+<td>Kondition</td>
+<td><span class="arithmatex">\(\kappa = \sigma_{\max}/\sigma_{\min}\)</span>, relativer Fehler <span class="arithmatex">\(\le \kappa\cdot\)</span> relativer Datenfehler</td>
+</tr>
+<tr>
+<td>Kleinste Quadrate</td>
+<td><span class="arithmatex">\(A^\top A\hat{\mathbf x} = A^\top\mathbf b\)</span>, Ridge: <span class="arithmatex">\((A^\top A + \lambda I)\hat{\mathbf x} = A^\top\mathbf b\)</span></td>
+</tr>
+<tr>
+<td>Projektionsmatrix</td>
+<td><span class="arithmatex">\(P = A(A^\top A)^{-1}A^\top = QQ^\top\)</span>, <span class="arithmatex">\(P^2 = P\)</span></td>
+</tr>
+<tr>
+<td>Eigenwerte</td>
+<td><span class="arithmatex">\(A\mathbf v = \lambda\mathbf v\)</span>, <span class="arithmatex">\(\det(A - \lambda I) = 0\)</span>, <span class="arithmatex">\(\sum\lambda = \operatorname{tr}A\)</span>, <span class="arithmatex">\(\prod\lambda = \det A\)</span></td>
+</tr>
+<tr>
+<td>Zerlegungen</td>
+<td><span class="arithmatex">\(PA = LU\)</span>, <span class="arithmatex">\(A = LL^\top\)</span> (SPD), <span class="arithmatex">\(A = QR\)</span>, <span class="arithmatex">\(A = Q\Lambda Q^\top\)</span> (sym.), <span class="arithmatex">\(A = U\Sigma V^\top\)</span></td>
+</tr>
+<tr>
+<td>SVD</td>
+<td><span class="arithmatex">\(\sigma_i = \sqrt{\lambda_i(A^\top A)}\)</span>, <span class="arithmatex">\(\Vert A\Vert _2 = \sigma_1\)</span>, <span class="arithmatex">\(A^+ = V\Sigma^+U^\top\)</span>, <span class="arithmatex">\(\Vert A - A_k\Vert _F^2 = \sum_{i&gt;k}\sigma_i^2\)</span></td>
+</tr>
+<tr>
+<td>Gradientenabstieg</td>
+<td><span class="arithmatex">\(\mathbf x_{k+1} = \mathbf x_k - \eta A^\top(A\mathbf x_k - \mathbf b)\)</span>, <span class="arithmatex">\(0 &lt; \eta &lt; 2/\sigma_{\max}^2\)</span></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Aufgabe</th>
+<th>NumPy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> lösen</td>
+<td><code>np.linalg.solve(A, b)</code></td>
+</tr>
+<tr>
+<td>Kleinste Quadrate</td>
+<td><code>np.linalg.lstsq(A, b, rcond=None)</code></td>
+</tr>
+<tr>
+<td>Eigenwerte (symmetrisch)</td>
+<td><code>np.linalg.eigh(A)</code> (aufsteigend sortiert)</td>
+</tr>
+<tr>
+<td>SVD</td>
+<td><code>U, s, Vt = np.linalg.svd(A, full_matrices=False)</code></td>
+</tr>
+<tr>
+<td>QR, Kondition, Rang</td>
+<td><code>np.linalg.qr(A)</code>, <code>np.linalg.cond(A)</code>, <code>np.linalg.matrix_rank(A)</code></td>
+</tr>
+<tr>
+<td>Pseudoinverse</td>
+<td><code>np.linalg.pinv(A)</code></td>
+</tr>
+</tbody>
+</table>
+<p><em>Alle Abbildungen rechnen live im Browser mit kleinen Beispielen. Für echte Probleme nimmt man LAPACK-basierte Bibliotheken wie NumPy oder PyTorch.</em></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Zurück zum Seitenanfang
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "toc.follow", "search.highlight", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/wiki.js"></script>
+      
+        <script src="../javascripts/mathjax-config.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photonen zählen im CT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<style>
+/* Layout: lange Lektüre-Spalte mit klebrigem Inhaltsverzeichnis links; Abbildungen als "Messplätze" in der Spalte. Tiefe = Ebene 1–5. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #fbfcfd;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --rule: #d3dae1;
+  --grid: #e3e8ed;
+  --accent: #2448b8;
+  --accent-soft: #dfe6fa;
+  --elec: #2b66d9;
+  --hole: #c8424f;
+  --bin0: #3a6fd8;
+  --bin1: #14937f;
+  --bin2: #c9900e;
+  --bin3: #c8424f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1160px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+@media (min-width: 1100px) {
+  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1099px) { nav.toc { display: none; } }
+
+main { min-width: 0; max-width: 800px; }
+
+/* Typo */
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
+h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
+p { margin: 0.9em 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.mono, code { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; line-height: 1.5; color: var(--fg); max-width: 34em; margin-top: 18px; }
+.muted { color: var(--muted); }
+
+/* TOC */
+nav.toc { font-family: var(--font-display); font-size: 15px; }
+nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
+nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
+nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
+nav.toc .lv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 14px; padding-left: 8px; }
+.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
+.toc-mobile summary { cursor: pointer; color: var(--muted); }
+.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
+
+/* Abschnitte */
+section { padding-top: 64px; scroll-margin-top: 20px; }
+.level { display: flex; align-items: center; gap: 10px; }
+.depth { display: inline-flex; gap: 3px; }
+.depth i { display: block; width: 14px; height: 6px; border-radius: 1px; background: var(--rule); }
+.depth i.f { background: var(--accent); }
+
+/* Abbildungen */
+figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
+figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
+canvas { display: block; width: 100%; max-width: 100%; }
+.c-concept { aspect-ratio: 2.1 / 1; }
+.c-wp { aspect-ratio: 2 / 1; }
+.c-q { aspect-ratio: 2 / 1; }
+.c-pulse { aspect-ratio: 2.4 / 1; }
+.c-dead { aspect-ratio: 1.8 / 1; }
+.c-grid { aspect-ratio: 1 / 1; }
+.c-hist { aspect-ratio: 1.25 / 1; }
+.c-spec { aspect-ratio: 2 / 1; }
+.c-mu { aspect-ratio: 2.2 / 1; }
+@media (max-width: 560px) { .c-concept { aspect-ratio: 1.35 / 1; } .c-pulse { aspect-ratio: 1.6 / 1; } }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.two.mc { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
+@media (max-width: 640px) { .two, .two.mc { grid-template-columns: minmax(0, 1fr); } }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
+
+/* Bedienelemente */
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
+.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
+.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, input:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; color: var(--fg); flex: 0 0 auto; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); margin-top: 10px; line-height: 1.6; }
+.readout span.k { color: var(--muted); }
+
+/* Tabellen */
+.tbl { overflow-x: auto; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
+td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+table.small td, table.small th { padding: 4px 10px 4px 0; font-size: 13px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+/* Formeln, Hinweise */
+.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
+mjx-container[display="true"] { margin: 0.6em 0 !important; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; color: var(--fg); }
+.note p { margin: 0.4em 0; }
+ul.tight { padding-left: 1.2em; }
+ul.tight li { margin: 0.35em 0; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+
+/* SVG-Diagramme */
+.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); }
+.d-surf { fill: var(--surface); } .d-bg { fill: var(--bg); } .d-soft { fill: var(--accent-soft); }
+.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
+.d-ste { stroke: var(--elec); fill: none; } .d-sth { stroke: var(--hole); fill: none; }
+.d-e { fill: var(--elec); } .d-h { fill: var(--hole); }
+.d-b0 { fill: var(--bin0); } .d-b1 { fill: var(--bin1); } .d-b2 { fill: var(--bin2); } .d-b3 { fill: var(--bin3); }
+.d-scint { fill: var(--accent-soft); }
+svg text { font-family: var(--font-display); }
+svg text.m { font-family: var(--font-mono); }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14px; margin: 0 0 18px; } .backlink a { text-decoration: none; }
+</style>
+
+<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc" aria-label="Inhalt">
+    <div class="eyebrow">Inhalt</div>
+    <ol>
+      <li class="lv">Ebene 1 · Konzept</li>
+      <li><a href="#konzept"><span class="n">01</span><span>Zählen statt integrieren</span></a></li>
+      <li class="lv">Ebene 2 · Sensor</li>
+      <li><a href="#konversion"><span class="n">02</span><span>Direkte Konversion</span></a></li>
+      <li><a href="#signal"><span class="n">03</span><span>Ladungstransport &amp; Signal</span></a></li>
+      <li class="lv">Ebene 3 · Elektronik</li>
+      <li><a href="#asic"><span class="n">04</span><span>Vom Puls zum Zählerstand</span></a></li>
+      <li class="lv">Ebene 4 · Grenzen</li>
+      <li><a href="#pileup"><span class="n">05</span><span>Totzeit &amp; Pile-up</span></a></li>
+      <li><a href="#sharing"><span class="n">06</span><span>Charge Sharing &amp; Fluoreszenz</span></a></li>
+      <li><a href="#kalibrierung"><span class="n">07</span><span>Polarisation &amp; Kalibrierung</span></a></li>
+      <li class="lv">Ebene 5 · Bildgebung</li>
+      <li><a href="#bins"><span class="n">08</span><span>Spektren &amp; Energie-Bins</span></a></li>
+      <li><a href="#zerlegung"><span class="n">09</span><span>Materialzerlegung</span></a></li>
+      <li><a href="#bildqualitaet"><span class="n">10</span><span>MTF, NPS, DQE</span></a></li>
+      <li><a href="#systeme"><span class="n">11</span><span>Systeme &amp; Sensortypen</span></a></li>
+      <li class="lv">Anhang</li>
+      <li><a href="#zahlen"><span class="n">A</span><span>Zahlen auf einen Blick</span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#physik">Physik</a></p>
+    <header>
+      <div class="eyebrow">Detektorphysik · Computertomographie</div>
+      <h1>Photonen zählen</h1>
+      <p class="lede">Wie ein Photon-Counting-Detektor im CT funktioniert: von der Grundidee über Halbleiterphysik und Ausleseelektronik bis zur Materialzerlegung. Jeder Abschnitt geht eine Ebene tiefer.</p>
+
+      <figure class="fig" id="fig-concept">
+        <canvas id="cv-concept" class="c-concept" role="img" aria-label="Animation: links summiert ein energieintegrierender Detektor die Energie aller Photonen eines Frames, rechts sortiert ein photonenzählender Detektor jedes Photon nach Energie in vier Bins."></canvas>
+        <div class="ctrls">
+          <button class="btn" type="button" id="concept-play">Pause</button>
+          <span class="muted" style="font-size:14px">Beide Detektoren sehen dieselben Photonen. Farbe = Energie-Bin des Photons.</span>
+        </div>
+        <figcaption><b>Abb. 1</b> Derselbe Photonenstrom, zwei Messprinzipien. Der energieintegrierende Detektor (links) liefert pro Frame eine einzige Zahl, die Summe der deponierten Energie plus Elektronikrauschen. Der photonenzählende Detektor (rechts) registriert jedes Photon einzeln und sortiert es per Schwellen in Energie-Bins.</figcaption>
+      </figure>
+
+      <details class="toc-mobile">
+        <summary>Inhalt</summary>
+        <ol>
+          <li><a href="#konzept">Zählen statt integrieren</a></li>
+          <li><a href="#konversion">Direkte Konversion</a></li>
+          <li><a href="#signal">Ladungstransport &amp; Signal</a></li>
+          <li><a href="#asic">Vom Puls zum Zählerstand</a></li>
+          <li><a href="#pileup">Totzeit &amp; Pile-up</a></li>
+          <li><a href="#sharing">Charge Sharing &amp; Fluoreszenz</a></li>
+          <li><a href="#kalibrierung">Polarisation &amp; Kalibrierung</a></li>
+          <li><a href="#bins">Spektren &amp; Energie-Bins</a></li>
+          <li><a href="#zerlegung">Materialzerlegung</a></li>
+          <li><a href="#bildqualitaet">MTF, NPS, DQE</a></li>
+          <li><a href="#systeme">Systeme &amp; Sensortypen</a></li>
+          <li><a href="#zahlen">Zahlen auf einen Blick</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <!-- 01 -->
+    <section id="konzept">
+      <div class="level"><span class="depth"><i class="f"></i><i></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 1 · Konzept</span></div>
+      <h2>Zählen statt integrieren</h2>
+      <p>Ein CT misst in jeder Projektion, wie stark der Patient die Röntgenstrahlung entlang jedes Strahls schwächt. Konventionelle Detektoren tun das, indem sie während eines kurzen Zeitfensters (eines <em>Frames</em> oder einer <em>Projektion</em>, typisch einige hundert Mikrosekunden) die gesamte deponierte Energie aufsummieren. Das Ergebnis ist ein Strom bzw. eine Ladung, die proportional zur Summe der Photonenenergien ist.</p>
+      <p>Ein Photon-Counting-Detektor (PCD) macht etwas grundsätzlich anderes: Er erkennt <strong>jedes einzelne Röntgenquant als eigenes elektrisches Ereignis</strong>, misst dessen Pulshöhe und vergleicht sie mit mehreren Energieschwellen. Am Ende eines Frames stehen pro Pixel nicht eine, sondern mehrere Zahlen: wie viele Photonen über 20 keV, über 35 keV, über 50 keV und so weiter gekommen sind.</p>
+
+      <h3>Drei Konsequenzen dieser Idee</h3>
+      <p><strong>1. Elektronikrauschen verschwindet aus dem Signal.</strong> Beim integrierenden Detektor addiert sich das Rauschen der Ausleseelektronik zu jedem Messwert. Bei wenigen Photonen, etwa hinter dicken Körperteilen oder bei sehr niedriger Dosis, dominiert es. Beim PCD liegt die unterste Schwelle (z. B. 20 keV) weit über dem Rauschpegel (rund 1 keV). Rauschen erzeugt dann praktisch keine Zählereignisse. Was bleibt, ist reines Poisson-Rauschen der Photonen.</p>
+      <p><strong>2. Jedes Photon bekommt dasselbe Gewicht.</strong> Ein integrierender Detektor gewichtet jedes Photon mit seiner Energie \(E\). Hochenergetische Photonen tragen aber den <em>geringsten</em> Kontrast, weil die Schwächungsunterschiede zwischen Geweben mit steigender Energie kleiner werden. Der PCD zählt jedes Photon gleich (Gewicht 1) oder sogar mit einem optimierten, energieabhängigen Gewicht. Das verbessert das Kontrast-Rausch-Verhältnis, vor allem für Iod.</p>
+      <p><strong>3. Spektrale Information in jedem Scan.</strong> Mit mehreren Energie-Bins pro Pixel bekommt man aus jeder Aufnahme eine grobe Spektralmessung. Daraus lassen sich Materialien trennen, virtuelle monoenergetische Bilder rechnen oder Kontrastmittel mit K-Kante gezielt darstellen.</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th></th><th>Energieintegrierend (EID)</th><th>Photonenzählend (PCD)</th></tr></thead>
+          <tbody>
+            <tr><td>Konversion</td><td>indirekt: Szintillator → Licht → Photodiode</td><td>direkt: Halbleiter → Ladung</td></tr>
+            <tr><td>Messgröße pro Pixel</td><td>\(\sum_i E_i\) + Rauschen</td><td>\(N(E \ge T_k)\) für mehrere Schwellen \(T_k\)</td></tr>
+            <tr><td>Gewichtung</td><td>\(w(E) \propto E\)</td><td>\(w(E) = 1\) oder frei wählbar</td></tr>
+            <tr><td>Elektronikrauschen</td><td>im Signal enthalten</td><td>durch Schwelle unterdrückt</td></tr>
+            <tr><td>Pixelgröße</td><td>durch Septen begrenzt (~1 mm am Detektor)</td><td>klein ohne Effizienzverlust (~0,15–0,3 mm)</td></tr>
+            <tr><td>Spektral</td><td>nur mit Dual-Source, kV-Switching, Dual-Layer</td><td>intrinsisch, 2–8 Bins</td></tr>
+            <tr><td>Hauptprobleme</td><td>Rauschen bei Niedrigdosis, Swank-Rauschen</td><td>Pile-up, Charge Sharing, Fluoreszenz, Polarisation</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Der Rest dieser Seite folgt dem Weg eines Photons: Absorption im Sensor, Ladungstransport, Signalentstehung, Pulsverarbeitung, Zählung. Danach geht es um die Effekte, die diesen idealen Weg stören, und schließlich darum, was man mit den Energie-Bins in der Bildgebung anfängt.</p>
+    </section>
+
+    <!-- 02 -->
+    <section id="konversion">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
+      <h2>Direkte Konversion im Halbleiter</h2>
+      <p>Damit ein einzelnes Photon als eigener Puls erkennbar ist, muss die Umwandlung in ein elektrisches Signal schnell und ohne Zwischenschritt geschehen. Ein Szintillator ist dafür ungeeignet: Er erzeugt einen Lichtblitz mit einer Abklingzeit von Mikrosekunden (bei GOS sogar mit langem Nachleuchten), und das Licht verteilt sich über mehrere Pixel. Ein PCD verwendet deshalb einen <strong>direkt konvertierenden Halbleiter</strong>.</p>
+
+      <figure class="fig">
+        <div class="svgbox">
+        <svg viewBox="0 0 760 330" role="img" aria-label="Vergleich indirekte Konversion mit Szintillator und Photodiode gegen direkte Konversion in CdTe mit Elektron-Loch-Paaren und Pixelanoden.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-fg"/></marker>
+            <marker id="are" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-e"/></marker>
+            <marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-h"/></marker>
+          </defs>
+          <!-- links: indirekt -->
+          <text x="20" y="24" class="d-fg" font-size="16" font-weight="600">Indirekt (EID)</text>
+          <text x="20" y="42" class="d-mut" font-size="13">Röntgen → Licht → Ladung, integriert</text>
+          <line x1="150" y1="58" x2="150" y2="118" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+          <text x="160" y="80" class="d-mut m" font-size="11">Röntgenquant</text>
+          <!-- Szintillatorzellen mit Septen -->
+          <rect x="40" y="122" width="300" height="80" class="d-scint"/>
+          <g class="d-fg">
+            <rect x="40" y="122" width="5" height="80"/><rect x="115" y="122" width="5" height="80"/><rect x="190" y="122" width="5" height="80"/><rect x="265" y="122" width="5" height="80"/><rect x="335" y="122" width="5" height="80"/>
+          </g>
+          <circle cx="150" cy="150" r="5" class="d-acc"/>
+          <g class="d-sta" stroke-width="1.3">
+            <line x1="150" y1="150" x2="125" y2="200"/><line x1="150" y1="150" x2="140" y2="200"/><line x1="150" y1="150" x2="160" y2="200"/><line x1="150" y1="150" x2="178" y2="200"/>
+            <path d="M150 150 L186 168 L170 200" /><path d="M150 150 L122 175 L132 200"/>
+          </g>
+          <text x="352" y="150" class="d-fg" font-size="13">Szintillator</text>
+          <text x="352" y="166" class="d-mut" font-size="12">(z. B. GOS)</text>
+          <text x="352" y="186" class="d-mut" font-size="12">Septen gegen</text>
+          <text x="352" y="200" class="d-mut" font-size="12">Lichtübersprechen</text>
+          <rect x="40" y="206" width="300" height="22" class="d-fg" opacity="0.85"/>
+          <g class="d-bg"><rect x="45" y="210" width="68" height="14"/><rect x="120" y="210" width="68" height="14"/><rect x="195" y="210" width="68" height="14"/><rect x="270" y="210" width="65" height="14"/></g>
+          <text x="352" y="222" class="d-fg" font-size="13">Photodioden</text>
+          <path d="M60 268 Q 80 268 95 252 T 140 248 T 190 256 T 240 246 T 300 254" class="d-sta" stroke-width="2"/>
+          <text x="40" y="296" class="d-mut" font-size="12">Strom ∝ Σ Energie, über das Frame integriert.</text>
+          <text x="40" y="312" class="d-mut" font-size="12">Einzelne Photonen nicht mehr unterscheidbar.</text>
+
+          <!-- rechts: direkt -->
+          <text x="420" y="24" class="d-fg" font-size="16" font-weight="600">Direkt (PCD)</text>
+          <text x="420" y="42" class="d-mut" font-size="13">Röntgen → Ladung, pro Photon ein Puls</text>
+          <rect x="430" y="104" width="250" height="5" class="d-fg"/>
+          <text x="688" y="111" class="d-fg" font-size="13">Kathode, −U</text>
+          <rect x="430" y="109" width="250" height="110" class="d-soft"/>
+          <text x="688" y="160" class="d-fg" font-size="13">CdTe</text>
+          <text x="688" y="176" class="d-mut" font-size="12">~1,6 mm</text>
+          <line x1="560" y1="58" x2="560" y2="140" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+          <g>
+            <circle cx="556" cy="150" r="3.4" class="d-e"/><circle cx="563" cy="146" r="3.4" class="d-e"/><circle cx="560" cy="156" r="3.4" class="d-e"/><circle cx="566" cy="154" r="3.4" class="d-e"/>
+            <circle cx="552" cy="144" r="3.4" class="d-h"/><circle cx="568" cy="147" r="3.4" class="d-h"/><circle cx="557" cy="140" r="3.4" class="d-h"/><circle cx="563" cy="159" r="3.4" class="d-h"/>
+          </g>
+          <line x1="560" y1="164" x2="560" y2="208" class="d-ste" stroke-width="2" marker-end="url(#are)"/>
+          <line x1="545" y1="140" x2="545" y2="118" class="d-sth" stroke-width="2" marker-end="url(#arh)"/>
+          <text x="572" y="196" class="d-fg" font-size="12">e⁻ zur Anode</text>
+          <text x="470" y="128" class="d-fg" font-size="12">Löcher</text>
+          <!-- Pixelanoden -->
+          <g class="d-fg"><rect x="436" y="219" width="54" height="6"/><rect x="498" y="219" width="54" height="6"/><rect x="560" y="219" width="54" height="6" class="d-acc"/><rect x="622" y="219" width="54" height="6"/></g>
+          <text x="688" y="227" class="d-fg" font-size="13">Pixelanoden</text>
+          <rect x="430" y="232" width="250" height="26" rx="2" class="d-fg" opacity="0.85"/>
+          <text x="555" y="250" class="d-bg" font-size="12" text-anchor="middle" style="fill:var(--bg)">ASIC: ein Kanal pro Pixel</text>
+          <path d="M440 300 L470 300 L476 274 L486 300 L540 300 L546 284 L556 300 L610 300 L616 268 L626 300 L670 300" class="d-sta" stroke-width="2"/>
+          <text x="430" y="320" class="d-mut" font-size="12">Pulshöhe ∝ Energie des einzelnen Photons</text>
+        </svg>
+        </div>
+        <figcaption><b>Abb. 2</b> Links: Im Szintillator wird das Quant in Licht umgewandelt, das sich ausbreitet und über Septen auf ein Pixel begrenzt wird. Die Photodiode integriert. Rechts: Im Halbleiter erzeugt das Quant direkt Elektron-Loch-Paare. Das Feld zieht die Elektronen zur Pixelanode, jedes Photon erzeugt einen eigenen Strompuls. Die Pixel sind nur durch die Elektrodenstruktur definiert.</figcaption>
+      </figure>
+
+      <h3>Absorption</h3>
+      <p>Der Sensor muss die Röntgenquanten in wenigen Millimetern stoppen. Entscheidend sind hohe Ordnungszahl und Dichte, denn der Photoeffekt skaliert ungefähr mit \(Z^4/E^3\). <strong>CdTe</strong> (Z = 48 und 52, ρ = 5,85 g/cm³) und die Legierung <strong>CdZnTe (CZT)</strong> erfüllen das. Bei 1,5–2 mm Dicke wird der diagnostisch wichtige Teil des CT-Spektrums nahezu vollständig absorbiert, erst am oberen Ende (über ~100 keV) sinkt die Quanteneffizienz merklich. Silizium (Z = 14) absorbiert viel schwächer und braucht eine andere Geometrie (siehe <a href="#systeme">Abschnitt 11</a>).</p>
+
+      <h3>Erzeugung von Ladungsträgern</h3>
+      <p>Das absorbierte Photon überträgt seine Energie auf ein Photoelektron, das auf seinem Weg durch den Kristall viele Elektron-Loch-Paare erzeugt. Im Mittel kostet ein Paar die Energie \(W\), etwa das Dreifache der Bandlücke, weil ein Teil der Energie an Gitterschwingungen geht:</p>
+      <div class="eq">$$N = \frac{E}{W}, \qquad W_{\mathrm{CdTe}} \approx 4{,}43\ \mathrm{eV}$$</div>
+      <p>Ein 60-keV-Photon erzeugt also rund 13 500 Paare, das sind etwa 2,2 fC. Die Zahl der Paare schwankt weniger als nach Poisson zu erwarten, weil die Erzeugungsprozesse nicht unabhängig sind. Das beschreibt der Fano-Faktor \(F\):</p>
+      <div class="eq">$$\sigma_N = \sqrt{F\,N}, \qquad F \approx 0{,}1 \quad\Rightarrow\quad \Delta E_{\mathrm{FWHM}} = 2{,}355\,\sqrt{F\,W\,E} \approx 0{,}4\ \mathrm{keV}\ \text{bei 60 keV}$$</div>
+      <p>Diese Fano-Grenze ist eine theoretische Untergrenze. Reale CT-Detektoren erreichen einige keV, weil Elektronikrauschen, unvollständige Ladungssammlung und Charge Sharing dominieren. Das sind die Themen der nächsten Abschnitte.</p>
+    </section>
+
+    <!-- 03 -->
+    <section id="signal">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
+      <h2>Ladungstransport und Signalentstehung</h2>
+      <p>Eine Hochspannung von einigen hundert Volt pro Millimeter zieht die Elektronen zu den Pixelanoden und die Löcher zur gemeinsamen Kathode. Die Driftgeschwindigkeit ist \(v = \mu E\). Elektronen und Löcher unterscheiden sich in CdTe stark:</p>
+      <div class="tbl"><table class="small">
+        <thead><tr><th>Größe</th><th class="num">Elektronen</th><th class="num">Löcher</th></tr></thead>
+        <tbody>
+          <tr><td>Beweglichkeit μ</td><td class="num">~1100 cm²/Vs</td><td class="num">~100 cm²/Vs</td></tr>
+          <tr><td>Mobilitäts-Lebensdauer-Produkt μτ</td><td class="num">~10⁻³ cm²/V</td><td class="num">~10⁻⁴ cm²/V</td></tr>
+          <tr><td>Driftzeit über 1,6 mm bei 1000 V</td><td class="num">~23 ns</td><td class="num">~250 ns</td></tr>
+        </tbody>
+      </table></div>
+      <p>Ladungsträger können unterwegs an Störstellen eingefangen werden (<em>Trapping</em>). Die mittlere Driftlänge bis zum Einfang ist \(\lambda = \mu\tau E\). Bei einem planaren Detektor mit zwei großflächigen Elektroden hängt die gesammelte Ladung deshalb von der Interaktionstiefe \(x\) ab, gemessen von der Kathode. Das beschreibt die <strong>Hecht-Gleichung</strong>:</p>
+      <div class="eq">$$\mathrm{CCE}(x) = \frac{\lambda_e}{d}\left(1 - e^{-(d-x)/\lambda_e}\right) + \frac{\lambda_h}{d}\left(1 - e^{-x/\lambda_h}\right)$$</div>
+
+      <h3>Wo das Signal wirklich entsteht: das Shockley-Ramo-Theorem</h3>
+      <p>Ein häufiges Missverständnis: Das Signal entsteht nicht erst, wenn die Elektronen an der Anode „ankommen“. Schon während der Drift <em>influenziert</em> jede bewegte Ladung einen Strom auf allen Elektroden. Wie groß dieser Strom auf einer bestimmten Elektrode ist, bestimmt das <strong>Gewichtungspotential</strong> \(\varphi_w\). Man erhält es, indem man die Laplace-Gleichung löst, mit der betrachteten Elektrode auf Potential 1 und allen anderen auf 0. Raumladung und tatsächliche Bias-Spannung spielen dafür keine Rolle.</p>
+      <div class="eq">$$Q_{\mathrm{ind}} = -q\,\Delta\varphi_w, \qquad i(t) = q\,\vec v \cdot \vec E_w$$</div>
+      <p>Bei einem planaren Detektor fällt \(\varphi_w\) linear von 1 an der Anode auf 0 an der Kathode ab. Elektronen und Löcher tragen dann je nach Tiefe zum Signal bei. Ist das Pixel aber klein gegenüber der Sensordicke, bleibt \(\varphi_w\) im größten Teil des Volumens nahe null und steigt erst kurz vor der Anode steil an. Das ist der <strong>Small-Pixel-Effekt</strong>: Fast das gesamte Signal stammt von den Elektronen auf ihren letzten Mikrometern, die Löcher tragen kaum bei. Ihr schlechter Transport fällt damit kaum noch ins Gewicht.</p>
+
+      <figure class="fig">
+        <div class="two">
+          <canvas id="cv-wp" class="c-wp" role="img" aria-label="Berechnetes Gewichtungspotential eines Pixels im Querschnitt durch den Sensor."></canvas>
+          <canvas id="cv-q" class="c-q" role="img" aria-label="Gewichtungspotential auf der Pixelachse und induzierte Ladung über der Zeit, verglichen mit einem planaren Detektor."></canvas>
+        </div>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="wp-p">Pixelbreite / Dicke</label><output id="wp-p-o"></output></div><input id="wp-p" type="range" min="0.06" max="1.5" step="0.01" value="0.14"></div>
+          <div class="ctrl"><div class="lab"><label for="wp-x">Interaktionstiefe (ab Kathode)</label><output id="wp-x-o"></output></div><input id="wp-x" type="range" min="0.02" max="0.98" step="0.01" value="0.5"></div>
+          <div class="ctrl"><div class="lab"><label for="wp-mt">μτ der Löcher</label><output id="wp-mt-o"></output></div><input id="wp-mt" type="range" min="-6" max="-3" step="0.05" value="-4.5"></div>
+        </div>
+        <div class="readout" id="wp-read"></div>
+        <figcaption><b>Abb. 3</b> Links: numerisch gelöstes Gewichtungspotential des mittleren Pixels (2D-Schnitt, Höhenlinien in Zehntelstufen). Der Punkt markiert die Interaktion, blau driften die Elektronen zur Anode, rot die Löcher zur Kathode. Rechts oben: \(\varphi_w\) auf der Pixelachse, rechts unten: induzierte Ladung über der Zeit. Gestrichelt ist jeweils der planare Fall. Annahmen: d = 1,6 mm, 1000 V, μₑ = 1100 cm²/Vs, μₕ = 100 cm²/Vs, (μτ)ₑ = 3·10⁻³ cm²/V.</figcaption>
+      </figure>
+      <p>Schiebe die Pixelbreite nach oben, bis sie größer als die Dicke ist: Das Gewichtungspotential wird linear, die Kurve der induzierten Ladung bekommt einen langsamen Anteil durch die Löcher, und mit kleinem μτ der Löcher bleibt die gesammelte Ladung unter 100 %. Das erzeugt im Spektrum den niederenergetischen Ausläufer (Tail). Bei kleinen Pixeln ist die induzierte Ladung fast unabhängig von der Tiefe.</p>
+      <div class="note"><p>Der Preis kleiner Pixel: Die Ladungswolke ist im Verhältnis zur Pixelgröße nicht mehr vernachlässigbar, und mehr Ereignisse verteilen sich auf Nachbarpixel. Darum geht es in <a href="#sharing">Abschnitt 6</a>.</p></div>
+    </section>
+
+    <!-- 04 -->
+    <section id="asic">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span><span class="eyebrow">Ebene 3 · Elektronik</span></div>
+      <h2>Vom Ladungspuls zum Zählerstand</h2>
+      <p>Unter jedem Pixel sitzt ein eigener Signalverarbeitungskanal im ASIC, der per Flip-Chip-Bonding direkt mit dem Sensor verbunden ist. Die Kette ist in allen photonenzählenden Systemen im Prinzip gleich.</p>
+
+      <figure class="fig">
+        <div class="svgbox">
+        <svg viewBox="0 0 760 250" role="img" aria-label="Blockschaltbild: Pixel, ladungsempfindlicher Verstärker, Pulsformer, vier Komparatoren mit Schwellen, vier Zähler, Auslese.">
+          <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-mut"/></marker></defs>
+          <!-- Pixel -->
+          <rect x="10" y="100" width="70" height="50" rx="3" class="d-soft"/>
+          <text x="45" y="129" text-anchor="middle" class="d-fg" font-size="13">Pixel</text>
+          <line x1="80" y1="125" x2="112" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <!-- CSA -->
+          <path d="M115 95 L115 155 L175 125 Z" class="d-surf" style="stroke:var(--fg)" stroke-width="1.5"/>
+          <text x="133" y="130" class="d-fg m" font-size="11">CSA</text>
+          <path d="M120 95 L120 72 L170 72 L170 120" class="d-st" stroke-width="1.2"/>
+          <line x1="140" y1="66" x2="140" y2="78" class="d-st" stroke-width="2"/><line x1="146" y1="66" x2="146" y2="78" class="d-st" stroke-width="2"/>
+          <text x="128" y="60" class="d-mut m" font-size="10">C_f</text>
+          <text x="110" y="182" class="d-mut" font-size="12">V = Q / C_f</text>
+          <path d="M100 215 L118 215 L120 196 L150 200 L170 204" class="d-sta" stroke-width="1.8"/>
+          <line x1="175" y1="125" x2="207" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <!-- Shaper -->
+          <rect x="210" y="100" width="90" height="50" rx="3" class="d-surf" style="stroke:var(--fg)" stroke-width="1.5"/>
+          <text x="255" y="122" text-anchor="middle" class="d-fg" font-size="13">Pulsformer</text>
+          <text x="255" y="139" text-anchor="middle" class="d-mut m" font-size="10">CR-RCⁿ, τ_p</text>
+          <path d="M218 215 L236 215 C242 196 250 196 256 206 C262 214 272 215 290 215" class="d-sta" stroke-width="1.8"/>
+          <text x="210" y="182" class="d-mut" font-size="12">Höhe ∝ E</text>
+          <line x1="300" y1="125" x2="340" y2="125" class="d-stm" stroke-width="1.5"/>
+          <line x1="340" y1="50" x2="340" y2="200" class="d-stm" stroke-width="1.5"/>
+          <!-- Komparatoren -->
+          <g font-size="11">
+            <g transform="translate(0,0)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b0"/><text x="415" y="54" class="d-fg m">T₁ 20 keV</text></g>
+            <g transform="translate(0,50)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b1"/><text x="415" y="54" class="d-fg m">T₂ 35 keV</text></g>
+            <g transform="translate(0,100)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b2"/><text x="415" y="54" class="d-fg m">T₃ 50 keV</text></g>
+            <g transform="translate(0,150)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b3"/><text x="415" y="54" class="d-fg m">T₄ 65 keV</text></g>
+          </g>
+          <text x="352" y="236" class="d-mut" font-size="12">Komparatoren + Trim-DAC</text>
+          <!-- Zähler -->
+          <g>
+            <line x1="490" y1="50" x2="532" y2="50" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+            <line x1="490" y1="100" x2="532" y2="100" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+            <line x1="490" y1="150" x2="532" y2="150" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+            <line x1="490" y1="200" x2="532" y2="200" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+            <rect x="535" y="36" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin0)" stroke-width="1.5"/><text x="583" y="54" text-anchor="middle" class="d-fg m" font-size="11">Zähler 1</text>
+            <rect x="535" y="86" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin1)" stroke-width="1.5"/><text x="583" y="104" text-anchor="middle" class="d-fg m" font-size="11">Zähler 2</text>
+            <rect x="535" y="136" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin2)" stroke-width="1.5"/><text x="583" y="154" text-anchor="middle" class="d-fg m" font-size="11">Zähler 3</text>
+            <rect x="535" y="186" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin3)" stroke-width="1.5"/><text x="583" y="204" text-anchor="middle" class="d-fg m" font-size="11">Zähler 4</text>
+          </g>
+          <line x1="631" y1="125" x2="668" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <path d="M631 50 L650 50 L650 200 L631 200" class="d-stm" stroke-width="1.5"/>
+          <rect x="670" y="100" width="80" height="50" rx="3" class="d-soft"/>
+          <text x="710" y="122" text-anchor="middle" class="d-fg" font-size="13">Auslese</text>
+          <text x="710" y="139" text-anchor="middle" class="d-mut m" font-size="10">pro Frame</text>
+        </svg>
+        </div>
+        <figcaption><b>Abb. 4</b> Signalkette eines Pixelkanals. Der ladungsempfindliche Verstärker (CSA) wandelt die influenzierte Ladung in eine Spannungsstufe um, der Pulsformer macht daraus einen kurzen Puls, dessen Höhe proportional zur Energie ist. Jeder Komparator inkrementiert seinen Zähler, wenn der Puls seine Schwelle überschreitet. Die Zähler messen also integrale Spektren \(N(E \ge T_k)\), die Bins ergeben sich als Differenzen.</figcaption>
+      </figure>
+
+      <h3>Rauschen und Formungszeit</h3>
+      <p class="muted" style="font-size:15px">Grundlagen zu thermischem Rauschen, Schrotrauschen und Filtern stehen auf der Seite <a href="../grundlagen/e-technik.html#rauschen">„E-Technik kompakt“</a>.</p>
+      <p>Das Rauschen der Kette wird als äquivalente Rauschladung (ENC) angegeben, also die Ladung am Eingang, die ein gleich großes Ausgangssignal erzeugen würde. Drei Beiträge konkurrieren:</p>
+      <div class="eq">$$\mathrm{ENC}^2 \approx \underbrace{a\,\frac{C_{\mathrm{in}}^2}{\tau_p}}_{\text{seriell, weiß}} \;+\; \underbrace{b\,I_{\mathrm{leak}}\,\tau_p}_{\text{parallel}} \;+\; \underbrace{c\,C_{\mathrm{in}}^2}_{1/f}$$</div>
+      <p>Eine kurze Peaking-Zeit \(\tau_p\) ist nötig, damit sich Pulse bei hohen Raten nicht überlappen, erhöht aber das serielle Rauschen. Kleine Pixel helfen doppelt: kleinere Eingangskapazität \(C_{\mathrm{in}}\) und weniger Leckstrom pro Kanal. Typische Werte liegen bei 100–200 e⁻ rms, also etwa 0,5–1 keV. Gegenüber Schwellen ab 20 keV ist das vernachlässigbar.</p>
+
+      <h3>Schwellen und Kalibrierung pro Pixel</h3>
+      <p>Die Schwellen werden global über DACs eingestellt. Weil Verstärkung und Offset von Pixel zu Pixel streuen, hat jeder Kanal zusätzlich Trim-DACs, mit denen die effektive Schwelle in keV über alle Pixel angeglichen wird. Die Zähler (typisch 12–24 Bit) werden pro Projektion ausgelesen. Oft gibt es zwei Zählerbänke, sodass eine gelesen wird, während die andere zählt, ohne Totzeit zwischen den Frames.</p>
+
+      <figure class="fig">
+        <canvas id="cv-pulse" class="c-pulse" role="img" aria-label="Simuliertes Signal am Ausgang des Pulsformers mit vier Schwellen. Bei hoher Rate überlappen sich Pulse."></canvas>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="pl-rate">Rate pro Pixel</label><output id="pl-rate-o"></output></div><input id="pl-rate" type="range" min="-0.3" max="2.3" step="0.01" value="0.7"></div>
+          <div class="ctrl"><div class="lab"><label for="pl-tp">Peaking-Zeit τ_p</label><output id="pl-tp-o"></output></div><input id="pl-tp" type="range" min="4" max="40" step="1" value="10"></div>
+          <button class="btn" type="button" id="pl-play">Pause</button>
+        </div>
+        <div class="tbl" style="margin:12px 0 0"><table class="small" id="pl-table"></table></div>
+        <figcaption><b>Abb. 5</b> Simulierter Ausgang des Pulsformers (CR-RC-Pulsform, 0,7 keV Rauschen), Photonenenergien aus einem 120-kV-Spektrum hinter 10 cm Wasser. Die Striche am unteren Rand markieren die wahren Ankunftszeiten, eingefärbt nach wahrer Energie. Die Tabelle stammt aus einer schnelleren Hintergrundsimulation mit denselben Parametern. Erhöhe die Rate: Pulse verschmelzen (Pile-up), Zählungen gehen verloren, und gleichzeitig wandern Ereignisse in höhere Bins.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 05 -->
+    <section id="pileup">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+      <h2>Zählrate, Totzeit und Pile-up</h2>
+      <p>Die Herausforderung für Photon Counting im CT ist der Fluss. Hinter Luft oder am Rand des Patienten treffen bis zu 10⁸–10⁹ Photonen pro mm² und Sekunde auf den Detektor. Bei einer Pixelfläche von ~0,05 mm² sind das bis zu einige 10⁷ Ereignisse pro Sekunde und Kanal. Die Pulse dauern aber einige 10 ns. Das Verhältnis \(n\tau\) ist damit nicht mehr klein.</p>
+
+      <h3>Zwei Totzeitmodelle</h3>
+      <p>Nach jedem gezählten Ereignis ist der Kanal für eine Totzeit \(\tau\) blind. Zwei idealisierte Modelle beschreiben die gemessene Rate \(m\) als Funktion der wahren Rate \(n\):</p>
+      <div class="eq">$$\text{nicht-paralysierbar:}\quad m = \frac{n}{1 + n\tau} \qquad\qquad \text{paralysierbar:}\quad m = n\,e^{-n\tau}$$</div>
+      <p>Im nicht-paralysierbaren Fall nähert sich \(m\) asymptotisch \(1/\tau\). Im paralysierbaren Fall verlängert jedes Photon, auch ein nicht gezähltes, die Totzeit. Die gemessene Rate erreicht bei \(n = 1/\tau\) ihr Maximum \(1/(e\tau)\) und <em>fällt danach wieder</em>. Das ist kritisch: Eine gemessene Rate gehört dann zu zwei wahren Raten, und hinter Luft kann ein Pixel weniger zählen als hinter Gewebe. Ein Komparator am Ausgang eines Pulsformers verhält sich weitgehend paralysierbar, reale Systeme liegen zwischen beiden Modellen.</p>
+
+      <figure class="fig">
+        <canvas id="cv-dead" class="c-dead" role="img" aria-label="Gemessene gegen wahre Zählrate für ideales, nicht-paralysierbares und paralysierbares Totzeitmodell, doppelt-logarithmisch."></canvas>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="dt-tau">Totzeit τ</label><output id="dt-tau-o"></output></div><input id="dt-tau" type="range" min="2" max="100" step="1" value="20"></div>
+        </div>
+        <figcaption><b>Abb. 6</b> Gemessene gegen wahre Rate. Der Punkt markiert das Maximum des paralysierbaren Modells bei \(n = 1/\tau\). Rechts davon ist die Kennlinie nicht mehr eindeutig invertierbar.</figcaption>
+      </figure>
+
+      <h3>Spektrale Folgen</h3>
+      <p>Pile-up kostet nicht nur Zählungen, es verfälscht auch Energien:</p>
+      <ul class="tight">
+        <li><strong>Peak-Pile-up:</strong> Zwei Photonen kommen fast gleichzeitig. Ihre Pulse addieren sich zu einem Puls der Höhe ≈ \(E_1 + E_2\). Statt zwei niederenergetischer Zählungen gibt es eine hochenergetische.</li>
+        <li><strong>Tail-Pile-up:</strong> Ein Puls sitzt auf dem Ausläufer des vorigen. Seine Höhe ist zu groß (oder bei bipolarer Formung zu klein).</li>
+      </ul>
+      <p>Das Spektrum verschiebt sich zu höheren Energien, während die Gesamtzahl sinkt. Für die Materialzerlegung ist das gefährlich, weil sie gerade auf dem Verhältnis zwischen den Bins beruht. Abb. 5 zeigt beide Effekte direkt: Bei hoher Rate steigen die gezählten Ereignisse in den oberen Bins über die wahren Werte, während die unterste Schwelle Zählungen verliert.</p>
+
+      <h3>Gegenmaßnahmen</h3>
+      <ul class="tight">
+        <li><strong>Kleine Pixel:</strong> Der Fluss pro Kanal sinkt mit der Fläche. Das ist der wichtigste Hebel und ein Grund für Pixel von ~0,2 mm.</li>
+        <li><strong>Kurze Pulsformung</strong> und schnelle Rücksetzung des CSA, im Tausch gegen etwas mehr Rauschen.</li>
+        <li><strong>Pile-up-Trigger oder Retrigger-Logik:</strong> Ein zusätzlicher Komparator erkennt, ob ein Puls über der Schwelle bleibt, und zählt Mehrfachereignisse.</li>
+        <li><strong>Formfilter (Bowtie)</strong> vor dem Patienten senken den Fluss an den Rändern, wo wenig Gewebe durchstrahlt wird.</li>
+        <li><strong>Modellbasierte Korrektur:</strong> Pixelweise kalibrierte Funktionen \(m_k(n)\) pro Schwelle, meist über Messungen mit variablem Röhrenstrom gewonnen.</li>
+      </ul>
+    </section>
+
+    <!-- 06 -->
+    <section id="sharing">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+      <h2>Charge Sharing und K-Fluoreszenz</h2>
+      <p>Bisher wurde angenommen, dass ein Photon genau ein Ereignis in genau einem Pixel erzeugt. Zwei Effekte brechen diese Annahme, und beide werden mit kleineren Pixeln stärker.</p>
+
+      <h3>Charge Sharing</h3>
+      <p>Die Elektronenwolke ist zu Beginn nur wenige Mikrometer groß, weitet sich aber während der Drift durch Diffusion und gegenseitige Abstoßung auf:</p>
+      <div class="eq">$$\sigma_{\mathrm{diff}} = \sqrt{2 D t}, \qquad D = \frac{\mu k_B T}{q} \approx 28\ \mathrm{cm^2/s}\ (\text{Elektronen, CdTe})$$</div>
+      <p>Nach ~20 ns Drift ergibt das σ ≈ 10 µm, mit Coulomb-Abstoßung bei hohen Energien eher 15–25 µm. Trifft ein Photon nahe einer Pixelgrenze, verteilt sich seine Ladung auf zwei oder vier Pixel. Jedes sieht dann ein Ereignis mit zu niedriger Energie. Liegt der Anteil über der Schwelle, wird das Photon <em>doppelt</em> gezählt, liegt er darunter, geht es verloren oder wird zu niedrig eingeordnet.</p>
+
+      <h3>K-Fluoreszenz</h3>
+      <p>Liegt die Photonenenergie über einer K-Kante (Cd: 26,7 keV, Te: 31,8 keV), wird meist ein K-Schalen-Elektron herausgeschlagen. Die Lücke füllt sich unter Aussendung eines Fluoreszenzphotons (Cd Kα ≈ 23,1 keV, Te Kα ≈ 27,5 keV). Die Fluoreszenzausbeute liegt bei ~85 %. Dieses Photon fliegt in CdTe typisch 50–120 µm weit, das ist vergleichbar mit der Pixelgröße. Folgen:</p>
+      <ul class="tight">
+        <li>Im Primärpixel bleibt \(E - E_{K\alpha}\) übrig: ein <strong>Escape-Peak</strong>.</li>
+        <li>Im Nachbarpixel entsteht ein zusätzliches Ereignis bei ~23–27 keV: eine <strong>Fluoreszenzzählung</strong>.</li>
+        <li>Ein Photon kann so zwei Zählungen in verschiedenen Pixeln auslösen, die <strong>korreliert</strong> sind. Das hat Folgen für Rauschspektrum und DQE (siehe <a href="#bildqualitaet">Abschnitt 10</a>).</li>
+      </ul>
+
+      <figure class="fig">
+        <div class="two mc">
+          <canvas id="cv-grid" class="c-grid" role="img" aria-label="Draufsicht auf 5 mal 5 Pixel mit simulierten Photoneneinschlägen, Ladungswolken und Fluoreszenzphotonen."></canvas>
+          <canvas id="cv-hist" class="c-hist" role="img" aria-label="Gemessenes Spektrum aller Pixelereignisse für monoenergetische Einstrahlung, mit Photopeak, Escape-Peaks und Fluoreszenzpeaks."></canvas>
+        </div>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="mc-e">Photonenenergie</label><output id="mc-e-o"></output></div><input id="mc-e" type="range" min="20" max="100" step="1" value="60"></div>
+          <div class="ctrl"><div class="lab"><label for="mc-p">Pixelgröße</label><output id="mc-p-o"></output></div><input id="mc-p" type="range" min="50" max="500" step="5" value="225"></div>
+          <div class="ctrl"><div class="lab"><label for="mc-s">Wolkenbreite σ</label><output id="mc-s-o"></output></div><input id="mc-s" type="range" min="2" max="40" step="1" value="15"></div>
+          <div class="ctrl"><div class="lab"><label for="mc-t">Zählschwelle</label><output id="mc-t-o"></output></div><input id="mc-t" type="range" min="8" max="50" step="1" value="20"></div>
+          <label class="chk"><input id="mc-cs" type="checkbox"> Charge Summing</label>
+          <label class="chk"><input id="mc-log" type="checkbox" checked> log. Achse</label>
+        </div>
+        <div class="readout" id="mc-read"></div>
+        <figcaption><b>Abb. 7</b> Monte-Carlo-Simulation: Photonen treffen zufällig auf das mittlere Pixel. Fluoreszenz wird isotrop mit exponentieller Weglänge emittiert (Cd Kα: 115 µm, Te Kα: 60 µm), Ladung als 2D-Gauß verteilt, 1 keV Rauschen pro Pixel. Das Histogramm enthält alle Pixelereignisse über 5 keV. Vereinfachungen: keine Compton-Streuung, kein Entweichen von Fluoreszenz aus der Sensoroberfläche, keine Tiefenabhängigkeit.</figcaption>
+      </figure>
+
+      <h3>Gegenmaßnahmen im ASIC</h3>
+      <p>Abb. 7 zeigt die Grundidee der Korrektur: Wer weiß, dass benachbarte Pixel <em>gleichzeitig</em> ein Signal sehen, kann diese Teilsignale wieder zusammenführen.</p>
+      <ul class="tight">
+        <li><strong>Charge Summing:</strong> Die analogen Signale benachbarter Pixel (z. B. jedes 2×2-Knotens) werden summiert, ein Arbitrierungsmechanismus ordnet das rekonstruierte Ereignis dem Pixel mit dem größten Anteil zu. Bekannt geworden ist das Prinzip mit dem Medipix3-ASIC.</li>
+        <li><strong>Anti-Coincidence:</strong> Ereignisse, die innerhalb eines kurzen Zeitfensters in Nachbarpixeln auftreten, werden als ein Ereignis gewertet bzw. die kleinere Zählung verworfen.</li>
+      </ul>
+      <p>Beide Verfahren brauchen Kommunikation zwischen Pixeln und verlängern die effektive Totzeit, denn jedes Ereignis belegt jetzt mehrere Kanäle. Es entsteht ein dritter Zielkonflikt, zusätzlich zu Rauschen gegen Rate und Auflösung gegen Charge Sharing: spektrale Treue gegen Zählratenfähigkeit.</p>
+    </section>
+
+    <!-- 07 -->
+    <section id="kalibrierung">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+      <h2>Polarisation, Drift und Kalibrierung</h2>
+      <h3>Polarisation</h3>
+      <p>Bei hohem Fluss werden Löcher, die langsamer und kürzer leben als Elektronen, in tiefen Störstellen eingefangen und bilden eine positive Raumladung. Sie verformt das elektrische Feld: Nahe der Kathode kann es so weit zusammenbrechen, dass Ladung dort kaum noch gesammelt wird. Sichtbar wird das als Einbruch der Zählrate, Verschiebung der Energieskala und zeitabhängiges Verhalten über Sekunden bis Minuten. Es gibt auch die Variante, dass sich unter Bias-Spannung allein über längere Zeit ein Raumladungsfeld aufbaut (Schottky-Kontakte), was periodisches Abschalten der Spannung erfordert.</p>
+      <p>Gegenmittel sind gute Kristallqualität mit wenig tiefen Störstellen, eine passende Kontakttechnologie (ohmsch gegen Schottky, mit Kompromiss zwischen Leckstrom und Polarisationsneigung), Temperaturkontrolle und in manchen Ansätzen eine Bestrahlung mit Infrarotlicht, die die Fallen in einen stabilen Zustand bringt.</p>
+
+      <h3>Was kalibriert werden muss</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Größe</th><th>Warum</th><th>Wie, typischerweise</th></tr></thead>
+          <tbody>
+            <tr><td>Schwellen-Equalisierung</td><td>Offset und Gain streuen pro Pixel</td><td>Rauschflanke oder Testpulse, Trim-DACs pixelweise setzen</td></tr>
+            <tr><td>Energieskala (keV ↔ DAC)</td><td>Schwellen sollen in keV gleich sein</td><td>bekannte Linien: Fluoreszenzfolien, Radionuklide (z. B. Am-241, 59,5 keV), K-Kanten-Filter</td></tr>
+            <tr><td>Ratenabhängigkeit</td><td>Totzeit, Pile-up, Polarisation</td><td>Messungen bei variablem Röhrenstrom und Filterung, pixelweise Korrekturkurven pro Schwelle</td></tr>
+            <tr><td>Spektrale Antwort</td><td>Basis für Materialzerlegung</td><td>Modell der Detector Response Function plus Kalibrierphantome bekannter Zusammensetzung</td></tr>
+            <tr><td>Temperatur</td><td>Leckstrom, Gain und Schwellen driften</td><td>aktive Kühlung, Temperaturmodell der Korrekturen</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ein CT ist bei pixelweisen Inhomogenitäten unerbittlich: Was im Projektionsbild ein Unterschied von wenigen Promille ist, wird nach der Rekonstruktion zu einem Ring. Ein PCD hat viele Pixel, mehrere Schwellen pro Pixel und ratenabhängiges Verhalten. Entsprechend aufwendig sind Kalibrierung und Stabilität.</p>
+    </section>
+
+    <!-- 08 -->
+    <section id="bins">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+      <h2>Spektren und Energie-Bins</h2>
+      <p>Hinter dem Patienten trifft ein Spektrum auf jedes Pixel, das durch die Röhre (Bremsstrahlung plus Wolfram-Linien), die Vorfilterung und die durchstrahlten Gewebe geformt wurde. Weiche Photonen werden stärker geschwächt, das Spektrum <em>härtet auf</em>. Die Schwellen schneiden dieses Spektrum in Bins. Was in welchem Bin landet, hängt davon ab, was der Strahl durchquert hat. Genau diese Information nutzt die Materialzerlegung.</p>
+      <figure class="fig">
+        <canvas id="cv-spec" class="c-spec" role="img" aria-label="Röntgenspektrum vor und hinter dem Objekt, mit vier farbig markierten Energie-Bins."></canvas>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="sp-kv">Röhrenspannung</label><output id="sp-kv-o"></output></div><input id="sp-kv" type="range" min="80" max="140" step="10" value="120"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-w">Wasser</label><output id="sp-w-o"></output></div><input id="sp-w" type="range" min="0" max="40" step="1" value="20"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-i">Iod (Flächendichte)</label><output id="sp-i-o"></output></div><input id="sp-i" type="range" min="0" max="100" step="1" value="0"></div>
+        </div>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="sp-t0">T₁</label><output id="sp-t0-o"></output></div><input id="sp-t0" type="range" min="15" max="120" step="1" value="20"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t1">T₂</label><output id="sp-t1-o"></output></div><input id="sp-t1" type="range" min="15" max="120" step="1" value="35"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t2">T₃</label><output id="sp-t2-o"></output></div><input id="sp-t2" type="range" min="15" max="120" step="1" value="50"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t3">T₄</label><output id="sp-t3-o"></output></div><input id="sp-t3" type="range" min="15" max="120" step="1" value="65"></div>
+        </div>
+        <div class="tbl" style="margin:12px 0 0"><table class="small" id="sp-table"></table></div>
+        <figcaption><b>Abb. 8</b> Photonenspektrum (Kramers-Modell mit Wolfram-Linien, 6 mm Al Vorfilterung) vor dem Objekt (gestrichelt) und dahinter (gefüllt, beide auf ihr Maximum normiert). Iod wird als Flächendichte im Strahl angegeben: 10 mg/cm² entsprechen etwa einem 1 cm dicken Gefäß mit 10 mg/ml. Die Tabelle vergleicht, welchen Anteil jedes Bin an den gezählten Photonen hat und welchen Anteil es an der Energie, also dem Gewicht in einem integrierenden Detektor, hätte. Ideale Detektorantwort angenommen.</figcaption>
+      </figure>
+      <p>Zwei Beobachtungen lohnen sich. Erstens: Mit mehr Wasser verschieben sich die Anteile zu den oberen Bins (Aufhärtung). Zweitens: Iod schwächt oberhalb seiner K-Kante bei 33,2 keV sprunghaft stärker. Ein Bin, der direkt über der Kante beginnt, reagiert deshalb empfindlich auf Iod, ein Bin knapp darunter kaum. Diese Asymmetrie ist mit zwei breiten Spektren (Dual-Energy) nur schwer zu nutzen, mit schmalen Bins dagegen direkt.</p>
+    </section>
+
+    <!-- 09 -->
+    <section id="zerlegung">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+      <h2>Materialzerlegung</h2>
+      <p>Die Schwächung eines Materials setzt sich im CT-Energiebereich aus zwei physikalischen Prozessen zusammen: Photoeffekt (stark abhängig von Z, fällt etwa mit \(E^{-3}\)) und Compton-Streuung (abhängig von der Elektronendichte, nahezu flach, Klein-Nishina). Ohne K-Kanten gilt daher für jedes Material in guter Näherung:</p>
+      <div class="eq">$$\mu(E) = a_1\,f_{\mathrm{PE}}(E) + a_2\,f_{\mathrm{KN}}(E)$$</div>
+      <p>Zwei Basisfunktionen reichen also, oder äquivalent zwei Basismaterialien wie Wasser und Iod oder Wasser und Kalzium. Jedes weitere Material ist im Rahmen der Messgenauigkeit eine Linearkombination davon. Ein <strong>drittes</strong> Material lässt sich nur unabhängig bestimmen, wenn es eine K-Kante im genutzten Spektrum hat, die seine Energieabhängigkeit von der der beiden anderen unterscheidet.</p>
+
+      <figure class="fig">
+        <canvas id="cv-mu" class="c-mu" role="img" aria-label="Massenschwächungskoeffizienten von Wasser, kortikalem Knochen und Iod über der Energie mit K-Kante von Iod, logarithmische Achse."></canvas>
+        <figcaption><b>Abb. 9</b> Massenschwächungskoeffizienten (Näherungswerte nach NIST-Tabellen) von Wasser, kortikalem Knochen und Iod. Die farbigen Bänder zeigen die Bins aus Abb. 8. Die K-Kante von Iod bei 33,2 keV ist der Sprung, den spektrale Bins sichtbar machen.</figcaption>
+      </figure>
+
+      <h3>Vorwärtsmodell</h3>
+      <p>Für die Zerlegung im Projektionsraum beschreibt man den Erwartungswert der Zählungen im Bin \(b\) als Funktion der Linienintegrale \(A_k = \int \rho_k\,\mathrm{d}l\) der Basismaterialien:</p>
+      <div class="eq">$$\bar\lambda_b(\mathbf A) = \int N_0(E)\,S_b(E)\,\exp\!\Big(-\sum_k A_k\,f_k(E)\Big)\,\mathrm{d}E$$</div>
+      <p>\(N_0(E)\) ist das Röhrenspektrum, \(S_b(E)\) die spektrale Empfindlichkeit von Bin \(b\), also die Detector Response Function (mit Charge Sharing, Fluoreszenz, Tail) integriert zwischen den Schwellen. An \(S_b\) hängt die Genauigkeit der gesamten Zerlegung.</p>
+
+      <h3>Schätzung</h3>
+      <p>Die Bin-Zählungen \(y_b\) sind näherungsweise Poisson-verteilt. Daraus ergibt sich die Maximum-Likelihood-Schätzung</p>
+      <div class="eq">$$\hat{\mathbf A} = \arg\max_{\mathbf A}\ \sum_b \Big[\,y_b \ln \bar\lambda_b(\mathbf A) - \bar\lambda_b(\mathbf A)\,\Big]$$</div>
+      <p>Die Cramér-Rao-Schranke, also die Inverse der Fisher-Information \(\mathbf F_{kl} = \sum_b \frac{1}{\bar\lambda_b} \frac{\partial \bar\lambda_b}{\partial A_k}\frac{\partial \bar\lambda_b}{\partial A_l}\), gibt das kleinste erreichbare Rauschen der Basisbilder an. Mit ihr lassen sich Schwellen gezielt optimieren. Zwei praktische Punkte:</p>
+      <ul class="tight">
+        <li><strong>Rauschkorrelation:</strong> Die Basisbilder sind stark antikorreliert verrauscht, weil die Basisfunktionen ähnlich aussehen. Eine gemeinsame Regularisierung oder ein korreliertes Denoising verbessert die Ergebnisse deutlich.</li>
+        <li><strong>Alternativen:</strong> Zerlegung im Bildraum (einfacher, aber mit Aufhärtungsfehlern), oder One-Step-Rekonstruktion direkt aus den Bin-Rohdaten in Materialbilder (rechenintensiv, statistisch am saubersten).</li>
+      </ul>
+
+      <h3>Was daraus wird</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Bild</th><th>Berechnung</th><th>Nutzen</th></tr></thead>
+        <tbody>
+          <tr><td>Virtuelles monoenergetisches Bild (VMI)</td><td>\(\mu(E_0) = \sum_k a_k f_k(E_0)\) für frei wählbares \(E_0\)</td><td>niedrige keV für Iod-Kontrast, hohe keV gegen Metall- und Aufhärtungsartefakte</td></tr>
+          <tr><td>Iod-Map, virtuelles Nativbild</td><td>Basisbild Iod bzw. Wasser/Gewebe ohne Iod</td><td>Perfusion, Kontrastmittelanreicherung, Ersatz einer nativen Serie</td></tr>
+          <tr><td>Kalzium-Unterdrückung</td><td>Zerlegung mit Kalzium-Basis</td><td>Gefäßlumen trotz Plaque, Knochenmarködem</td></tr>
+          <tr><td>K-Kanten-Bildgebung</td><td>dritte Basis mit K-Kante</td><td>z. B. Gadolinium (50,2 keV) und Iod gleichzeitig unterscheiden</td></tr>
+          <tr><td>Optimal gewichtetes Bild</td><td>lineare Bin-Kombination mit maximalem CNR</td><td>Dosisreduktion bei gleicher Bildqualität</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 10 -->
+    <section id="bildqualitaet">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+      <h2>Bildqualität: MTF, NPS und DQE</h2>
+      <p>Die klassischen Kenngrößen gelten auch für PCDs, müssen aber mit Bedacht interpretiert werden, weil die Annahmen der linearen Systemtheorie nicht ohne Weiteres erfüllt sind.</p>
+
+      <h3>MTF</h3>
+      <p>Ohne Szintillator gibt es keine Lichtstreuung. Die MTF wird im Wesentlichen durch die Pixelapertur bestimmt und folgt nahezu der idealen sinc-Funktion. Charge Sharing verbreitert die Antwort leicht. Ein bemerkenswerter Effekt: Bei <em>hoher</em> Schwelle werden nur Ereignisse nahe der Pixelmitte vollständig gezählt, weil Randereignisse ihre Ladung teilen und unter die Schwelle fallen. Die effektive Apertur wird kleiner als das Pixel, und die MTF kann <em>über</em> der sinc-Kurve des geometrischen Pixels liegen. Die MTF ist damit schwellenabhängig.</p>
+
+      <h3>NPS und Mehrfachzählung</h3>
+      <p>Weil Elektronikrauschen nicht gezählt wird, besteht das Rauschen im Idealfall nur aus Photonenstatistik. Mehrfachzählungen ändern das: Wenn ein Photon in zwei benachbarten Pixeln gezählt wird, sind deren Werte korreliert. Das NPS ist dann nicht mehr flach (weiß), sondern bei niedrigen Ortsfrequenzen erhöht. Außerdem ist die Varianz der Gesamtzählung größer als ihr Mittelwert.</p>
+
+      <h3>DQE</h3>
+      <p>Sei \(m\) die Zahl der Zählungen, die ein einzelnes absorbiertes Photon auslöst (0, 1, 2 …). Analog zum Swank-Faktor eines Szintillators gilt bei der Ortsfrequenz null:</p>
+      <div class="eq">$$\mathrm{DQE}(0) = \eta \cdot \frac{\langle m\rangle^2}{\langle m^2\rangle}$$</div>
+      <p>mit der Quanteneffizienz \(\eta\). Ein Detektor, der jedes Photon genau einmal zählt, hat \(\langle m\rangle^2/\langle m^2\rangle = 1\). Zählt er 20 % der Photonen doppelt, ist \(\langle m\rangle = 1{,}2\), \(\langle m^2\rangle = 1{,}6\), und der Faktor sinkt auf 0,9. Abb. 7 berechnet diesen Faktor live: Stelle eine niedrige Schwelle und kleine Pixel ein und beobachte, wie er fällt. Mit Charge Summing kommt er näher an 1.</p>
+      <div class="note">
+        <p><strong>Messpraxis:</strong> Normen für die DQE-Messung digitaler Röntgendetektoren (z. B. die Reihe IEC 62220) gehen von einem linearen, verschiebungsinvarianten System mit linearisierter Kennlinie aus. Für PCDs braucht es zusätzlich eine ratenabhängige Linearisierung, eine Festlegung, welche Schwelle bzw. welche Bin-Kombination betrachtet wird, und die Messung bei Flüssen, die klinisch relevant sind, weil Pile-up die Antwort verändert. Die Werte hängen von Schwelle und Rate ab und sind nicht als einzelne Zahl vergleichbar.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="systeme">
+      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+      <h2>Systeme und Sensortypen</h2>
+      <h3>CdTe / CZT, Face-on</h3>
+      <p>Der Sensor liegt flach zum Strahl, die Röntgenquanten treten durch die Kathode ein. Vorteile: hohe Absorption in wenigen Millimetern, kompakte Module. Nachteile: Fluoreszenz bei 23–27 keV, Polarisation, anspruchsvolle Kristallherstellung. Das erste klinisch zugelassene PCD-CT, das Siemens NAEOTOM Alpha (FDA-Zulassung 2021), verwendet CdTe in einer Dual-Source-Geometrie.</p>
+      <h3>Silizium, Edge-on</h3>
+      <p>Silizium absorbiert schwach. Man stellt die Sensoren deshalb hochkant, sodass der Strahl mehrere Zentimeter Silizium durchquert. Entlang der Tiefe kann man den Sensor zusätzlich segmentieren, was den Fluss pro Kanal verteilt und Tiefeninformation liefert. Vorteile: ausgereifte Materialqualität, keine Polarisation, keine störende K-Fluoreszenz im relevanten Bereich. Nachteile: Bei niedriger Ordnungszahl dominiert Compton-Streuung im Sensor, was zusätzliche niederenergetische Ereignisse erzeugt, und die Geometrie ist mechanisch aufwendig. Dieser Ansatz wird unter anderem als „Deep Silicon“ verfolgt.</p>
+      <h3>Typische Betriebsmodi</h3>
+      <ul class="tight">
+        <li><strong>Ultra-High-Resolution (UHR):</strong> Die kleinen Subpixel werden einzeln ausgelesen. Die Ortsauflösung reicht für Felsenbein, Lunge oder Koronarstents.</li>
+        <li><strong>Standard / spektral:</strong> Subpixel werden zu Makropixeln zusammengefasst, alle Bins werden für VMI und Materialbilder genutzt.</li>
+        <li><strong>Niedrigdosis:</strong> Profitiert direkt vom fehlenden Elektronikrauschen.</li>
+      </ul>
+    </section>
+
+    <!-- A -->
+    <section id="zahlen">
+      <div class="eyebrow">Anhang</div>
+      <h2>Zahlen auf einen Blick</h2>
+      <p class="muted">Typische Größenordnungen bei Raumtemperatur. Werte für μτ schwanken je nach Kristallqualität und Hersteller um mindestens eine Größenordnung.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Größe</th><th class="num">CdTe</th><th class="num">CZT</th><th class="num">Si</th></tr></thead>
+        <tbody>
+          <tr><td>Ordnungszahlen</td><td class="num">48 / 52</td><td class="num">48 / 30 / 52</td><td class="num">14</td></tr>
+          <tr><td>Dichte (g/cm³)</td><td class="num">5,85</td><td class="num">~5,8</td><td class="num">2,33</td></tr>
+          <tr><td>Bandlücke (eV)</td><td class="num">1,44</td><td class="num">~1,57</td><td class="num">1,12</td></tr>
+          <tr><td>Paarerzeugungsenergie W (eV)</td><td class="num">4,43</td><td class="num">~4,6</td><td class="num">3,62</td></tr>
+          <tr><td>μₑ (cm²/Vs)</td><td class="num">~1100</td><td class="num">~1000</td><td class="num">~1400</td></tr>
+          <tr><td>μₕ (cm²/Vs)</td><td class="num">~100</td><td class="num">50–100</td><td class="num">~450</td></tr>
+          <tr><td>(μτ)ₑ (cm²/V)</td><td class="num">~10⁻³</td><td class="num">10⁻³–10⁻²</td><td class="num">&gt; 1</td></tr>
+          <tr><td>(μτ)ₕ (cm²/V)</td><td class="num">~10⁻⁴</td><td class="num">~10⁻⁵</td><td class="num">~1</td></tr>
+          <tr><td>K-Kanten (keV)</td><td class="num">Cd 26,7 · Te 31,8</td><td class="num">wie CdTe</td><td class="num">1,8</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Größe</th><th class="num">Typischer Wert</th></tr></thead>
+        <tbody>
+          <tr><td>Sensordicke CdTe/CZT</td><td class="num">1,5–3 mm</td></tr>
+          <tr><td>Bias-Spannung</td><td class="num">einige 100 V/mm</td></tr>
+          <tr><td>Pixelgröße am Detektor</td><td class="num">~0,1–0,3 mm</td></tr>
+          <tr><td>Energieschwellen pro Pixel</td><td class="num">2–8</td></tr>
+          <tr><td>Unterste Schwelle</td><td class="num">~20–25 keV</td></tr>
+          <tr><td>Elektronikrauschen (ENC)</td><td class="num">~0,5–1 keV rms</td></tr>
+          <tr><td>Peaking-Zeit / Totzeit</td><td class="num">~10–30 ns</td></tr>
+          <tr><td>Fluss am Detektor (unabgeschwächt)</td><td class="num">bis ~10⁸–10⁹ mm⁻²s⁻¹</td></tr>
+          <tr><td>Ladungswolke (σ, nach Drift)</td><td class="num">~10–25 µm</td></tr>
+          <tr><td>K-Fluoreszenz Cd / Te (Kα)</td><td class="num">23,1 / 27,5 keV</td></tr>
+          <tr><td>K-Kanten Kontrastmittel</td><td class="num">I 33,2 · Gd 50,2 · W 69,5 · Au 80,7 · Bi 90,5 keV</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <footer>
+      Alle Simulationen auf dieser Seite sind didaktische Modelle mit typischen Parametern aus der Literatur. Sie zeigen Zusammenhänge und Größenordnungen, keine Herstellerdaten.
+    </footer>
+  </main>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const root = document.documentElement;
+const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
+const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
+const nf = (v, d=0) => v.toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+function rgb(c) {
+  c = c.replace('#','');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255];
+}
+function rgba(c, a) { const [r,g,b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
+function gauss() { let u = 0, v = 0; while (u === 0) u = Math.random(); v = Math.random(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
+function erf(x) {
+  const s = Math.sign(x); x = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592) * t * Math.exp(-x*x);
+  return s * y;
+}
+function fit(c) {
+  const r = c.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(1, r.width), h = Math.max(1, r.height);
+  const W = Math.round(w*dpr), H = Math.round(h*dpr);
+  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return { ctx, w, h };
+}
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const pow10 = v => '10' + String(Math.round(Math.log10(v))).split('').map(c => SUP[c]).join('');
+
+function frame(ctx, w, h, o) {
+  const L = o.l ?? 52, R = o.r ?? 14, T = o.t ?? 14, B = o.b ?? 38;
+  const bx = L, by = T, bw = Math.max(10, w-L-R), bh = Math.max(10, h-T-B);
+  const tx = v => o.xlog ? Math.log10(v) : v, ty = v => o.ylog ? Math.log10(v) : v;
+  const X = v => bx + (tx(v) - tx(o.x0)) / (tx(o.x1) - tx(o.x0)) * bw;
+  const Y = v => by + bh - (ty(v) - ty(o.y0)) / (ty(o.y1) - ty(o.y0)) * bh;
+  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
+  const grid = tok('--grid'), muted = tok('--muted');
+  for (const v of (o.xt || [])) {
+    const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by+bh); ctx.stroke();
+    ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by+bh+15);
+  }
+  for (const v of (o.yt || [])) {
+    const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx+bw, y); ctx.stroke();
+    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx-6, y+4);
+  }
+  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by+bh); ctx.lineTo(bx+bw, by+bh); ctx.stroke();
+  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
+  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx+bw/2, by+bh+31); }
+  if (o.yl) { ctx.save(); ctx.translate(13, by+bh/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
+  return { X, Y, bx, by, bw, bh };
+}
+function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
+
+/* ---------- Modulverwaltung ---------- */
+const mods = [];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
+function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
+function redrawAll() { mods.forEach(m => m.draw()); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+function playBtn(btn, m) {
+  btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  if (!m.playing) btn.textContent = 'Abspielen';
+}
+
+/* ---------- Spektren & Schwächung ---------- */
+const WATER = [[10,5.33],[15,1.67],[20,0.81],[30,0.376],[40,0.268],[50,0.227],[60,0.206],[80,0.184],[100,0.171],[150,0.150]];
+const BONE  = [[10,28.5],[15,9.0],[20,4.0],[30,1.33],[40,0.665],[50,0.424],[60,0.315],[80,0.223],[100,0.186],[150,0.148]];
+const AL    = [[10,26.2],[15,7.96],[20,3.44],[30,1.13],[40,0.568],[50,0.368],[60,0.278],[80,0.202],[100,0.170],[150,0.138]];
+const I_LO  = [[10,162],[15,61],[20,22.1],[25,12.3],[30,8.6],[33.16,6.55]];
+const I_HI  = [[33.17,36.0],[40,22.1],[50,12.3],[60,7.6],[80,3.5],[100,1.94],[150,0.73]];
+function mu(t, E) {
+  if (E <= t[0][0]) return t[0][1];
+  for (let i = 0; i < t.length-1; i++) if (E <= t[i+1][0]) {
+    const [e0,m0] = t[i], [e1,m1] = t[i+1];
+    const f = Math.log(E/e0) / Math.log(e1/e0);
+    return Math.exp(Math.log(m0) + f*Math.log(m1/m0));
+  }
+  return t[t.length-1][1];
+}
+const muI = E => E < 33.17 ? mu(I_LO, E) : mu(I_HI, E);
+const EG = []; for (let e = 10; e <= 150.001; e += 0.5) EG.push(Math.round(e*10)/10);
+function tube(kvp) {
+  const g = (E, c) => Math.exp(-0.5*((E-c)/0.45)**2);
+  return EG.map(E => {
+    if (E >= kvp) return 0;
+    let n = (kvp - E) / E;
+    if (kvp > 69.5) { const a = 1.3*(kvp-69.5)/50; n += a*(g(E,59.3) + 0.55*g(E,58.0) + 0.32*g(E,67.2)); }
+    return n * Math.exp(-mu(AL, E)*2.7*0.6);
+  });
+}
+function transmit(spec, waterCm, iodMgCm2) {
+  return spec.map((n, i) => { const E = EG[i]; return n * Math.exp(-mu(WATER, E)*waterCm - muI(E)*iodMgCm2/1000); });
+}
+function sampler(spec) {
+  const cdf = []; let s = 0; for (const v of spec) { s += v; cdf.push(s); }
+  return () => {
+    const u = Math.random()*s; let lo = 0, hi = cdf.length-1;
+    while (lo < hi) { const m = (lo+hi) >> 1; if (cdf[m] < u) lo = m+1; else hi = m; }
+    return EG[lo] + (Math.random()-0.5)*0.5;
+  };
+}
+const BINC = ['--bin0','--bin1','--bin2','--bin3'];
+
+/* ---------- Abb. 1: Konzept ---------- */
+(() => {
+  const c = $('#cv-concept');
+  const samp = sampler(transmit(tube(120), 10, 0));
+  const TH = [20,35,50,65];
+  const binOf = E => { let b = -1; for (let k = 0; k < 4; k++) if (E >= TH[k]) b = k; return b; };
+  const FR = 3.2;
+  const S = { ph: [], acc: 0, hist: [0,0,0,0], tF: 0, spawn: 0, nF: 1, lastE: null, lastH: null, glow: [] };
+  function add() { const E = samp(); S.ph.push({ f: 0.1 + 0.8*Math.random(), y: 0, E, b: binOf(E), hit: false, t: 0 }); }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      S.spawn += dt*8;
+      while (S.spawn > 1) { S.spawn--; add(); }
+      for (const p of S.ph) {
+        if (!p.hit) { p.y += dt*0.62; if (p.y >= 1) { p.y = 1; p.hit = true; S.acc += p.E; if (p.b >= 0) S.hist[p.b]++; S.glow.push({ f: p.f, t: 0, E: p.E }); } }
+        else p.t += dt;
+      }
+      S.ph = S.ph.filter(p => p.t < 0.75);
+      S.glow.forEach(g => g.t += dt); S.glow = S.glow.filter(g => g.t < 0.6);
+      S.tF += dt;
+      if (S.tF > FR) { S.lastE = S.acc + gauss()*90; S.lastH = S.hist.slice(); S.acc = 0; S.hist = [0,0,0,0]; S.tF = 0; S.nF++; }
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const fg = tok('--fg'), mut = tok('--muted'), rule = tok('--rule'), acc = tok('--accent'), soft = tok('--accent-soft');
+      const narrow = w < 520;
+      const gap = narrow ? 14 : 28, pw = (w - gap)/2;
+      const top = 44, det = h*0.48, detH = 14, meterY = det + detH + (narrow ? 26 : 34), meterH = h - meterY - 26;
+      const col = b => b < 0 ? mut : tok(BINC[b]);
+      ['Energieintegrierend (EID)', 'Photonenzählend (PCD)'].forEach((t, k) => {
+        const x0 = k*(pw+gap);
+        ctx.fillStyle = fg; ctx.font = `600 ${narrow?13:15}px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(t, x0, 18);
+        ctx.fillStyle = mut; ctx.font = `${narrow?11:12}px ${DISP}`;
+        ctx.fillText(k === 0 ? 'misst Σ E pro Frame' : 'zählt jedes Photon, sortiert nach E', x0, 34);
+        // Detektor
+        if (k === 0) {
+          ctx.fillStyle = soft; ctx.fillRect(x0, det, pw, detH*0.65);
+          ctx.fillStyle = rgba(fg, 0.75); ctx.fillRect(x0, det + detH*0.65, pw, detH*0.35);
+        } else {
+          ctx.fillStyle = soft; ctx.fillRect(x0, det, pw, detH);
+          ctx.fillStyle = rgba(fg, 0.75);
+          const n = narrow ? 10 : 16;
+          for (let i = 0; i < n; i++) ctx.fillRect(x0 + i*pw/n + 1, det + detH - 3, pw/n - 2, 3);
+        }
+      });
+      // Photonen
+      for (const p of S.ph) {
+        for (let k = 0; k < 2; k++) {
+          const x0 = k*(pw+gap); const px = x0 + p.f*pw;
+          if (!p.hit) {
+            const y = top + p.y*(det - top);
+            ctx.strokeStyle = rgba(col(p.b) || mut, 0.35); ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(px, y - 14); ctx.lineTo(px, y); ctx.stroke();
+            ctx.fillStyle = col(p.b); ctx.beginPath(); ctx.arc(px, y, 3.6, 0, 7); ctx.fill();
+          } else if (k === 1 && p.b >= 0) {
+            const bw = pw/4; const tx = x0 + bw*p.b + bw/2, ty = meterY;
+            const s = Math.min(1, p.t/0.5); const e = s*s*(3-2*s);
+            const x = px + (tx - px)*e, y = det + detH + (ty - det - detH)*e;
+            ctx.globalAlpha = 1 - Math.max(0, (p.t-0.5)/0.25);
+            ctx.fillStyle = col(p.b); ctx.beginPath(); ctx.arc(x, y, 3.4, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+          }
+        }
+      }
+      // EID-Glühen: Licht breitet sich im Szintillator aus
+      for (const g of S.glow) {
+        const px = g.f*pw; const a = 1 - g.t/0.6;
+        const grd = ctx.createRadialGradient(px, det+4, 0, px, det+4, 26);
+        grd.addColorStop(0, rgba(acc, 0.55*a)); grd.addColorStop(1, rgba(acc, 0));
+        ctx.fillStyle = grd; ctx.fillRect(px-26, det, 52, detH);
+        const x1 = pw + gap + g.f*pw;
+        ctx.fillStyle = rgba(acc, a); ctx.fillRect(x1-2, det+detH-5, 4, 5);
+      }
+      // EID-Messwert
+      const fullE = 8*FR*72;
+      const cur = S.acc;
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left';
+      ctx.fillText(`Frame ${S.nF}: Ladung integriert`, 0, meterY - 8);
+      ctx.strokeStyle = rule; ctx.strokeRect(0.5, meterY + 0.5, pw - 1, Math.min(26, meterH*0.4));
+      ctx.fillStyle = acc; ctx.fillRect(1, meterY+1, Math.min(1, cur/fullE)*(pw-2), Math.min(26, meterH*0.4) - 1);
+      const ly = meterY + Math.min(26, meterH*0.4) + 20;
+      ctx.fillStyle = fg; ctx.font = `12px ${MONO}`;
+      if (S.lastE !== null) ctx.fillText(`letzter Frame: ${nf(S.lastE/1000,2)} MeV`, 0, ly);
+      ctx.fillStyle = mut; ctx.fillText(`+ Elektronikrauschen`, 0, ly + 17);
+      if (!narrow) ctx.fillText(`keine Information über einzelne E`, 0, ly + 34);
+      // PCD-Histogramm
+      const x0 = pw + gap, bw = pw/4, hmax = Math.max(10, ...S.hist, ...(S.lastH || [0])) ;
+      const labels = ['20–35','35–50','50–65','≥65'];
+      for (let b = 0; b < 4; b++) {
+        const bx = x0 + b*bw + 4, bwi = bw - 8;
+        const hh = (meterH - 22) * S.hist[b] / (hmax*1.1);
+        if (S.lastH) { const lh = (meterH - 22) * S.lastH[b] / (hmax*1.1); ctx.strokeStyle = rgba(tok(BINC[b]), 0.6); ctx.setLineDash([3,3]); ctx.strokeRect(bx+0.5, meterY + meterH - 22 - lh, bwi-1, lh); ctx.setLineDash([]); }
+        ctx.fillStyle = tok(BINC[b]); ctx.fillRect(bx, meterY + meterH - 22 - hh, bwi, hh);
+        ctx.fillStyle = fg; ctx.font = `12px ${MONO}`; ctx.textAlign = 'center';
+        ctx.fillText(String(S.hist[b]), bx + bwi/2, meterY + meterH - 26 - hh);
+        ctx.fillStyle = mut; ctx.font = `${narrow?9:10.5}px ${MONO}`; ctx.fillText(labels[b], bx + bwi/2, meterY + meterH - 6);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`;
+      ctx.fillText(`Zähler je Bin (keV), gestrichelt: letzter Frame`, x0, meterY - 8);
+    }
+  });
+  for (let i = 0; i < 260; i++) m.step(1/60);
+  playBtn($('#concept-play'), m);
+  m.draw();
+})();
+
+/* ---------- Abb. 3: Gewichtungspotential ---------- */
+(() => {
+  const cw = $('#cv-wp'), cq = $('#cv-q');
+  const ip = $('#wp-p'), ix = $('#wp-x'), imt = $('#wp-mt');
+  let sol = null, solP = -1;
+  function solve(p) {
+    const NZ = 50, W = Math.max(6*p, 4.2), NX = 168;
+    const dx = W/NX, dz = 1/NZ, ax = 1/(dx*dx), az = 1/(dz*dz), den = 2*ax + 2*az;
+    const N1 = NX+1, phi = new Float64Array(N1*(NZ+1));
+    const onPix = i => Math.abs(-W/2 + i*dx) <= p/2 + 1e-9;
+    for (let j = 0; j <= NZ; j++) for (let i = 0; i <= NX; i++) phi[j*N1+i] = onPix(i) ? Math.max(0, 1 - j/NZ*(1+0.5/p)) : 0;
+    for (let i = 0; i <= NX; i++) { phi[i] = onPix(i) ? 1 : 0; phi[NZ*N1+i] = 0; }
+    const w = 1.9;
+    for (let it = 0; it < 1400; it++) {
+      for (let j = 1; j < NZ; j++) {
+        const r = j*N1;
+        phi[r] = phi[r+1]; phi[r+NX] = phi[r+NX-1];
+        for (let i = 1; i < NX; i++) {
+          const k = r+i;
+          const g = (ax*(phi[k-1]+phi[k+1]) + az*(phi[k-N1]+phi[k+N1])) / den;
+          phi[k] += w*(g - phi[k]);
+        }
+      }
+    }
+    const ic = NX/2, axis = new Float64Array(NZ+1);
+    for (let j = 0; j <= NZ; j++) axis[j] = phi[j*N1+ic];
+    return { phi, NX, NZ, W, dx, N1, axis };
+  }
+  const phiAx = (u, ax) => { const n = ax.length-1; const t = Math.min(n, Math.max(0, u*n)); const j = Math.min(n-1, Math.floor(t)); const f = t - j; return ax[j]*(1-f) + ax[j+1]*f; };
+  function induced(ax, planar, u0, mth) {
+    const ve = 0.04297, vh = 0.003906, te = 2727, th = (Math.pow(10, mth)/100)*1e9;
+    const P = planar ? (u => 1 - u) : (u => phiAx(u, ax));
+    const dt = 0.25, T = 320, out = [];
+    let ue = u0, uh = u0, Q = 0;
+    for (let t = 0; t <= T; t += dt) {
+      out.push([t, Q]);
+      const ne = Math.exp(-t/te), nh = Math.exp(-t/th);
+      if (ue > 0) { const un = Math.max(0, ue - ve*dt); Q += ne*(P(un) - P(ue)); ue = un; }
+      if (uh < 1) { const un = Math.min(1, uh + vh*dt); Q -= nh*(P(un) - P(uh)); uh = un; }
+    }
+    return out;
+  }
+  let qs = null, qp = null;
+  function update() {
+    const p = +ip.value, x = +ix.value, mth = +imt.value;
+    $('#wp-p-o').textContent = `${nf(p,2)} (${nf(p*1600,0)} µm)`;
+    $('#wp-x-o').textContent = `${nf(x*1.6,2)} mm`;
+    $('#wp-mt-o').textContent = `${nf(Math.pow(10, mth)/Math.pow(10, Math.floor(mth)),1)}·10${String(Math.floor(mth)).split('').map(c=>SUP[c]).join('')} cm²/V`;
+    if (Math.abs(p - solP) > 1e-6) { sol = solve(p); solP = p; }
+    const u0 = 1 - x;
+    qs = induced(sol.axis, false, u0, mth); qp = induced(null, true, u0, mth);
+    const cs = qs[qs.length-1][1], cp = qp[qp.length-1][1];
+    $('#wp-read').innerHTML = `<span class="k">Gesammelte Ladung (CCE):</span> Pixel ${nf(cs*100,1)} %  <span class="k">·</span>  planar ${nf(cp*100,1)} %  <span class="k">·</span>  <span class="k">φ_w in Interaktionstiefe:</span> ${nf(phiAx(u0, sol.axis),2)}`;
+    m1.draw(); m2.draw();
+  }
+  const m1 = reg({ el: cw, draw() {
+    if (!sol) return;
+    const { ctx, w, h } = fit(cw);
+    const fg = tok('--fg'), mut = tok('--muted'), bg = rgb(tok('--surface')), ac = rgb(tok('--accent'));
+    const top = 18, bot = 18, H = h - top - bot, Wd = w;
+    const res = 2, iw = Math.ceil(Wd/res), ih = Math.ceil(H/res);
+    const img = ctx.createImageData(iw, ih);
+    const { phi, NX, NZ, W, N1 } = sol;
+    for (let yy = 0; yy < ih; yy++) {
+      const u = 1 - yy/(ih-1);
+      const jf = u*NZ, j = Math.min(NZ-1, Math.floor(jf)), fz = jf - j;
+      for (let xx = 0; xx < iw; xx++) {
+        const xd = -1 + 2*xx/(iw-1);
+        const fi = (xd + W/2)/W*NX, i = Math.min(NX-1, Math.max(0, Math.floor(fi))), fx = fi - i;
+        const v = (phi[j*N1+i]*(1-fx) + phi[j*N1+i+1]*fx)*(1-fz) + (phi[(j+1)*N1+i]*(1-fx) + phi[(j+1)*N1+i+1]*fx)*fz;
+        const lv = Math.min(1, Math.max(0, v));
+        const q = Math.floor(lv*10)/10 + 0.05;
+        const a = Math.pow(q, 0.7)*0.95;
+        const o = (yy*iw + xx)*4;
+        img.data[o] = bg[0] + (ac[0]-bg[0])*a; img.data[o+1] = bg[1] + (ac[1]-bg[1])*a; img.data[o+2] = bg[2] + (ac[2]-bg[2])*a; img.data[o+3] = 255;
+      }
+    }
+    const off = document.createElement('canvas'); off.width = iw; off.height = ih; off.getContext('2d').putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, top, Wd, H);
+    // Elektroden
+    const p = solP, X = xd => (xd + 1)/2*Wd;
+    ctx.fillStyle = fg; ctx.fillRect(0, top-3, Wd, 3);
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillStyle = mut; ctx.fillText('Kathode', 4, top-6);
+    for (let k = -8; k <= 8; k++) {
+      const c0 = k*p; const a = X(c0 - p/2 + Math.min(0.03, p*0.1)), b = X(c0 + p/2 - Math.min(0.03, p*0.1));
+      if (b < 0 || a > Wd) continue;
+      ctx.fillStyle = k === 0 ? tok('--accent') : rgba(fg, 0.55);
+      ctx.fillRect(a, top + H, Math.max(1, b - a), 4);
+    }
+    ctx.fillStyle = mut; ctx.fillText('Pixelanoden', 4, top + H + 15);
+    // Interaktion
+    const x = +ix.value, py = top + x*H, pxx = X(0);
+    ctx.strokeStyle = tok('--elec'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pxx, py+5); ctx.lineTo(pxx, top+H-6); ctx.stroke();
+    ctx.fillStyle = tok('--elec'); ctx.beginPath(); ctx.moveTo(pxx-5, top+H-10); ctx.lineTo(pxx+5, top+H-10); ctx.lineTo(pxx, top+H-2); ctx.fill();
+    ctx.strokeStyle = tok('--hole'); ctx.beginPath(); ctx.moveTo(pxx+9, py-5); ctx.lineTo(pxx+9, top+6); ctx.stroke();
+    ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.moveTo(pxx+4, top+10); ctx.lineTo(pxx+14, top+10); ctx.lineTo(pxx+9, top+2); ctx.fill();
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(pxx, py, 5, 0, 7); ctx.fill();
+    ctx.strokeStyle = tok('--surface'); ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillStyle = fg; ctx.font = `11px ${MONO}`; ctx.fillText('φ_w: 0 … 1', Wd - 4, top - 6);
+  }});
+  const m2 = reg({ el: cq, draw() {
+    if (!sol || !qs) return;
+    const { ctx, w, h } = fit(cq);
+    const h1 = Math.round(h*0.44);
+    const acc = tok('--accent'), mut = tok('--muted'), fg = tok('--fg');
+    // phi(u)
+    let f = frame(ctx, w, h1, { x0: 0, x1: 1, y0: 0, y1: 1, xt: [0, 0.5, 1], yt: [0, 0.5, 1], xf: v => v === 0 ? 'Anode' : v === 1 ? 'Kathode' : '', yf: v => nf(v,1), b: 22, t: 10, yl: 'φ_w', l: 46 });
+    clipBox(ctx, f);
+    ctx.strokeStyle = mut; ctx.setLineDash([4,4]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.X(0), f.Y(1)); ctx.lineTo(f.X(1), f.Y(0)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = acc; ctx.lineWidth = 2.2; ctx.beginPath();
+    sol.axis.forEach((v, j) => { const u = j/(sol.axis.length-1); j ? ctx.lineTo(f.X(u), f.Y(v)) : ctx.moveTo(f.X(u), f.Y(v)); }); ctx.stroke();
+    const u0 = 1 - (+ix.value); ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(u0), f.by); ctx.lineTo(f.X(u0), f.by+f.bh); ctx.stroke();
+    ctx.restore();
+    // Q(t)
+    ctx.save(); ctx.translate(0, h1 + 6);
+    f = frame(ctx, w, h - h1 - 6, { x0: 0, x1: 320, y0: 0, y1: 1.05, xt: [0, 100, 200, 300], yt: [0, 0.5, 1], yf: v => nf(v*100,0) + '%', xl: 'Zeit (ns)', yl: 'Q_ind / Q₀', l: 46, t: 8 });
+    clipBox(ctx, f);
+    const line = (arr, col, dash, lw) => { ctx.strokeStyle = col; ctx.setLineDash(dash); ctx.lineWidth = lw; ctx.beginPath(); arr.forEach(([t, q], i) => i ? ctx.lineTo(f.X(t), f.Y(q)) : ctx.moveTo(f.X(t), f.Y(q))); ctx.stroke(); ctx.setLineDash([]); };
+    line(qp, mut, [4,4], 1.5); line(qs, acc, [], 2.2);
+    ctx.restore(); ctx.restore();
+    ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'right';
+    ctx.fillText('— Pixel   - - planar', w - 16, 12);
+  }});
+  [ip, ix, imt].forEach(el => el.addEventListener('input', update));
+  update();
+})();
+
+/* ---------- Abb. 5: Pulse ---------- */
+(() => {
+  const c = $('#cv-pulse'), ir = $('#pl-rate'), it = $('#pl-tp');
+  const TH = [20,35,50,65];
+  const samp = sampler(transmit(tube(120), 10, 0));
+  class Sim {
+    constructor(rate, tp, keep) { this.rate = rate; this.tp = tp; this.t = 0; this.next = this.arr(); this.pul = []; this.noise = 0; this.prev = 0; this.keep = keep;
+      this.cnt = [0,0,0,0]; this.tru = [0,0,0,0]; this.nTrue = 0; this.buf = keep ? new Float32Array(keep) : null; this.bi = 0; this.marks = []; }
+    arr() { return -Math.log(1 - Math.random()) / this.rate; }
+    h(t) { const x = t/this.tp; return x * Math.exp(1 - x); }
+    advance(ns) {
+      const a = Math.exp(-1/Math.max(2, this.tp*0.5)), sq = Math.sqrt(1 - a*a);
+      for (let k = 0; k < ns; k++) {
+        while (this.next <= this.t) {
+          const E = samp(); this.pul.push([this.next, E]); this.nTrue++;
+          for (let j = 0; j < 4; j++) if (E >= TH[j]) this.tru[j]++;
+          if (this.keep) this.marks.push([this.next, E]);
+          this.next += this.arr();
+        }
+        let s = 0;
+        for (const [t0, E] of this.pul) { const dt = this.t - t0; if (dt >= 0) s += E*this.h(dt); }
+        this.noise = a*this.noise + sq*0.7*gauss();
+        s += this.noise;
+        for (let j = 0; j < 4; j++) if (this.prev < TH[j] && s >= TH[j]) this.cnt[j]++;
+        this.prev = s;
+        if (this.buf) { this.buf[this.bi % this.keep] = s; this.bi++; }
+        this.t += 1;
+        if (this.pul.length && this.t - this.pul[0][0] > 9*this.tp) this.pul = this.pul.filter(p => this.t - p[0] <= 9*this.tp);
+      }
+      if (this.keep) this.marks = this.marks.filter(mk => this.t - mk[0] <= this.keep);
+    }
+  }
+  const WIN = 700;
+  let vis, stat, acc = 0;
+  const rate = () => Math.pow(10, +ir.value) * 1e-3; // Ereignisse pro ns
+  function reset() {
+    $('#pl-rate-o').textContent = `${nf(Math.pow(10, +ir.value), Math.pow(10, +ir.value) < 10 ? 1 : 0)} Mcps`;
+    $('#pl-tp-o').textContent = `${it.value} ns`;
+    vis = new Sim(rate(), +it.value, WIN); vis.advance(WIN);
+    stat = new Sim(rate(), +it.value, 0);
+    table();
+  }
+  function table() {
+    const n = stat.nTrue;
+    const rows = TH.map((T, j) => {
+      const tr = stat.tru[j], cn = stat.cnt[j];
+      const d = tr ? (cn/tr - 1)*100 : 0;
+      return `<tr><td><span class="sw" style="background:var(${BINC[j]})"></span>≥ ${T} keV</td><td class="num">${nf(tr)}</td><td class="num">${nf(cn)}</td><td class="num">${tr ? (d >= 0 ? '+' : '') + nf(d,1) + ' %' : '–'}</td></tr>`;
+    }).join('');
+    $('#pl-table').innerHTML = `<thead><tr><th>Schwelle</th><th class="num">wahre Photonen</th><th class="num">gezählt</th><th class="num">Abweichung</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="4" class="muted" style="font-size:12px;border:0">Simulierte Zeit: ${nf(stat.t/1000,0)} µs · ${nf(n)} Photonen</td></tr></tfoot>`;
+  }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      vis.advance(Math.max(1, Math.round(dt*160)));
+      if (stat.t < 4e6) { stat.advance(Math.round(dt*60000)); }
+      acc += dt; if (acc > 0.3) { acc = 0; table(); }
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const f = frame(ctx, w, h, { x0: 0, x1: WIN, y0: -5, y1: 140, xt: [0, 100, 200, 300, 400, 500, 600, 700], yt: [0, 20, 35, 50, 65, 100, 140].filter(v => !TH.includes(v)), xf: v => v, xl: 'Zeit (ns), Fenster scrollt', yl: 'Pulshöhe (keV)', b: 40 });
+      clipBox(ctx, f);
+      TH.forEach((T, j) => {
+        ctx.strokeStyle = tok(BINC[j]); ctx.lineWidth = 1.2; ctx.setLineDash([6,4]);
+        ctx.beginPath(); ctx.moveTo(f.bx, f.Y(T)); ctx.lineTo(f.bx+f.bw, f.Y(T)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = tok(BINC[j]); ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText(`T${j+1} ${T}`, f.bx+f.bw-4, f.Y(T)-3);
+      });
+      const n = Math.min(vis.bi, WIN), start = vis.bi - n;
+      ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let k = 0; k < n; k++) { const v = vis.buf[(start + k) % WIN]; const x = f.X(WIN - n + k), y = f.Y(v); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke();
+      const t0 = vis.t - WIN;
+      for (const [ta, E] of vis.marks) {
+        let b = -1; for (let j = 0; j < 4; j++) if (E >= TH[j]) b = j;
+        ctx.fillStyle = b < 0 ? tok('--muted') : tok(BINC[b]);
+        ctx.fillRect(f.X(ta - t0) - 1, f.by + f.bh - 10, 2.5, 10);
+      }
+      ctx.restore();
+    }
+  });
+  ir.addEventListener('input', reset); it.addEventListener('input', reset);
+  reset();
+  playBtn($('#pl-play'), m);
+  m.draw();
+})();
+
+/* ---------- Abb. 6: Totzeit ---------- */
+(() => {
+  const c = $('#cv-dead'), it = $('#dt-tau');
+  const m = reg({ el: c, draw() {
+    const tau = +it.value*1e-9;
+    $('#dt-tau-o').textContent = `${it.value} ns`;
+    const { ctx, w } = fit(c); const h = c.getBoundingClientRect().height;
+    const xt = [1e5,1e6,1e7,1e8,1e9,1e10];
+    const f = frame(ctx, w, h, { x0: 1e5, x1: 1e10, y0: 1e5, y1: 1e10, xlog: true, ylog: true, xt, yt: xt, xf: pow10, yf: pow10, xl: 'wahre Rate n (s⁻¹)', yl: 'gemessene Rate m (s⁻¹)', l: 54 });
+    clipBox(ctx, f);
+    const curve = (fn, col, dash, lw) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash); ctx.beginPath(); for (let k = 0; k <= 300; k++) { const n = Math.pow(10, 5 + 5*k/300), v = Math.max(1e5*0.5, fn(n)); k ? ctx.lineTo(f.X(n), f.Y(v)) : ctx.moveTo(f.X(n), f.Y(v)); } ctx.stroke(); ctx.setLineDash([]); };
+    curve(n => n, tok('--muted'), [4,4], 1.3);
+    curve(n => n/(1+n*tau), tok('--bin1'), [], 2.2);
+    curve(n => n*Math.exp(-n*tau), tok('--hole'), [], 2.2);
+    const nm = 1/tau, mm = 1/(Math.E*tau);
+    ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(f.X(nm), f.Y(mm), 4.5, 0, 7); ctx.fill();
+    ctx.strokeStyle = rgba(tok('--muted'), 0.6); ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(1/tau)); ctx.lineTo(f.bx+f.bw, f.Y(1/tau)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left';
+    const lx = f.bx + 12; let ly = f.by + 16;
+    [['ideal m = n', '--muted'], ['nicht-paralysierbar', '--bin1'], ['paralysierbar', '--hole']].forEach(([t, cc]) => { ctx.fillStyle = tok(cc); ctx.fillRect(lx, ly-8, 14, 3); ctx.fillStyle = tok('--fg'); ctx.fillText(t, lx + 20, ly - 3); ly += 18; });
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`;
+    ctx.fillText(`1/τ = ${nf(1/tau/1e6,0)} Mcps`, Math.min(f.X(1e5)+12, f.bx+f.bw-130), f.Y(1/tau)-6);
+    ctx.fillStyle = tok('--hole'); ctx.textAlign = 'left';
+    const tx = Math.min(f.X(nm) + 8, f.bx + f.bw - 120);
+    ctx.fillText(`Max. ${nf(mm/1e6,1)} Mcps`, tx, f.Y(mm) + 18);
+  }});
+  it.addEventListener('input', () => m.draw());
+  m.draw();
+})();
+
+/* ---------- Abb. 7: Charge Sharing / Fluoreszenz ---------- */
+(() => {
+  const cg = $('#cv-grid'), ch = $('#cv-hist');
+  const iE = $('#mc-e'), iP = $('#mc-p'), iS = $('#mc-s'), iT = $('#mc-t'), iCS = $('#mc-cs'), iL = $('#mc-log');
+  const NB = 220, BW = 0.5;
+  let H, nPh, sumM, sumM2, recent, peak, visT;
+  function P() { return { E: +iE.value, p: +iP.value, s: +iS.value, T: +iT.value, cs: iCS.checked }; }
+  function reset() {
+    const q = P();
+    $('#mc-e-o').textContent = `${q.E} keV`; $('#mc-p-o').textContent = `${q.p} µm`; $('#mc-s-o').textContent = `${q.s} µm`; $('#mc-t-o').textContent = `${q.T} keV`;
+    H = new Float64Array(NB); nPh = 0; sumM = 0; sumM2 = 0; recent = []; peak = 0; visT = 0;
+    for (let i = 0; i < 3000; i++) one(false);
+  }
+  function one(keep) {
+    const q = P(), p = q.p, sg = q.s, E0 = q.E;
+    const x0 = (Math.random()-0.5)*p, y0 = (Math.random()-0.5)*p;
+    const dep = []; let fl = null, Ep = E0;
+    if (E0 > 26.71) {
+      const el = (E0 > 31.81 && Math.random() < 0.5) ? 'Te' : 'Cd';
+      const pk = 0.86*(el === 'Cd' ? 0.84 : 0.875);
+      if (Math.random() < pk) {
+        const EK = el === 'Cd' ? 23.1 : 27.5, lam = el === 'Cd' ? 115 : 60;
+        const cz = 2*Math.random() - 1, ph = 2*Math.PI*Math.random(), s = -lam*Math.log(1 - Math.random());
+        const r = s*Math.sqrt(1 - cz*cz);
+        const x1 = x0 + r*Math.cos(ph), y1 = y0 + r*Math.sin(ph);
+        Ep = E0 - EK; dep.push({ x: x1, y: y1, E: EK }); fl = { x1, y1, el };
+      }
+    }
+    dep.unshift({ x: x0, y: y0, E: Ep });
+    const px = new Float64Array(25), k2 = Math.SQRT2*sg;
+    for (const d of dep) {
+      const fx = [], fy = [];
+      for (let k = -2; k <= 2; k++) {
+        const lo = (k-0.5)*p, hi = (k+0.5)*p;
+        fx.push(0.5*(erf((hi-d.x)/k2) - erf((lo-d.x)/k2)));
+        fy.push(0.5*(erf((hi-d.y)/k2) - erf((lo-d.y)/k2)));
+      }
+      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) px[j*5+i] += d.E*fx[i]*fy[j];
+    }
+    const clean = Float64Array.from(px);
+    for (let i = 0; i < 25; i++) px[i] += gauss()*1.0;
+    const ev = [];
+    if (q.cs) {
+      let im = 0; for (let i = 1; i < 25; i++) if (px[i] > px[im]) im = i;
+      const ix = im % 5, iy = (im/5) | 0; let sum = 0; const used = new Set();
+      for (let j = iy-1; j <= iy+1; j++) for (let i = ix-1; i <= ix+1; i++) if (i >= 0 && i < 5 && j >= 0 && j < 5) { const v = px[j*5+i]; used.add(j*5+i); if (v > 3) sum += v; }
+      if (sum > 5) ev.push(sum);
+      for (let i = 0; i < 25; i++) if (!used.has(i) && px[i] > 5) ev.push(px[i]);
+    } else {
+      for (let i = 0; i < 25; i++) if (px[i] > 5) ev.push(px[i]);
+    }
+    let mcount = 0;
+    for (const e of ev) { const b = Math.floor(e/BW); if (b >= 0 && b < NB) H[b]++; if (e >= q.T) mcount++; if (Math.abs(e - E0) < 3) peak++; }
+    nPh++; sumM += mcount; sumM2 += mcount*mcount;
+    if (keep) { recent.push({ x0, y0, dep, fl, px: clean, E0, t: 0 }); if (recent.length > 9) recent.shift(); }
+  }
+  function readout() {
+    const mm = sumM/nPh, m2 = sumM2/nPh;
+    $('#mc-read').innerHTML = `<span class="k">Photonen:</span> ${nf(nPh)}  <span class="k">·</span>  <span class="k">Zählungen ≥ Schwelle pro Photon:</span> ${nf(mm,3)}  <span class="k">·</span>  <span class="k">im Photopeak (±3 keV):</span> ${nf(peak/nPh*100,1)} %  <span class="k">·</span>  <span class="k">⟨m⟩²/⟨m²⟩:</span> ${nf(m2 ? mm*mm/m2 : 0,3)}`;
+  }
+  const mg = reg({ el: cg, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (nPh < 150000) for (let i = 0; i < 60; i++) one(false);
+      visT += dt; if (visT > 0.45) { visT = 0; one(true); }
+      recent.forEach(r => r.t += dt);
+      mh.draw(); readout();
+    },
+    draw() {
+      const { ctx, w, h } = fit(cg);
+      const q = P(), size = Math.min(w, h) - 24, cell = size/5, ox = (w - size)/2, oy = 6;
+      const s = cell/q.p;
+      const fg = tok('--fg'), mut = tok('--muted'), acc = tok('--accent'), rule = tok('--rule');
+      const lastR = recent[recent.length-1];
+      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) {
+        const x = ox + i*cell, y = oy + j*cell;
+        if (lastR) { const fr = Math.min(1, lastR.px[j*5+i]/lastR.E0); if (fr > 0.01) { ctx.fillStyle = rgba(acc, 0.12 + 0.6*fr); ctx.fillRect(x, y, cell, cell); } }
+        ctx.strokeStyle = (i === 2 && j === 2) ? fg : rule; ctx.lineWidth = (i === 2 && j === 2) ? 1.6 : 1;
+        ctx.strokeRect(x + 0.5, y + 0.5, cell - 1, cell - 1);
+      }
+      const cx = ox + 2.5*cell, cy = oy + 2.5*cell;
+      ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, size, size); ctx.clip();
+      recent.forEach((r, k) => {
+        const a = Math.max(0.15, 1 - (recent.length - 1 - k)*0.11);
+        r.dep.forEach((d, di) => {
+          const X = cx + d.x*s, Y = cy + d.y*s;
+          const rad = Math.max(2, 2*q.s*s);
+          const grd = ctx.createRadialGradient(X, Y, 0, X, Y, rad);
+          const cc = di === 0 ? tok('--elec') : tok('--bin2');
+          grd.addColorStop(0, rgba(cc, 0.55*a)); grd.addColorStop(1, rgba(cc, 0));
+          ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(X, Y, rad, 0, 7); ctx.fill();
+        });
+        const X0 = cx + r.x0*s, Y0 = cy + r.y0*s;
+        if (r.fl) {
+          ctx.strokeStyle = rgba(tok('--bin2'), a); ctx.lineWidth = 1.4; ctx.setLineDash([4,3]);
+          ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(cx + r.fl.x1*s, cy + r.fl.y1*s); ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle = rgba(tok('--bin2'), a); ctx.beginPath(); ctx.arc(cx + r.fl.x1*s, cy + r.fl.y1*s, 3, 0, 7); ctx.fill();
+          if (k === recent.length-1) { ctx.font = `11px ${MONO}`; ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText(`${r.fl.el} Kα`, cx + r.fl.x1*s + 6, cy + r.fl.y1*s - 4); }
+        }
+        ctx.fillStyle = rgba(fg, a); ctx.beginPath(); ctx.arc(X0, Y0, 2.8, 0, 7); ctx.fill();
+      });
+      ctx.restore();
+      // Maßstab
+      const L = 100*s, by = oy + size + 12;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox, by); ctx.lineTo(ox + L, by); ctx.stroke();
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('100 µm', ox + L + 6, by + 4);
+    }
+  });
+  const mh = reg({ el: ch, draw() {
+    const { ctx, w, h } = fit(ch);
+    const q = P(), log = iL.checked;
+    const xmax = Math.max(50, Math.ceil((q.E + 12)/10)*10);
+    let mx = 1; for (let i = 0; i < NB; i++) if (i*BW <= xmax) mx = Math.max(mx, H[i]);
+    const val = v => log ? Math.log10(1 + v)/Math.log10(1 + mx) : v/mx;
+    const xt = []; for (let v = 0; v <= xmax; v += xmax > 80 ? 20 : 10) xt.push(v);
+    const f = frame(ctx, w, h, { x0: 0, x1: xmax, y0: 0, y1: 1.08, xt, yt: [], xl: 'gemessene Energie pro Pixelereignis (keV)', yl: log ? 'Ereignisse (log)' : 'Ereignisse', l: 26 });
+    clipBox(ctx, f);
+    ctx.fillStyle = rgba(tok('--accent'), 0.85);
+    for (let i = 0; i < NB; i++) { const e = i*BW; if (e > xmax) break; const v = val(H[i]); if (v <= 0) continue; ctx.fillRect(f.X(e), f.Y(v), Math.max(1, f.X(e+BW) - f.X(e)), f.Y(0) - f.Y(v)); }
+    ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(f.X(q.T), f.by); ctx.lineTo(f.X(q.T), f.by+f.bh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    const marks = [[q.E, 'E₀']];
+    if (q.E > 26.71) { marks.push([23.1, 'Cd Kα']); marks.push([q.E - 23.1, 'Esc Cd']); }
+    if (q.E > 31.81) { marks.push([27.5, 'Te Kα']); marks.push([q.E - 27.5, 'Esc Te']); }
+    ctx.font = `10px ${MONO}`; ctx.textAlign = 'center';
+    const placed = [];
+    marks.sort((a, b) => a[0] - b[0]).forEach(([e, t]) => {
+      if (e < 5 || e > xmax) return;
+      const x = f.X(e); let row = 0; while (placed.some(([px, pr]) => pr === row && Math.abs(px - x) < 40)) row++;
+      placed.push([x, row]);
+      ctx.fillStyle = tok('--muted'); ctx.fillRect(x - 0.5, f.by, 1, 6 + row*12);
+      ctx.fillStyle = tok('--fg'); ctx.fillText(t, x, f.by + 16 + row*12);
+    });
+    ctx.fillStyle = tok('--hole'); ctx.textAlign = 'left'; ctx.fillText('Schwelle', f.X(q.T) + 4, f.by + f.bh - 6);
+  }});
+  [iE, iP, iS, iT, iCS].forEach(el => el.addEventListener('input', () => { reset(); mg.draw(); mh.draw(); readout(); }));
+  iL.addEventListener('input', () => mh.draw());
+  reset(); for (let i = 0; i < 6; i++) one(true); readout(); mg.draw(); mh.draw();
+})();
+
+/* ---------- Abb. 8 + 9: Spektrum, Bins, μ(E) ---------- */
+(() => {
+  const cs = $('#cv-spec'), cm = $('#cv-mu');
+  const ikv = $('#sp-kv'), iw = $('#sp-w'), ii = $('#sp-i');
+  const it = [0,1,2,3].map(k => $('#sp-t' + k));
+  let T = [20,35,50,65], inc, tr;
+  function thr(changed) {
+    let v = it.map(e => +e.value);
+    if (changed !== undefined) {
+      for (let k = changed+1; k < 4; k++) if (v[k] < v[k-1] + 1) v[k] = v[k-1] + 1;
+      for (let k = changed-1; k >= 0; k--) if (v[k] > v[k+1] - 1) v[k] = v[k+1] - 1;
+      v = v.map(x => Math.min(120, Math.max(15, x)));
+      v.forEach((x, k) => it[k].value = x);
+    }
+    T = v; T.forEach((x, k) => $('#sp-t' + k + '-o').textContent = `${x} keV`);
+  }
+  function update(changed) {
+    thr(changed);
+    const kv = +ikv.value;
+    $('#sp-kv-o').textContent = `${kv} kV`; $('#sp-w-o').textContent = `${iw.value} cm`; $('#sp-i-o').textContent = `${ii.value} mg/cm²`;
+    inc = tube(kv); tr = transmit(inc, +iw.value, +ii.value);
+    // Tabelle
+    let nT = 0, eT = 0; const n = [0,0,0,0], e = [0,0,0,0]; let below = 0;
+    tr.forEach((v, i) => {
+      const E = EG[i]; nT += v; eT += v*E;
+      let b = -1; for (let k = 0; k < 4; k++) if (E >= T[k]) b = k;
+      if (b < 0) below += v; else { n[b] += v; e[b] += v*E; }
+    });
+    const rows = [0,1,2,3].map(b => {
+      const lo = T[b], hi = b < 3 ? T[b+1] : kv;
+      return `<tr><td><span class="sw" style="background:var(${BINC[b]})"></span>Bin ${b+1}</td><td class="num">${lo}–${hi} keV</td><td class="num">${nf(n[b]/nT*100,1)} %</td><td class="num">${nf(e[b]/eT*100,1)} %</td><td class="num">${n[b] ? nf(e[b]/n[b],1) : '–'} keV</td></tr>`;
+    }).join('');
+    $('#sp-table').innerHTML = `<thead><tr><th>Bin</th><th class="num">Bereich</th><th class="num">Anteil Photonen</th><th class="num">Anteil Energie (EID)</th><th class="num">mittlere E</th></tr></thead><tbody>${rows}<tr><td class="muted">unter T₁</td><td class="num">&lt; ${T[0]} keV</td><td class="num">${nf(below/nT*100,1)} %</td><td class="num"></td><td class="num"></td></tr></tbody><tfoot><tr><td colspan="5" class="muted" style="font-size:12px;border:0">Mittlere Energie hinter dem Objekt: ${nf(eT/nT,1)} keV · Transmission: ${nf(nT/inc.reduce((a,b)=>a+b,0)*100, nT/inc.reduce((a,b)=>a+b,0) < 0.01 ? 2 : 1)} %</td></tr></tfoot>`;
+    ms.draw(); mm.draw();
+  }
+  const ms = reg({ el: cs, draw() {
+    if (!tr) return;
+    const { ctx, w, h } = fit(cs);
+    const kv = +ikv.value;
+    const f = frame(ctx, w, h, { x0: 10, x1: 150, y0: 0, y1: 1.08, xt: [20, 40, 60, 80, 100, 120, 140], yt: [0, 0.5, 1], yf: v => nf(v,1), xl: 'Energie (keV)', yl: 'Photonen (norm.)', l: 46 });
+    const mi = Math.max(...inc), mt = Math.max(...tr) || 1;
+    clipBox(ctx, f);
+    for (let i = 0; i < EG.length - 1; i++) {
+      const E = EG[i]; let b = -1; for (let k = 0; k < 4; k++) if (E >= T[k]) b = k;
+      const v = tr[i]/mt;
+      ctx.fillStyle = b < 0 ? rgba(tok('--muted'), 0.35) : rgba(tok(BINC[b]), 0.75);
+      ctx.fillRect(f.X(E), f.Y(v), f.X(EG[i+1]) - f.X(E) + 0.5, f.Y(0) - f.Y(v));
+    }
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.4; ctx.beginPath(); tr.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v/mt); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4,4]); ctx.lineWidth = 1.3; ctx.beginPath(); inc.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v/mi); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
+    T.forEach((t, k) => { ctx.strokeStyle = tok(BINC[k]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.X(t), f.by); ctx.lineTo(f.X(t), f.by+f.bh); ctx.stroke(); });
+    if (+ii.value > 0) { ctx.strokeStyle = tok('--fg'); ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(f.X(33.17), f.by); ctx.lineTo(f.X(33.17), f.by+f.bh); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.fillStyle = tok('--muted'); ctx.textAlign = 'right';
+    ctx.fillText(`- - vor Objekt   ▇ hinter Objekt`, f.bx + f.bw - 4, f.by + 12);
+    if (+ii.value > 0) { ctx.textAlign = 'left'; ctx.fillStyle = tok('--fg'); ctx.fillText('I K-Kante', f.X(33.17) + 4, f.by + 28); }
+    T.forEach((t, k) => { ctx.fillStyle = tok(BINC[k]); ctx.textAlign = 'left'; ctx.fillText(`T${k+1}`, f.X(t) + 3, f.by + f.bh - 6 - (k % 2)*12); });
+  }});
+  const mm = reg({ el: cm, draw() {
+    const { ctx, w, h } = fit(cm);
+    const f = frame(ctx, w, h, { x0: 10, x1: 150, y0: 0.1, y1: 200, ylog: true, xt: [20, 40, 60, 80, 100, 120, 140], yt: [0.1, 1, 10, 100], yf: v => v < 1 ? '0,1' : String(v), xl: 'Energie (keV)', yl: 'μ/ρ (cm²/g)', l: 46, r: 64 });
+    const kv = +ikv.value;
+    clipBox(ctx, f);
+    for (let k = 0; k < 4; k++) { const a = T[k], b = k < 3 ? T[k+1] : kv; ctx.fillStyle = rgba(tok(BINC[k]), 0.12); ctx.fillRect(f.X(a), f.by, f.X(b) - f.X(a), f.bh); }
+    const curve = (fn, col) => { ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); let first = true, prevE = 0; for (let E = 10; E <= 150; E += 0.25) { const x = f.X(E), y = f.Y(fn(E)); if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y); prevE = E; } ctx.stroke(); };
+    curve(E => mu(WATER, E), tok('--elec'));
+    curve(E => mu(BONE, E), tok('--muted'));
+    curve(muI, tok('--hole'));
+    ctx.restore();
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left';
+    [['Iod', muI(150), '--hole'], ['Knochen', mu(BONE, 150)*1.35, '--muted'], ['Wasser', mu(WATER, 150)*0.72, '--elec']].forEach(([t, v, cc]) => { ctx.fillStyle = tok(cc); ctx.fillText(t, f.bx + f.bw + 6, f.Y(v) + 4); });
+    ctx.fillStyle = tok('--fg'); ctx.font = `11px ${MONO}`; ctx.fillText('K-Kante 33,2 keV', f.X(33.17) + 6, f.Y(36) - 4);
+  }});
+  [ikv, iw, ii].forEach(el => el.addEventListener('input', () => update()));
+  it.forEach((el, k) => el.addEventListener('input', () => update(k)));
+  update();
+})();
+
+/* ---------- Inhaltsverzeichnis markieren ---------- */
+(() => {
+  const links = [...document.querySelectorAll('nav.toc a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); const a = map.get(e.target.id); if (a) a.classList.add('on'); } }), { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('main section').forEach(s => so.observe(s));
+})();
+})();
+</script>
+
+</body>
+</html>

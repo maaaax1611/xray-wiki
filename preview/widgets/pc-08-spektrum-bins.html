@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spektrum und Energie-Bins und Schwächungskoeffizienten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lange Lektüre-Spalte mit klebrigem Inhaltsverzeichnis links; Abbildungen als "Messplätze" in der Spalte. Tiefe = Ebene 1–5. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #fbfcfd;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --rule: #d3dae1;
+  --grid: #e3e8ed;
+  --accent: #2448b8;
+  --accent-soft: #dfe6fa;
+  --elec: #2b66d9;
+  --hole: #c8424f;
+  --bin0: #3a6fd8;
+  --bin1: #14937f;
+  --bin2: #c9900e;
+  --bin3: #c8424f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
+  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
+  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1160px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+@media (min-width: 1100px) {
+  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1099px) { nav.toc { display: none; } }
+
+main { min-width: 0; max-width: 800px; }
+
+/* Typo */
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
+h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
+p { margin: 0.9em 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.mono, code { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; line-height: 1.5; color: var(--fg); max-width: 34em; margin-top: 18px; }
+.muted { color: var(--muted); }
+
+/* TOC */
+nav.toc { font-family: var(--font-display); font-size: 15px; }
+nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
+nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
+nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
+nav.toc .lv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 14px; padding-left: 8px; }
+.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
+.toc-mobile summary { cursor: pointer; color: var(--muted); }
+.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
+
+/* Abschnitte */
+section { padding-top: 64px; scroll-margin-top: 20px; }
+.level { display: flex; align-items: center; gap: 10px; }
+.depth { display: inline-flex; gap: 3px; }
+.depth i { display: block; width: 14px; height: 6px; border-radius: 1px; background: var(--rule); }
+.depth i.f { background: var(--accent); }
+
+/* Abbildungen */
+figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
+figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
+canvas { display: block; width: 100%; max-width: 100%; }
+.c-concept { aspect-ratio: 2.1 / 1; }
+.c-wp { aspect-ratio: 2 / 1; }
+.c-q { aspect-ratio: 2 / 1; }
+.c-pulse { aspect-ratio: 2.4 / 1; }
+.c-dead { aspect-ratio: 1.8 / 1; }
+.c-grid { aspect-ratio: 1 / 1; }
+.c-hist { aspect-ratio: 1.25 / 1; }
+.c-spec { aspect-ratio: 2 / 1; }
+.c-mu { aspect-ratio: 2.2 / 1; }
+@media (max-width: 560px) { .c-concept { aspect-ratio: 1.35 / 1; } .c-pulse { aspect-ratio: 1.6 / 1; } }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.two.mc { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
+@media (max-width: 640px) { .two, .two.mc { grid-template-columns: minmax(0, 1fr); } }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
+
+/* Bedienelemente */
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
+.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
+.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, input:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; color: var(--fg); flex: 0 0 auto; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); margin-top: 10px; line-height: 1.6; }
+.readout span.k { color: var(--muted); }
+
+/* Tabellen */
+.tbl { overflow-x: auto; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
+td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+table.small td, table.small th { padding: 4px 10px 4px 0; font-size: 13px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+/* Formeln, Hinweise */
+.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
+mjx-container[display="true"] { margin: 0.6em 0 !important; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; color: var(--fg); }
+.note p { margin: 0.4em 0; }
+ul.tight { padding-left: 1.2em; }
+ul.tight li { margin: 0.35em 0; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+
+/* SVG-Diagramme */
+.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); }
+.d-surf { fill: var(--surface); } .d-bg { fill: var(--bg); } .d-soft { fill: var(--accent-soft); }
+.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
+.d-ste { stroke: var(--elec); fill: none; } .d-sth { stroke: var(--hole); fill: none; }
+.d-e { fill: var(--elec); } .d-h { fill: var(--hole); }
+.d-b0 { fill: var(--bin0); } .d-b1 { fill: var(--bin1); } .d-b2 { fill: var(--bin2); } .d-b3 { fill: var(--bin3); }
+.d-scint { fill: var(--accent-soft); }
+svg text { font-family: var(--font-display); }
+svg text.m { font-family: var(--font-mono); }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+
+body { margin: 0; } .widget { padding: 4px; max-width: 900px; margin: 0 auto; } figure.fig { margin: 0 0 12px; } figure.fig + figure.fig { margin-top: 12px; }
+:root.noframe figure.fig { border: 0; padding: 4px; background: transparent; } :root.noframe body { background: transparent; }</style>
+<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<script>try{if(new URLSearchParams(location.search).get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+        <canvas id="cv-spec" class="c-spec" role="img" aria-label="Röntgenspektrum vor und hinter dem Objekt, mit vier farbig markierten Energie-Bins."></canvas>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="sp-kv">Röhrenspannung</label><output id="sp-kv-o"></output></div><input id="sp-kv" type="range" min="80" max="140" step="10" value="120"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-w">Wasser</label><output id="sp-w-o"></output></div><input id="sp-w" type="range" min="0" max="40" step="1" value="20"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-i">Iod (Flächendichte)</label><output id="sp-i-o"></output></div><input id="sp-i" type="range" min="0" max="100" step="1" value="0"></div>
+        </div>
+        <div class="ctrls">
+          <div class="ctrl"><div class="lab"><label for="sp-t0">T₁</label><output id="sp-t0-o"></output></div><input id="sp-t0" type="range" min="15" max="120" step="1" value="20"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t1">T₂</label><output id="sp-t1-o"></output></div><input id="sp-t1" type="range" min="15" max="120" step="1" value="35"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t2">T₃</label><output id="sp-t2-o"></output></div><input id="sp-t2" type="range" min="15" max="120" step="1" value="50"></div>
+          <div class="ctrl"><div class="lab"><label for="sp-t3">T₄</label><output id="sp-t3-o"></output></div><input id="sp-t3" type="range" min="15" max="120" step="1" value="65"></div>
+        </div>
+        <div class="tbl" style="margin:12px 0 0"><table class="small" id="sp-table"></table></div>
+        <figcaption><b>Abb. 8</b> Photonenspektrum (Kramers-Modell mit Wolfram-Linien, 6 mm Al Vorfilterung) vor dem Objekt (gestrichelt) und dahinter (gefüllt, beide auf ihr Maximum normiert). Iod wird als Flächendichte im Strahl angegeben: 10 mg/cm² entsprechen etwa einem 1 cm dicken Gefäß mit 10 mg/ml. Die Tabelle vergleicht, welchen Anteil jedes Bin an den gezählten Photonen hat und welchen Anteil es an der Energie, also dem Gewicht in einem integrierenden Detektor, hätte. Ideale Detektorantwort angenommen.</figcaption>
+      </figure>
+<figure class="fig">
+        <canvas id="cv-mu" class="c-mu" role="img" aria-label="Massenschwächungskoeffizienten von Wasser, kortikalem Knochen und Iod über der Energie mit K-Kante von Iod, logarithmische Achse."></canvas>
+        <figcaption><b>Abb. 9</b> Massenschwächungskoeffizienten (Näherungswerte nach NIST-Tabellen) von Wasser, kortikalem Knochen und Iod. Die farbigen Bänder zeigen die Bins aus Abb. 8. Die K-Kante von Iod bei 33,2 keV ist der Sprung, den spektrale Bins sichtbar machen.</figcaption>
+      </figure>
+</main>
+<script>
+(() => {
+
+'use strict';
+const $ = s => document.querySelector(s);
+const root = document.documentElement;
+const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
+const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
+const nf = (v, d=0) => v.toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+function rgb(c) {
+  c = c.replace('#','');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255];
+}
+function rgba(c, a) { const [r,g,b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
+function gauss() { let u = 0, v = 0; while (u === 0) u = Math.random(); v = Math.random(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
+function erf(x) {
+  const s = Math.sign(x); x = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592) * t * Math.exp(-x*x);
+  return s * y;
+}
+function fit(c) {
+  const r = c.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(1, r.width), h = Math.max(1, r.height);
+  const W = Math.round(w*dpr), H = Math.round(h*dpr);
+  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return { ctx, w, h };
+}
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const pow10 = v => '10' + String(Math.round(Math.log10(v))).split('').map(c => SUP[c]).join('');
+
+function frame(ctx, w, h, o) {
+  const L = o.l ?? 52, R = o.r ?? 14, T = o.t ?? 14, B = o.b ?? 38;
+  const bx = L, by = T, bw = Math.max(10, w-L-R), bh = Math.max(10, h-T-B);
+  const tx = v => o.xlog ? Math.log10(v) : v, ty = v => o.ylog ? Math.log10(v) : v;
+  const X = v => bx + (tx(v) - tx(o.x0)) / (tx(o.x1) - tx(o.x0)) * bw;
+  const Y = v => by + bh - (ty(v) - ty(o.y0)) / (ty(o.y1) - ty(o.y0)) * bh;
+  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
+  const grid = tok('--grid'), muted = tok('--muted');
+  for (const v of (o.xt || [])) {
+    const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by+bh); ctx.stroke();
+    ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by+bh+15);
+  }
+  for (const v of (o.yt || [])) {
+    const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx+bw, y); ctx.stroke();
+    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx-6, y+4);
+  }
+  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by+bh); ctx.lineTo(bx+bw, by+bh); ctx.stroke();
+  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
+  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx+bw/2, by+bh+31); }
+  if (o.yl) { ctx.save(); ctx.translate(13, by+bh/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
+  return { X, Y, bx, by, bw, bh };
+}
+function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
+
+/* ---------- Modulverwaltung ---------- */
+const mods = [];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
+function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
+function redrawAll() { mods.forEach(m => m.draw()); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+function playBtn(btn, m) {
+  btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  if (!m.playing) btn.textContent = 'Abspielen';
+}
+
+/* ---------- Spektren & Schwächung ---------- */
+const WATER = [[10,5.33],[15,1.67],[20,0.81],[30,0.376],[40,0.268],[50,0.227],[60,0.206],[80,0.184],[100,0.171],[150,0.150]];
+const BONE  = [[10,28.5],[15,9.0],[20,4.0],[30,1.33],[40,0.665],[50,0.424],[60,0.315],[80,0.223],[100,0.186],[150,0.148]];
+const AL    = [[10,26.2],[15,7.96],[20,3.44],[30,1.13],[40,0.568],[50,0.368],[60,0.278],[80,0.202],[100,0.170],[150,0.138]];
+const I_LO  = [[10,162],[15,61],[20,22.1],[25,12.3],[30,8.6],[33.16,6.55]];
+const I_HI  = [[33.17,36.0],[40,22.1],[50,12.3],[60,7.6],[80,3.5],[100,1.94],[150,0.73]];
+function mu(t, E) {
+  if (E <= t[0][0]) return t[0][1];
+  for (let i = 0; i < t.length-1; i++) if (E <= t[i+1][0]) {
+    const [e0,m0] = t[i], [e1,m1] = t[i+1];
+    const f = Math.log(E/e0) / Math.log(e1/e0);
+    return Math.exp(Math.log(m0) + f*Math.log(m1/m0));
+  }
+  return t[t.length-1][1];
+}
+const muI = E => E < 33.17 ? mu(I_LO, E) : mu(I_HI, E);
+const EG = []; for (let e = 10; e <= 150.001; e += 0.5) EG.push(Math.round(e*10)/10);
+function tube(kvp) {
+  const g = (E, c) => Math.exp(-0.5*((E-c)/0.45)**2);
+  return EG.map(E => {
+    if (E >= kvp) return 0;
+    let n = (kvp - E) / E;
+    if (kvp > 69.5) { const a = 1.3*(kvp-69.5)/50; n += a*(g(E,59.3) + 0.55*g(E,58.0) + 0.32*g(E,67.2)); }
+    return n * Math.exp(-mu(AL, E)*2.7*0.6);
+  });
+}
+function transmit(spec, waterCm, iodMgCm2) {
+  return spec.map((n, i) => { const E = EG[i]; return n * Math.exp(-mu(WATER, E)*waterCm - muI(E)*iodMgCm2/1000); });
+}
+function sampler(spec) {
+  const cdf = []; let s = 0; for (const v of spec) { s += v; cdf.push(s); }
+  return () => {
+    const u = Math.random()*s; let lo = 0, hi = cdf.length-1;
+    while (lo < hi) { const m = (lo+hi) >> 1; if (cdf[m] < u) lo = m+1; else hi = m; }
+    return EG[lo] + (Math.random()-0.5)*0.5;
+  };
+}
+const BINC = ['--bin0','--bin1','--bin2','--bin3'];
+
+/* ---------- Abb. 8 + 9: Spektrum, Bins, μ(E) ---------- */
+(() => {
+  const cs = $('#cv-spec'), cm = $('#cv-mu');
+  const ikv = $('#sp-kv'), iw = $('#sp-w'), ii = $('#sp-i');
+  const it = [0,1,2,3].map(k => $('#sp-t' + k));
+  let T = [20,35,50,65], inc, tr;
+  function thr(changed) {
+    let v = it.map(e => +e.value);
+    if (changed !== undefined) {
+      for (let k = changed+1; k < 4; k++) if (v[k] < v[k-1] + 1) v[k] = v[k-1] + 1;
+      for (let k = changed-1; k >= 0; k--) if (v[k] > v[k+1] - 1) v[k] = v[k+1] - 1;
+      v = v.map(x => Math.min(120, Math.max(15, x)));
+      v.forEach((x, k) => it[k].value = x);
+    }
+    T = v; T.forEach((x, k) => $('#sp-t' + k + '-o').textContent = `${x} keV`);
+  }
+  function update(changed) {
+    thr(changed);
+    const kv = +ikv.value;
+    $('#sp-kv-o').textContent = `${kv} kV`; $('#sp-w-o').textContent = `${iw.value} cm`; $('#sp-i-o').textContent = `${ii.value} mg/cm²`;
+    inc = tube(kv); tr = transmit(inc, +iw.value, +ii.value);
+    // Tabelle
+    let nT = 0, eT = 0; const n = [0,0,0,0], e = [0,0,0,0]; let below = 0;
+    tr.forEach((v, i) => {
+      const E = EG[i]; nT += v; eT += v*E;
+      let b = -1; for (let k = 0; k < 4; k++) if (E >= T[k]) b = k;
+      if (b < 0) below += v; else { n[b] += v; e[b] += v*E; }
+    });
+    const rows = [0,1,2,3].map(b => {
+      const lo = T[b], hi = b < 3 ? T[b+1] : kv;
+      return `<tr><td><span class="sw" style="background:var(${BINC[b]})"></span>Bin ${b+1}</td><td class="num">${lo}–${hi} keV</td><td class="num">${nf(n[b]/nT*100,1)} %</td><td class="num">${nf(e[b]/eT*100,1)} %</td><td class="num">${n[b] ? nf(e[b]/n[b],1) : '–'} keV</td></tr>`;
+    }).join('');
+    $('#sp-table').innerHTML = `<thead><tr><th>Bin</th><th class="num">Bereich</th><th class="num">Anteil Photonen</th><th class="num">Anteil Energie (EID)</th><th class="num">mittlere E</th></tr></thead><tbody>${rows}<tr><td class="muted">unter T₁</td><td class="num">&lt; ${T[0]} keV</td><td class="num">${nf(below/nT*100,1)} %</td><td class="num"></td><td class="num"></td></tr></tbody><tfoot><tr><td colspan="5" class="muted" style="font-size:12px;border:0">Mittlere Energie hinter dem Objekt: ${nf(eT/nT,1)} keV · Transmission: ${nf(nT/inc.reduce((a,b)=>a+b,0)*100, nT/inc.reduce((a,b)=>a+b,0) < 0.01 ? 2 : 1)} %</td></tr></tfoot>`;
+    ms.draw(); mm.draw();
+  }
+  const ms = reg({ el: cs, draw() {
+    if (!tr) return;
+    const { ctx, w, h } = fit(cs);
+    const kv = +ikv.value;
+    const f = frame(ctx, w, h, { x0: 10, x1: 150, y0: 0, y1: 1.08, xt: [20, 40, 60, 80, 100, 120, 140], yt: [0, 0.5, 1], yf: v => nf(v,1), xl: 'Energie (keV)', yl: 'Photonen (norm.)', l: 46 });
+    const mi = Math.max(...inc), mt = Math.max(...tr) || 1;
+    clipBox(ctx, f);
+    for (let i = 0; i < EG.length - 1; i++) {
+      const E = EG[i]; let b = -1; for (let k = 0; k < 4; k++) if (E >= T[k]) b = k;
+      const v = tr[i]/mt;
+      ctx.fillStyle = b < 0 ? rgba(tok('--muted'), 0.35) : rgba(tok(BINC[b]), 0.75);
+      ctx.fillRect(f.X(E), f.Y(v), f.X(EG[i+1]) - f.X(E) + 0.5, f.Y(0) - f.Y(v));
+    }
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.4; ctx.beginPath(); tr.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v/mt); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4,4]); ctx.lineWidth = 1.3; ctx.beginPath(); inc.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v/mi); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
+    T.forEach((t, k) => { ctx.strokeStyle = tok(BINC[k]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.X(t), f.by); ctx.lineTo(f.X(t), f.by+f.bh); ctx.stroke(); });
+    if (+ii.value > 0) { ctx.strokeStyle = tok('--fg'); ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(f.X(33.17), f.by); ctx.lineTo(f.X(33.17), f.by+f.bh); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.fillStyle = tok('--muted'); ctx.textAlign = 'right';
+    ctx.fillText(`- - vor Objekt   ▇ hinter Objekt`, f.bx + f.bw - 4, f.by + 12);
+    if (+ii.value > 0) { ctx.textAlign = 'left'; ctx.fillStyle = tok('--fg'); ctx.fillText('I K-Kante', f.X(33.17) + 4, f.by + 28); }
+    T.forEach((t, k) => { ctx.fillStyle = tok(BINC[k]); ctx.textAlign = 'left'; ctx.fillText(`T${k+1}`, f.X(t) + 3, f.by + f.bh - 6 - (k % 2)*12); });
+  }});
+  const mm = reg({ el: cm, draw() {
+    const { ctx, w, h } = fit(cm);
+    const f = frame(ctx, w, h, { x0: 10, x1: 150, y0: 0.1, y1: 200, ylog: true, xt: [20, 40, 60, 80, 100, 120, 140], yt: [0.1, 1, 10, 100], yf: v => v < 1 ? '0,1' : String(v), xl: 'Energie (keV)', yl: 'μ/ρ (cm²/g)', l: 46, r: 64 });
+    const kv = +ikv.value;
+    clipBox(ctx, f);
+    for (let k = 0; k < 4; k++) { const a = T[k], b = k < 3 ? T[k+1] : kv; ctx.fillStyle = rgba(tok(BINC[k]), 0.12); ctx.fillRect(f.X(a), f.by, f.X(b) - f.X(a), f.bh); }
+    const curve = (fn, col) => { ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); let first = true, prevE = 0; for (let E = 10; E <= 150; E += 0.25) { const x = f.X(E), y = f.Y(fn(E)); if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y); prevE = E; } ctx.stroke(); };
+    curve(E => mu(WATER, E), tok('--elec'));
+    curve(E => mu(BONE, E), tok('--muted'));
+    curve(muI, tok('--hole'));
+    ctx.restore();
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left';
+    [['Iod', muI(150), '--hole'], ['Knochen', mu(BONE, 150)*1.35, '--muted'], ['Wasser', mu(WATER, 150)*0.72, '--elec']].forEach(([t, v, cc]) => { ctx.fillStyle = tok(cc); ctx.fillText(t, f.bx + f.bw + 6, f.Y(v) + 4); });
+    ctx.fillStyle = tok('--fg'); ctx.font = `11px ${MONO}`; ctx.fillText('K-Kante 33,2 keV', f.X(33.17) + 6, f.Y(36) - 4);
+  }});
+  [ikv, iw, ii].forEach(el => el.addEventListener('input', () => update()));
+  it.forEach((el, k) => el.addEventListener('input', () => update(k)));
+  update();
+})();
+
+})();
+</script>
+</body>
+</html>
