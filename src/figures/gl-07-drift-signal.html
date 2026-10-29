@@ -1,0 +1,98 @@
+<!-- title: Drift und Signalentstehung
+     lib: gl -->
+<figure class="fig">
+<canvas aria-label="Animation: ein Photon erzeugt Ladungen in einem Sensor. Elektronen driften schnell zur Anode, Löcher langsam zur Kathode, einige bleiben stecken. Daneben wächst das gemessene Signal über der Zeit." class="c-drift" id="cv-drift" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="dr-u">Spannung</label><output id="dr-u-o"></output></div><input id="dr-u" max="1500" min="100" step="50" type="range" value="1000"/></div>
+<div class="ctrl"><div class="lab"><label for="dr-x">Tiefe ab Kathode</label><output id="dr-x-o"></output></div><input id="dr-x" max="0.95" min="0.05" step="0.01" type="range" value="0.4"/></div>
+<div class="ctrl"><div class="lab"><label for="dr-mt">μτ Löcher</label><output id="dr-mt-o"></output></div><input id="dr-mt" max="-3" min="-6" step="0.05" type="range" value="-4"/></div>
+<button class="btn" id="dr-go" type="button">Neues Photon</button>
+</div>
+<div class="readout" id="dr-read"></div>
+<figcaption><b>Abb. 7</b> Links: Querschnitt durch einen 1,6 mm dicken CdTe-Sensor. Elektronen (blau) driften nach unten zur Anode, Löcher (rot) nach oben zur Kathode, gekreuzte Punkte sind eingefangen. Die Zeit läuft stark verlangsamt. Rechts das Signal an der Elektrode über der Zeit, aufgeteilt nach Elektronen- und Löcherbeitrag. Wie das Signal entsteht, erklärt Baustein 6.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 7: Drift ---------- */
+(() => {
+  const c = $('#cv-drift'), iu = $('#dr-u'), ix = $('#dr-x'), imt = $('#dr-mt');
+  const D = 0.16, MUE = 1100, MUH = 100, MTE = 3e-3, NC = 40;
+  let S = null, wait = 0, hold = false;
+  function P() { const U = +iu.value, mt = Math.pow(10, +imt.value); return { U, z0: +ix.value, mt, ve: MUE * U / (D * D) * 1e-9, vh: MUH * U / (D * D) * 1e-9, te: MTE / MUE * 1e9, th: mt / MUH * 1e9 }; }
+  function start() {
+    const q = P();
+    const tH = 1 / q.vh, tE = 1 / q.ve;
+    const horizon = Math.max(3 * tE, Math.min(tH * 1.1, 6 * q.th + tE));
+    S = { q, t: 0, T: horizon, speed: horizon / 4.2, intro: 0, e: [], h: [], Qe: 0, Qh: 0, rec: [[0, 0, 0]] };
+    for (let i = 0; i < NC; i++) { const off = gauss() * 0.02; S.e.push({ z: q.z0, x: off, st: 0 }); S.h.push({ z: q.z0, x: gauss() * 0.02, st: 0 }); }
+    wait = 0; hold = false;
+    const lh = q.mt * q.U / D * 10;
+    $('#dr-u-o').textContent = `${q.U} V`; $('#dr-x-o').textContent = `${nf(q.z0 * 1.6, 2)} mm`;
+    const ex = Math.floor(+imt.value), man = Math.pow(10, +imt.value - ex);
+    $('#dr-mt-o').textContent = `${nf(man, 1)}·10${String(ex).split('').map(ch => SUP[ch]).join('')} cm²/V`;
+    S.readBase = `<span class="k">Feld:</span> ${nf(q.U / D, 0)} V/cm  <span class="k">·</span>  <span class="k">v_e:</span> ${nf(q.ve * 1600, 1)} µm/ns  <span class="k">·</span>  <span class="k">v_h:</span> ${nf(q.vh * 1600, 2)} µm/ns<br><span class="k">Laufzeit über 1,6 mm:</span> Elektronen ${nf(tE, 0)} ns, Löcher ${nf(tH, 0)} ns  <span class="k">·</span>  <span class="k">Driftlänge Löcher λ_h:</span> ${lh >= 10 ? nf(lh / 10, 1) + ' cm' : nf(lh, 2) + ' mm'}`;
+    read();
+  }
+  function read() { $('#dr-read').innerHTML = S.readBase + `<br><span class="k">Signal bisher:</span> ${nf((S.Qe + S.Qh) * 100, 1)} %  (Elektronen ${nf(S.Qe * 100, 1)} %, Löcher ${nf(S.Qh * 100, 1)} %)`; }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (!S) return;
+      if (S.intro < 1) { S.intro += dt / 0.35; return; }
+      if (hold) { wait += dt; if (wait > 2) start(); return; }
+      const q = S.q, sub = 6, ds = dt * S.speed / sub;
+      for (let k = 0; k < sub; k++) {
+        if (S.t >= S.T) break;
+        for (const c of S.e) if (c.st === 0) { if (Math.random() < ds / q.te) { c.st = 2; continue; } const nz = Math.min(1, c.z + q.ve * ds); S.Qe += (nz - c.z) / NC; c.z = nz; c.x += gauss() * 0.002; if (c.z >= 1) c.st = 1; }
+        for (const c of S.h) if (c.st === 0) { if (Math.random() < ds / q.th) { c.st = 2; continue; } const nz = Math.max(0, c.z - q.vh * ds); S.Qh += (c.z - nz) / NC; c.z = nz; c.x += gauss() * 0.0007; if (c.z <= 0) c.st = 1; }
+        S.t += ds;
+        S.rec.push([S.t, S.Qe, S.Qh]);
+      }
+      const active = S.e.some(c => c.st === 0) || S.h.some(c => c.st === 0);
+      if (!active || S.t >= S.T) hold = true;
+      read();
+    },
+    draw() {
+      if (!S) return;
+      const { ctx, w, h } = fit(c);
+      const narrow = w < 560;
+      const A = narrow ? [0, 0, w, h * 0.48] : [0, 0, w * 0.42, h];
+      const Pp = narrow ? [0, h * 0.5, w, h * 0.5] : [w * 0.45, 0, w * 0.55, h];
+      const fg = tok('--fg'), mut = tok('--muted');
+      const sx = A[0] + 30, sw = A[2] - 60, sy = A[1] + 26, sh = A[3] - 52;
+      ctx.fillStyle = tok('--accent-soft'); ctx.fillRect(sx, sy, sw, sh);
+      ctx.fillStyle = fg; ctx.fillRect(sx, sy - 5, sw, 5); ctx.fillRect(sx, sy + sh, sw, 5);
+      ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = fg;
+      ctx.fillText('Kathode  −', sx, sy - 10); ctx.fillText('Anode  +', sx, sy + sh + 19);
+      ctx.fillStyle = mut; ctx.textAlign = 'right'; ctx.fillText('CdTe 1,6 mm', sx + sw, sy - 10);
+      // Feldpfeile (Kraft auf Elektronen)
+      ctx.strokeStyle = rgba(mut, 0.35); ctx.lineWidth = 1;
+      for (let k = 1; k <= 4; k++) { const x = sx + sw * k / 5; ctx.beginPath(); ctx.moveTo(x, sy + 8); ctx.lineTo(x, sy + sh - 8); ctx.stroke(); }
+      const zY = z => sy + z * sh, xX = x => sx + sw / 2 + x * sw;
+      // Photon
+      const q = S.q;
+      if (S.intro < 1) { const y = sy - 20 + (zY(q.z0) - sy + 20) * S.intro; ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xX(0), sy - 24); ctx.lineTo(xX(0), y); ctx.stroke(); }
+      else { ctx.strokeStyle = rgba(tok('--bin2'), 0.35); ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(xX(0), sy - 24); ctx.lineTo(xX(0), zY(q.z0)); ctx.stroke(); ctx.setLineDash([]); }
+      const dot = (cc, col) => {
+        const x = xX(cc.x), y = zY(cc.z);
+        if (cc.st === 2) { ctx.strokeStyle = rgba(col, 0.55); ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x - 3, y - 3); ctx.lineTo(x + 3, y + 3); ctx.moveTo(x + 3, y - 3); ctx.lineTo(x - 3, y + 3); ctx.stroke(); }
+        else { ctx.fillStyle = cc.st === 1 ? rgba(col, 0.35) : col; ctx.beginPath(); ctx.arc(x, y, 2.8, 0, 7); ctx.fill(); }
+      };
+      if (S.intro >= 1) { S.h.forEach(cc => dot(cc, tok('--hole'))); S.e.forEach(cc => dot(cc, tok('--elec'))); }
+      // Signal
+      const f = frame(ctx, Pp[0], Pp[1], Pp[2], Pp[3], { x0: 0, x1: S.T, y0: 0, y1: 1.05, xt: niceTicks(S.T), yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v * 100, 0) + '%', xl: 'Zeit (ns)', yl: 'Signal (Anteil der Ladung)', l: 50, t: 12 });
+      clipBox(ctx, f);
+      const line = (fn, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); S.rec.forEach((r, i) => { const x = f.X(r[0]), y = f.Y(fn(r)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
+      line(r => r[1], tok('--elec'), 1.5, [5, 3]); line(r => r[2], tok('--hole'), 1.5, [5, 3]); line(r => r[1] + r[2], fg, 2.4);
+      ctx.restore();
+      ctx.font = `11px ${MONO}`; ctx.textAlign = 'left';
+      const lx = f.bx + 8; let ly = f.by + 12;
+      [['Summe', fg], ['Elektronen', tok('--elec')], ['Löcher', tok('--hole')]].forEach(([t, cc]) => { ctx.fillStyle = cc; ctx.fillRect(lx, ly - 6, 12, 2.5); ctx.fillStyle = mut; ctx.fillText(t, lx + 17, ly - 2); ly += 15; });
+    }
+  });
+  function niceTicks(T) { const st = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find(s => T / s <= 5) || 20000; const a = []; for (let v = 0; v <= T + 1e-9; v += st) a.push(v); return a; }
+  [iu, ix, imt].forEach(e => e.addEventListener('input', () => { start(); m.draw(); }));
+  $('#dr-go').addEventListener('click', () => { start(); m.draw(); });
+  start();
+  if (reduceMotion) { S.intro = 1; for (let i = 0; i < 400 && !hold; i++) m.step(0.03); }
+  m.draw();
+})();
+</script>

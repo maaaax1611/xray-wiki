@@ -1,0 +1,63 @@
+<!-- title: Indirekte und direkte Konversion
+     lib: pc -->
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Vergleich indirekte Konversion mit Szintillator und Photodiode gegen direkte Konversion in CdTe mit Elektron-Loch-Paaren und Pixelanoden." role="img" viewbox="0 0 760 330">
+<defs>
+<marker id="ar" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-fg" d="M0,0 L10,5 L0,10 z"></path></marker>
+<marker id="are" markerheight="6" markerwidth="6" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-e" d="M0,0 L10,5 L0,10 z"></path></marker>
+<marker id="arh" markerheight="6" markerwidth="6" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-h" d="M0,0 L10,5 L0,10 z"></path></marker>
+</defs>
+<!-- links: indirekt -->
+<text class="d-fg" font-size="16" font-weight="600" x="20" y="24">Indirekt (EID)</text>
+<text class="d-mut" font-size="13" x="20" y="42">Röntgen → Licht → Ladung, integriert</text>
+<line class="d-st" marker-end="url(#ar)" stroke-dasharray="5 4" stroke-width="2" x1="150" x2="150" y1="58" y2="118"></line>
+<text class="d-mut m" font-size="11" x="160" y="80">Röntgenquant</text>
+<!-- Szintillatorzellen mit Septen -->
+<rect class="d-scint" height="80" width="300" x="40" y="122"></rect>
+<g class="d-fg">
+<rect height="80" width="5" x="40" y="122"></rect><rect height="80" width="5" x="115" y="122"></rect><rect height="80" width="5" x="190" y="122"></rect><rect height="80" width="5" x="265" y="122"></rect><rect height="80" width="5" x="335" y="122"></rect>
+</g>
+<circle class="d-acc" cx="150" cy="150" r="5"></circle>
+<g class="d-sta" stroke-width="1.3">
+<line x1="150" x2="125" y1="150" y2="200"></line><line x1="150" x2="140" y1="150" y2="200"></line><line x1="150" x2="160" y1="150" y2="200"></line><line x1="150" x2="178" y1="150" y2="200"></line>
+<path d="M150 150 L186 168 L170 200"></path><path d="M150 150 L122 175 L132 200"></path>
+</g>
+<text class="d-fg" font-size="13" x="352" y="150">Szintillator</text>
+<text class="d-mut" font-size="12" x="352" y="166">(z. B. GOS)</text>
+<text class="d-mut" font-size="12" x="352" y="186">Septen gegen</text>
+<text class="d-mut" font-size="12" x="352" y="200">Lichtübersprechen</text>
+<rect class="d-fg" height="22" opacity="0.85" width="300" x="40" y="206"></rect>
+<g class="d-bg"><rect height="14" width="68" x="45" y="210"></rect><rect height="14" width="68" x="120" y="210"></rect><rect height="14" width="68" x="195" y="210"></rect><rect height="14" width="65" x="270" y="210"></rect></g>
+<text class="d-fg" font-size="13" x="352" y="222">Photodioden</text>
+<path class="d-sta" d="M60 268 Q 80 268 95 252 T 140 248 T 190 256 T 240 246 T 300 254" stroke-width="2"></path>
+<text class="d-mut" font-size="12" x="40" y="296">Strom ∝ Σ Energie, über das Frame integriert.</text>
+<text class="d-mut" font-size="12" x="40" y="312">Einzelne Photonen nicht mehr unterscheidbar.</text>
+<!-- rechts: direkt -->
+<text class="d-fg" font-size="16" font-weight="600" x="420" y="24">Direkt (PCD)</text>
+<text class="d-mut" font-size="13" x="420" y="42">Röntgen → Ladung, pro Photon ein Puls</text>
+<rect class="d-fg" height="5" width="250" x="430" y="104"></rect>
+<text class="d-fg" font-size="13" x="688" y="111">Kathode, −U</text>
+<rect class="d-soft" height="110" width="250" x="430" y="109"></rect>
+<text class="d-fg" font-size="13" x="688" y="160">CdTe</text>
+<text class="d-mut" font-size="12" x="688" y="176">~1,6 mm</text>
+<line class="d-st" marker-end="url(#ar)" stroke-dasharray="5 4" stroke-width="2" x1="560" x2="560" y1="58" y2="140"></line>
+<g>
+<circle class="d-e" cx="556" cy="150" r="3.4"></circle><circle class="d-e" cx="563" cy="146" r="3.4"></circle><circle class="d-e" cx="560" cy="156" r="3.4"></circle><circle class="d-e" cx="566" cy="154" r="3.4"></circle>
+<circle class="d-h" cx="552" cy="144" r="3.4"></circle><circle class="d-h" cx="568" cy="147" r="3.4"></circle><circle class="d-h" cx="557" cy="140" r="3.4"></circle><circle class="d-h" cx="563" cy="159" r="3.4"></circle>
+</g>
+<line class="d-ste" marker-end="url(#are)" stroke-width="2" x1="560" x2="560" y1="164" y2="208"></line>
+<line class="d-sth" marker-end="url(#arh)" stroke-width="2" x1="545" x2="545" y1="140" y2="118"></line>
+<text class="d-fg" font-size="12" x="572" y="196">e⁻ zur Anode</text>
+<text class="d-fg" font-size="12" x="470" y="128">Löcher</text>
+<!-- Pixelanoden -->
+<g class="d-fg"><rect height="6" width="54" x="436" y="219"></rect><rect height="6" width="54" x="498" y="219"></rect><rect class="d-acc" height="6" width="54" x="560" y="219"></rect><rect height="6" width="54" x="622" y="219"></rect></g>
+<text class="d-fg" font-size="13" x="688" y="227">Pixelanoden</text>
+<rect class="d-fg" height="26" opacity="0.85" rx="2" width="250" x="430" y="232"></rect>
+<text class="d-bg" font-size="12" style="fill:var(--bg)" text-anchor="middle" x="555" y="250">ASIC: ein Kanal pro Pixel</text>
+<path class="d-sta" d="M440 300 L470 300 L476 274 L486 300 L540 300 L546 284 L556 300 L610 300 L616 268 L626 300 L670 300" stroke-width="2"></path>
+<text class="d-mut" font-size="12" x="430" y="320">Pulshöhe ∝ Energie des einzelnen Photons</text>
+</svg>
+</div>
+<figcaption><b>Abb. 2</b> Links: Im Szintillator wird das Quant in Licht umgewandelt, das sich ausbreitet und über Septen auf ein Pixel begrenzt wird. Die Photodiode integriert. Rechts: Im Halbleiter erzeugt das Quant direkt Elektron-Loch-Paare. Das Feld zieht die Elektronen zur Pixelanode, jedes Photon erzeugt einen eigenen Strompuls. Die Pixel sind nur durch die Elektrodenstruktur definiert.</figcaption>
+</figure>

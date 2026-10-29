@@ -1,0 +1,67 @@
+<!-- title: Integrieren oder zählen
+     lib: gl -->
+<figure class="fig">
+<canvas aria-label="Animation: eine Folge von Spannungspulsen mit Rauschen und einer Zählschwelle. Darunter laufende Ergebnisse eines integrierenden und eines zählenden Verfahrens." class="c-int" id="cv-int" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="in-n">Elektronikrauschen</label><output id="in-n-o"></output></div><input id="in-n" max="8" min="0" step="0.5" type="range" value="2"/></div>
+<div class="ctrl"><div class="lab"><label for="in-t">Zählschwelle</label><output id="in-t-o"></output></div><input id="in-t" max="60" min="3" step="1" type="range" value="20"/></div>
+<button class="btn" id="in-play" type="button">Pause</button>
+</div>
+<div class="readout" id="in-read"></div>
+<figcaption><b>Abb. 8</b> Pulse einzelner Photonen am Ausgang des Pulsformers, mit Elektronikrauschen. Die Striche unten markieren die wahren Photonen. Nach jedem Zeitfenster (Frame) erscheint unten, was beide Verfahren gemessen haben. Senke die Schwelle in das Rauschen: Der Zähler zählt plötzlich Rauschspitzen. Mit vernünftiger Schwelle ist der Zähler exakt, während der integrierte Wert immer ein wenig Rauschen enthält.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 8: Integrieren vs Zählen ---------- */
+(() => {
+  const c = $('#cv-int'), inn = $('#in-n'), ith = $('#in-t');
+  const samp = sampler(tube(120, 3).map((v, i) => v * Math.exp(-mu(WATER, EG[i]) * 10)));
+  const TP = 15, WIN = 600, RATE = 0.004, FR = 2000;
+  const h = t => { const x = t / TP; return x * Math.exp(1 - x); };
+  const AREA = TP * Math.E; // ∫ x e^{1-x} dt
+  let S;
+  function reset() {
+    $('#in-n-o').textContent = `${nf(+inn.value, 1)} keV rms`; $('#in-t-o').textContent = `${ith.value} keV`;
+    S = { t: 0, next: -Math.log(1 - Math.random()) / RATE, pul: [], noise: 0, prev: 0, buf: new Float32Array(WIN), bi: 0, marks: [], fr: { n: 0, E: 0, sum: 0, cnt: 0 }, last: null, hist: [] };
+    for (let i = 0; i < WIN; i++) adv();
+  }
+  function adv() {
+    const sig = +inn.value, a = Math.exp(-1 / 6), sq = Math.sqrt(1 - a * a);
+    while (S.next <= S.t) { const E = samp(); S.pul.push([S.next, E]); S.marks.push([S.next, E]); S.fr.n++; S.fr.E += E; S.next += -Math.log(1 - Math.random()) / RATE; }
+    let s = 0; for (const [t0, E] of S.pul) { const d = S.t - t0; if (d >= 0) s += E * h(d); }
+    S.noise = a * S.noise + sq * sig * gauss(); s += S.noise;
+    if (S.prev < +ith.value && s >= +ith.value) S.fr.cnt++;
+    S.prev = s; S.fr.sum += s;
+    S.buf[S.bi % WIN] = s; S.bi++; S.t += 1;
+    if (S.pul.length && S.t - S.pul[0][0] > 10 * TP) S.pul = S.pul.filter(p => S.t - p[0] <= 10 * TP);
+    if (S.t % FR === 0) { S.last = { ...S.fr }; S.hist.unshift(S.last); S.hist = S.hist.slice(0, 4); S.fr = { n: 0, E: 0, sum: 0, cnt: 0 }; table(); }
+  }
+  function table() {
+    const rows = S.hist.map(f => `${nf(f.n)} Photonen, ${nf(f.E, 0)} keV  →  <span class="k">integriert:</span> ${nf(f.sum / AREA, 0)} keV (${f.sum / AREA - f.E >= 0 ? '+' : ''}${nf(f.sum / AREA - f.E, 0)})  <span class="k">·</span>  <span class="k">gezählt:</span> ${f.cnt}${f.cnt !== f.n ? ` (${f.cnt - f.n > 0 ? '+' : ''}${f.cnt - f.n})` : ' ✓'}`);
+    $('#in-read').innerHTML = `<span class="k">Letzte Frames (je ${FR / 1000} µs), wahr → gemessen:</span><br>` + (rows.join('<br>') || '<span class="k">läuft …</span>');
+  }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) { const n = Math.round(dt * 350); for (let i = 0; i < n; i++) adv(); S.marks = S.marks.filter(mk => S.t - mk[0] <= WIN); },
+    draw() {
+      const { ctx, w, h: H } = fit(c);
+      const f = frame(ctx, 0, 0, w, H, { x0: 0, x1: WIN, y0: -15, y1: 130, xt: [0, 100, 200, 300, 400, 500, 600], yt: [0, 40, 80, 120], xl: 'Zeit (ns)', yl: 'Pulshöhe (keV)', l: 50 });
+      clipBox(ctx, f);
+      const T = +ith.value;
+      ctx.strokeStyle = tok('--hole'); ctx.setLineDash([6, 4]); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(f.bx, f.Y(T)); ctx.lineTo(f.bx + f.bw, f.Y(T)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = tok('--hole'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText(`Schwelle ${T} keV`, f.bx + f.bw - 4, f.Y(T) - 4);
+      const n = Math.min(S.bi, WIN), st = S.bi - n;
+      ctx.fillStyle = rgba(tok('--accent'), 0.12); ctx.beginPath(); ctx.moveTo(f.X(WIN - n), f.Y(0));
+      for (let k = 0; k < n; k++) ctx.lineTo(f.X(WIN - n + k), f.Y(S.buf[(st + k) % WIN])); ctx.lineTo(f.X(WIN), f.Y(0)); ctx.fill();
+      ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let k = 0; k < n; k++) { const x = f.X(WIN - n + k), y = f.Y(S.buf[(st + k) % WIN]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      const t0 = S.t - WIN;
+      ctx.fillStyle = tok('--accent');
+      for (const [ta] of S.marks) ctx.fillRect(f.X(ta - t0) - 1, f.by + f.bh - 9, 2.5, 9);
+      ctx.restore();
+      ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--muted');
+      ctx.fillText('Fläche = integrierter Wert', f.bx + 8, f.by + 12);
+    }
+  });
+  [inn, ith].forEach(e => e.addEventListener('input', () => { reset(); m.draw(); }));
+  reset(); playBtn($('#in-play'), m); table(); m.draw();
+})();
+</script>

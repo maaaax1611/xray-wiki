@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rauschen</title>
+<!-- Erzeugt von build.py aus src/figures/et-13-rauschen.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Simuliertes thermisches Rauschsignal mit der berechneten Effektivspannung." class="c-nz" id="cv-nz" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="nz-r">Widerstand R</label><output id="nz-r-o"></output></div><input id="nz-r" max="7" min="0" step="0.01" type="range" value="3"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-t">Temperatur</label><output id="nz-t-o"></output></div><input id="nz-t" max="400" min="4" step="1" type="range" value="300"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-b">Bandbreite B</label><output id="nz-b-o"></output></div><input id="nz-b" max="9" min="3" step="0.01" type="range" value="6"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-i">Gleichstrom I (Schrot)</label><output id="nz-i-o"></output></div><input id="nz-i" max="-3" min="-12" step="0.05" type="range" value="-9"/></div>
+</div>
+<div class="readout" id="nz-read"></div>
+<figcaption><b>Abb. 13</b> Thermisches Rauschen eines Widerstands. Die Kurve ist ein zufälliges Signal mit der berechneten Effektivspannung (gestrichelt: ±1σ). Vierfacher Widerstand oder vierfache Bandbreite verdoppeln die Rauschspannung. Abkühlen auf flüssiges Helium (4 K) senkt sie gegenüber Raumtemperatur um fast eine Größenordnung. Unten zum Vergleich das Schrotrauschen des eingestellten Gleichstroms.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
+<script>
+/* ---------- Abb. 11: Rauschen ---------- */
+(() => {
+  const c = $('#cv-nz'), iR = $('#nz-r'), iT = $('#nz-t'), iB = $('#nz-b'), iI = $('#nz-i');
+  const KB = 1.380649e-23, QE = 1.602e-19;
+  let seed = []; for (let k = 0; k < 600; k++) seed.push(gauss());
+  let seed2 = []; for (let k = 0; k < 600; k++) seed2.push(gauss());
+  const m = reg({ el: c, draw() {
+    const R = Math.pow(10, +iR.value), T = +iT.value, B = Math.pow(10, +iB.value), I = Math.pow(10, +iI.value);
+    const vn = Math.sqrt(4 * KB * T * R * B), dens = Math.sqrt(4 * KB * T * R), isn = Math.sqrt(2 * QE * I * B);
+    $('#nz-r-o').textContent = SI(R, 'Ω'); $('#nz-t-o').textContent = `${T} K (${nf(T - 273.15, 0)} °C)`; $('#nz-b-o').textContent = SI(B, 'Hz'); $('#nz-i-o').textContent = SI(I, 'A');
+    const { ctx, w, h } = fit(c);
+    const plot = (y0, hh, arr, sig, unit, col, lbl, last) => {
+      const ym = sig * 3.6;
+      const f = frame(ctx, 0, y0, w, hh, { x0: 0, x1: 599, y0: -ym, y1: ym, xt: [], yt: [-sig * 3, 0, sig * 3], yf: v => v === 0 ? '0' : SI(v, unit, 1), l: 66, t: 18, b: last ? 10 : 6 });
+      ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText(lbl, f.bx + 6, y0 + 13);
+      clipBox(ctx, f);
+      ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(sig)); ctx.lineTo(f.bx + f.bw, f.Y(sig)); ctx.moveTo(f.bx, f.Y(-sig)); ctx.lineTo(f.bx + f.bw, f.Y(-sig)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = tok(col); ctx.lineWidth = 1.3; ctx.beginPath(); arr.forEach((g, k) => { const x = f.X(k), y = f.Y(g * sig); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
+    };
+    plot(0, h * 0.58, seed, vn, 'V', '--accent', 'Thermisches Rauschen des Widerstands');
+    plot(h * 0.58, h * 0.42, seed2, isn, 'A', '--elec', 'Schrotrauschen des Gleichstroms', true);
+    $('#nz-read').innerHTML = `<span class="k">u_n = √(4kTRB) =</span> ${SI(vn, 'V')} rms  <span class="k">·</span>  <span class="k">Rauschdichte:</span> ${nf(dens * 1e9, dens * 1e9 < 10 ? 2 : 1)} nV/√Hz  <span class="k">·</span>  <span class="k">i_n = √(2eIB) =</span> ${SI(isn, 'A')} rms (${nf(isn / I * 100, isn / I < 0.01 ? 3 : 1)} % von I)`;
+  }});
+  [iR, iT, iB, iI].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!-- title: Die Messkette im CT
+     lib: gl -->
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Übersicht: Röntgenröhre erzeugt Photonen, sie durchqueren den Patienten, werden im Sensor zu Ladung, die Elektronik macht daraus ein Signal, und aus vielen Signalen entsteht das CT-Bild." role="img" viewbox="0 0 760 190">
+<defs><marker id="ov" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-mut" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<g font-size="13">
+<rect class="d-soft" height="70" rx="5" width="104" x="8" y="40"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="60" y="68">Röhre</text>
+<text class="d-mut" font-size="12" text-anchor="middle" x="60" y="88">erzeugt Photonen</text>
+<line class="d-stm" marker-end="url(#ov)" stroke-width="1.5" x1="112" x2="138" y1="75" y2="75"></line>
+<rect class="d-soft" height="70" rx="5" width="104" x="140" y="40"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="192" y="68">Photonen</text>
+<text class="d-mut" font-size="12" text-anchor="middle" x="192" y="88">Energiepakete</text>
+<line class="d-stm" marker-end="url(#ov)" stroke-width="1.5" x1="244" x2="270" y1="75" y2="75"></line>
+<rect class="d-soft" height="70" rx="5" width="104" x="272" y="40"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="324" y="68">Patient</text>
+<text class="d-mut" font-size="12" text-anchor="middle" x="324" y="88">schwächt</text>
+<line class="d-stm" marker-end="url(#ov)" stroke-width="1.5" x1="376" x2="402" y1="75" y2="75"></line>
+<rect class="d-soft" height="70" rx="5" width="104" x="404" y="40"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="456" y="68">Sensor</text>
+<text class="d-mut" font-size="12" text-anchor="middle" x="456" y="88">Photon → Ladung</text>
+<line class="d-stm" marker-end="url(#ov)" stroke-width="1.5" x1="508" x2="534" y1="75" y2="75"></line>
+<rect class="d-soft" height="70" rx="5" width="104" x="536" y="40"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="588" y="68">Elektronik</text>
+<text class="d-mut" font-size="12" text-anchor="middle" x="588" y="88">Ladung → Zahl</text>
+<line class="d-stm" marker-end="url(#ov)" stroke-width="1.5" x1="640" x2="666" y1="75" y2="75"></line>
+<rect class="d-acc" height="70" rx="5" width="84" x="668" y="40"></rect>
+<text font-weight="600" style="fill:var(--surface)" text-anchor="middle" x="710" y="68">CT-Bild</text>
+<text font-size="12" style="fill:var(--surface)" text-anchor="middle" x="710" y="88">Rekonstruktion</text>
+</g>
+<g class="d-mut m" font-size="11" text-anchor="middle">
+<text x="60" y="134">Baustein 2</text><text x="192" y="134">Baustein 1</text><text x="324" y="134">Baustein 3</text>
+<text x="456" y="134">Bausteine 4, 5</text><text x="588" y="134">Baustein 6</text><text x="710" y="134">Baustein 7</text>
+</g>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="172">Photon Counting betrifft die Stationen Sensor und Elektronik.</text>
+</svg>
+</div>
+<figcaption><b>Abb. 0</b> Die Kette, der jedes CT folgt. Diese Seite geht sie Station für Station durch. Die Reihenfolge der Bausteine ist so gewählt, dass jeder nur auf den vorherigen aufbaut.</figcaption>
+</figure>

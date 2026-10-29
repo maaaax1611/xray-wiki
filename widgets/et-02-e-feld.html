@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elektrisches Feld</title>
+<!-- Erzeugt von build.py aus src/figures/et-02-e-feld.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Interaktives Feldbild: verschiebbare Punktladungen mit Feldlinien und farbigem Potential." class="c-ef" id="cv-ef" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<button class="btn" id="ef-addp" type="button">Ladung + hinzufügen</button>
+<button class="btn" id="ef-addn" type="button">Ladung − hinzufügen</button>
+<button class="btn" id="ef-del" type="button">Letzte entfernen</button>
+<label class="chk"><input checked="" id="ef-pot" type="checkbox"/> Potential zeigen</label>
+<label class="chk"><input checked="" id="ef-lines" type="checkbox"/> Feldlinien</label>
+</div>
+<div class="readout" id="ef-read"></div>
+<figcaption><b>Abb. 2</b> Feld von Punktladungen (je 1 nC). Ladungen lassen sich verschieben, ein Doppelklick dreht das Vorzeichen. Rot ist hohes, blau niedriges Potential, die feinen Linien sind Äquipotentiallinien. Bewegst du die Maus über das Feld, siehst du unten Feldstärke und Potential an dieser Stelle. Abstände in cm.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
+<script>
+/* ---------- Abb. 2: E-Feld ---------- */
+(() => {
+  const c = $('#cv-ef'), iP = $('#ef-pot'), iL = $('#ef-lines');
+  let Q = [{ x: -3, y: 0, q: 1 }, { x: 3, y: 0, q: -1 }];
+  const K = 8.988e9, QC = 1e-9;
+  let geo = null, drag = null, probe = null, cache = null;
+  function view(w, h) { const W = 16, H = W * h / w; return { W, H, sx: w / W, cx: w / 2, cy: h / 2 }; }
+  const toS = (v, x, y) => [v.cx + x * v.sx, v.cy - y * v.sx];
+  const toW = (v, px, py) => [(px - v.cx) / v.sx, -(py - v.cy) / v.sx];
+  function field(x, y) { let ex = 0, ey = 0, ph = 0; for (const p of Q) { const dx = (x - p.x) / 100, dy = (y - p.y) / 100, r2 = dx * dx + dy * dy + 1e-8, r = Math.sqrt(r2), k = K * p.q * QC; ex += k * dx / (r2 * r); ey += k * dy / (r2 * r); ph += k / r; } return [ex, ey, ph]; }
+  function read() {
+    if (!probe) { $('#ef-read').innerHTML = `<span class="k">Maus über das Feld bewegen, um E und φ abzulesen.</span>  <span class="k">Ladungen:</span> ${Q.length}`; return; }
+    const [ex, ey, ph] = field(probe[0], probe[1]), E = Math.hypot(ex, ey);
+    $('#ef-read').innerHTML = `<span class="k">Ort:</span> (${nf(probe[0], 1)} cm, ${nf(probe[1], 1)} cm)  <span class="k">·</span>  <span class="k">|E| =</span> ${SI(E, 'V/m')}  <span class="k">·</span>  <span class="k">φ =</span> ${SI(ph, 'V')}`;
+  }
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c); const v = view(w, h); geo = v;
+    const bg = rgb(tok('--surface')), cp = rgb(tok('--hole')), cn = rgb(tok('--elec')), fg = tok('--fg');
+    if (iP.checked) {
+      const S = 3, iw = Math.ceil(w / S), ih = Math.ceil(h / S), img = ctx.createImageData(iw, ih), ph0 = K * QC / 0.05;
+      for (let j = 0; j < ih; j++) for (let i = 0; i < iw; i++) {
+        const [x, y] = toW(v, (i + 0.5) * S, (j + 0.5) * S), ph = field(x, y)[2];
+        const s = Math.sign(ph) * Math.log1p(Math.abs(ph) / ph0 * 3), a = Math.min(1, Math.abs(s) / 2.2) * 0.75, col = ph > 0 ? cp : cn;
+        const band = (s * 4) - Math.floor(s * 4), line = band < 0.07 ? 0.25 : 0;
+        const o = (j * iw + i) * 4;
+        for (let k = 0; k < 3; k++) img.data[o + k] = bg[k] + (col[k] - bg[k]) * Math.min(1, a + line);
+        img.data[o + 3] = 255;
+      }
+      const off = document.createElement('canvas'); off.width = iw; off.height = ih; off.getContext('2d').putImageData(img, 0, 0);
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, iw * S, ih * S);
+    }
+    if (iL.checked && Q.length) {
+      ctx.strokeStyle = rgba(fg, 0.55); ctx.lineWidth = 1.1;
+      const pos = Q.filter(p => p.q > 0), src = pos.length ? pos : Q.filter(p => p.q < 0), dir = pos.length ? 1 : -1;
+      for (const p of src) for (let k = 0; k < 16; k++) {
+        const a = (k + 0.5) / 16 * 2 * Math.PI; let x = p.x + 0.35 * Math.cos(a), y = p.y + 0.35 * Math.sin(a);
+        ctx.beginPath(); ctx.moveTo(...toS(v, x, y)); let midDrawn = false;
+        for (let s = 0; s < 900; s++) {
+          const [ex, ey] = field(x, y), E = Math.hypot(ex, ey); if (!E) break;
+          const ds = 0.05 * dir; x += ds * ex / E; y += ds * ey / E;
+          ctx.lineTo(...toS(v, x, y));
+          if (Math.abs(x) > v.W * 0.6 || Math.abs(y) > v.H * 0.6) break;
+          if (Q.some(o => o.q * dir < 0 && Math.hypot(o.x - x, o.y - y) < 0.3)) break;
+          if (!midDrawn && s === 40) { midDrawn = true; }
+        }
+        ctx.stroke();
+        // Pfeil
+        let ax = p.x + 1.2 * Math.cos(a), ay = p.y + 1.2 * Math.sin(a); const [ex, ey] = field(ax, ay), E = Math.hypot(ex, ey) || 1;
+        const [sx, sy] = toS(v, ax, ay), ux = ex / E * dir, uy = -ey / E * dir;
+        ctx.fillStyle = rgba(fg, 0.6); ctx.beginPath(); ctx.moveTo(sx + ux * 5, sy + uy * 5); ctx.lineTo(sx - ux * 3 - uy * 3.5, sy - uy * 3 + ux * 3.5); ctx.lineTo(sx - ux * 3 + uy * 3.5, sy - uy * 3 - ux * 3.5); ctx.fill();
+      }
+    }
+    for (const p of Q) {
+      const [sx, sy] = toS(v, p.x, p.y);
+      ctx.fillStyle = tok(p.q > 0 ? '--hole' : '--elec'); ctx.beginPath(); ctx.arc(sx, sy, 11, 0, 7); ctx.fill();
+      ctx.strokeStyle = tok('--surface'); ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = `700 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(p.q > 0 ? '+' : '−', sx, sy + 5);
+    }
+    if (probe) { const [sx, sy] = toS(v, probe[0], probe[1]); ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 7); ctx.stroke(); }
+    ctx.lineWidth = 1;
+  }});
+  const pt = e => { const r = c.getBoundingClientRect(); return toW(geo, e.clientX - r.left, e.clientY - r.top); };
+  c.addEventListener('pointerdown', e => { const [x, y] = pt(e); let best = null, bd = 0.8; Q.forEach(p => { const d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p; } }); if (best) { drag = best; c.setPointerCapture(e.pointerId); e.preventDefault(); } });
+  c.addEventListener('pointermove', e => { const [x, y] = pt(e); if (drag) { drag.x = Math.max(-geo.W / 2 + 0.5, Math.min(geo.W / 2 - 0.5, x)); drag.y = Math.max(-geo.H / 2 + 0.5, Math.min(geo.H / 2 - 0.5, y)); }
+    probe = [x, y]; c.style.cursor = drag ? 'grabbing' : (Q.some(p => Math.hypot(p.x - x, p.y - y) < 0.8) ? 'grab' : 'crosshair'); read(); redraw(); });
+  c.addEventListener('pointerup', () => drag = null); c.addEventListener('pointercancel', () => drag = null);
+  c.addEventListener('pointerleave', () => { if (!drag) { probe = null; read(); redraw(); } });
+  c.addEventListener('dblclick', e => { const [x, y] = pt(e); const p = Q.find(p => Math.hypot(p.x - x, p.y - y) < 0.8); if (p) { p.q = -p.q; redraw(); } });
+  const redraw = rafDebounce(() => m.draw());
+  $('#ef-addp').addEventListener('click', () => { Q.push({ x: (Math.random() - 0.5) * 8, y: (Math.random() - 0.5) * 4, q: 1 }); read(); m.draw(); });
+  $('#ef-addn').addEventListener('click', () => { Q.push({ x: (Math.random() - 0.5) * 8, y: (Math.random() - 0.5) * 4, q: -1 }); read(); m.draw(); });
+  $('#ef-del').addEventListener('click', () => { Q.pop(); read(); m.draw(); });
+  [iP, iL].forEach(e => e.addEventListener('input', () => m.draw()));
+  read(); m.draw();
+})();
+</script>
+</body>
+</html>

@@ -155,3 +155,4 @@ canvas.c-pl[tabindex] { outline: none; }
 /* Widgets (einzeln eingebettet) */
 .widget { padding: 4px; max-width: 900px; margin: 0 auto; } .widget figure.fig { margin: 0; }
 :root.noframe figure.fig { border: 0; padding: 4px; background: transparent; } :root.noframe body { background: transparent; }
+.widget figure.fig + figure.fig { margin-top: 12px; }

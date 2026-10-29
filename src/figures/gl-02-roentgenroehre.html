@@ -1,0 +1,104 @@
+<!-- title: Röntgenröhre und Spektrum
+     lib: gl -->
+<figure class="fig">
+<canvas aria-label="Animation einer Röntgenröhre: Elektronen werden zur Anode beschleunigt, erzeugen Photonen unterschiedlicher Energie, ein Filter absorbiert weiche Photonen. Daneben füllt sich ein Histogramm des Spektrums." class="c-tube" id="cv-tube" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="tb-kv">Röhrenspannung</label><output id="tb-kv-o"></output></div><input id="tb-kv" max="140" min="40" step="5" type="range" value="120"/></div>
+<div class="ctrl"><div class="lab"><label for="tb-al">Filter (Aluminium)</label><output id="tb-al-o"></output></div><input id="tb-al" max="12" min="0" step="0.5" type="range" value="3"/></div>
+<button class="btn" id="tb-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 2</b> Links: Elektronen (blau) fliegen von der Kathode zur Anode und erzeugen dort Photonen, eingefärbt nach Energie. Im Filter verschwindet ein Teil, vor allem die weichen. Rechts: Histogramm der Photonen, die den Filter passiert haben, und die berechnete Kurve dazu (gestrichelt: ohne Filter). Für eine glatte Kurve fließen zusätzlich viele nicht gezeichnete Photonen ins Histogramm ein.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 2: Röhre ---------- */
+(() => {
+  const c = $('#cv-tube'), ikv = $('#tb-kv'), ial = $('#tb-al');
+  const BW = 2, NB = 75;
+  let hist, el, ph, sampRaw, specF, specRaw, spawn = 0;
+  function reset() {
+    const kv = +ikv.value, al = +ial.value;
+    $('#tb-kv-o').textContent = `${kv} kV`; $('#tb-al-o').textContent = `${nf(al, 1)} mm`;
+    specRaw = tube(kv, 0); specF = tube(kv, al); sampRaw = sampler(specRaw);
+    hist = new Float64Array(NB); el = []; ph = [];
+    for (let i = 0; i < 4000; i++) bg();
+  }
+  function passes(E) { return Math.random() < Math.exp(-mu(AL, E) * 2.7 * (+ial.value) / 10); }
+  function bg() { const E = sampRaw(); if (passes(E)) { const b = Math.floor(E / BW); if (b < NB) hist[b]++; } }
+  function lay(w, h) {
+    const narrow = w < 560;
+    return narrow ? { t: [0, 0, w, h * 0.5], p: [0, h * 0.5, w, h * 0.5] } : { t: [0, 0, w * 0.46, h], p: [w * 0.49, 0, w * 0.51, h] };
+  }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      spawn += dt * 7;
+      while (spawn > 1) { spawn--; el.push({ t: 0 }); }
+      el.forEach(e => e.t += dt / 0.7);
+      el = el.filter(e => { if (e.t >= 1) { const E = sampRaw(); const pass = passes(E); ph.push({ E, ang: (Math.random() - 0.5) * 0.5, t: 0, pass, dead: false }); if (pass) { const b = Math.floor(E / BW); if (b < NB) hist[b]++; } return false; } return true; });
+      ph.forEach(p => p.t += dt);
+      ph = ph.filter(p => p.t < 1.6);
+      for (let i = 0; i < 25; i++) bg();
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const Ly = lay(w, h), [tx, ty, tw, th] = Ly.t;
+      const fg = tok('--fg'), mut = tok('--muted'), acc = tok('--accent');
+      // Röhre
+      const cy = ty + th * 0.32, gx = tx + 8, gw = tw - 16, gh = th * 0.42;
+      ctx.strokeStyle = mut; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(gx, cy - gh / 2, gw, gh, gh / 2) : ctx.rect(gx, cy - gh / 2, gw, gh); ctx.stroke();
+      ctx.font = `11px ${DISP}`; ctx.fillStyle = mut; ctx.textAlign = 'left'; ctx.fillText('Vakuum', gx + gh * 0.4, cy - gh / 2 + 14);
+      const kx = gx + gw * 0.14, ax = gx + gw * 0.76;
+      // Kathode (Glühwendel)
+      ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 24; i++) { const y = cy - 10 + i * 20 / 24, x = kx + 4 * Math.sin(i * 1.6); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      ctx.fillStyle = fg; ctx.font = `12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('Kathode −', kx, cy + gh / 2 + 16);
+      // Anode
+      ctx.fillStyle = rgba(fg, 0.75); ctx.beginPath(); ctx.moveTo(ax, cy - 18); ctx.lineTo(ax + 26, cy - 18); ctx.lineTo(ax + 26, cy + 18); ctx.lineTo(ax + 10, cy + 18); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = fg; ctx.fillText('Anode + (W)', ax + 12, cy + gh / 2 + 16);
+      // Hochspannung
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.fillText(`U = ${ikv.value} kV`, (kx + ax) / 2, cy - gh / 2 - 6);
+      // Elektronen
+      ctx.fillStyle = tok('--elec');
+      el.forEach(e => { const x = kx + 6 + (ax + 4 - kx - 6) * e.t * e.t; ctx.beginPath(); ctx.arc(x, cy + Math.sin(e.t * 9 + x) * 1.5, 2.6, 0, 7); ctx.fill(); });
+      // Filter
+      const fy = cy + gh / 2 + 30, fth = 3 + (+ial.value) * 1.4;
+      ctx.fillStyle = rgba(mut, 0.45); ctx.fillRect(ax - 34, fy, 70, fth);
+      ctx.fillStyle = mut; ctx.font = `11px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('Al-Filter', ax + 40, fy + fth / 2 + 4);
+      // Photonen
+      const yEnd = ty + th - 4;
+      ph.forEach(p => {
+        const sx = ax + 12, sy = cy + 8, dist = p.t * (yEnd - sy) / 1.2;
+        let yy = sy + dist * Math.cos(p.ang), xx = sx + dist * Math.sin(p.ang);
+        if (!p.pass && yy > fy) { if (yy < fy + 40) { const a = 1 - (yy - fy) / 40; ctx.fillStyle = rgba(tok(BINC[ebin(p.E)]), 0.6 * a); ctx.beginPath(); ctx.arc(sx + (fy - sy) * Math.tan(p.ang), fy + fth / 2, 6 * (1 - a) + 2, 0, 7); ctx.fill(); } return; }
+        if (yy > yEnd) return;
+        ctx.strokeStyle = rgba(tok(BINC[ebin(p.E)]), 0.5); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(xx - 10 * Math.sin(p.ang), yy - 10 * Math.cos(p.ang)); ctx.lineTo(xx, yy); ctx.stroke();
+        ctx.fillStyle = tok(BINC[ebin(p.E)]); ctx.beginPath(); ctx.arc(xx, yy, 3.2, 0, 7); ctx.fill();
+      });
+      // Legende Energiefarben
+      ctx.font = `10.5px ${MONO}`; ctx.textAlign = 'left';
+      ['<40', '40–60', '60–80', '≥80 keV'].forEach((t, k) => { const lx = tx + 8 + k * Math.min(62, tw / 4.3), ly = ty + 12; ctx.fillStyle = tok(BINC[k]); ctx.fillRect(lx, ly - 7, 8, 8); ctx.fillStyle = mut; ctx.fillText(t, lx + 11, ly); });
+      // Histogramm
+      const [px, py, pw, phh] = Ly.p;
+      const kv = +ikv.value;
+      let mx = 1; for (let i = 0; i < NB; i++) mx = Math.max(mx, hist[i]);
+      const f = frame(ctx, px, py, pw, phh, { x0: 0, x1: 150, y0: 0, y1: 1.12, xt: [0, 30, 60, 90, 120, 150], yt: [], xl: 'Photonenenergie (keV)', yl: 'Anzahl', l: 24, t: 30 });
+      clipBox(ctx, f);
+      for (let i = 0; i < NB; i++) { const E = i * BW, v = hist[i] / mx; if (!v) continue; ctx.fillStyle = rgba(tok(BINC[ebin(E + 1)]), 0.75); ctx.fillRect(f.X(E) + 0.5, f.Y(v), f.X(E + BW) - f.X(E) - 1, f.Y(0) - f.Y(v)); }
+      // Kurven skalieren auf Histogramm
+      let tot = 0; for (let i = 0; i < NB; i++) tot += hist[i];
+      const sF = specF.reduce((a, b) => a + b, 0) || 1;
+      const scale = tot / sF * (BW / 0.5) / mx;
+      ctx.strokeStyle = fg; ctx.lineWidth = 1.6; ctx.beginPath(); specF.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v * scale); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+      ctx.strokeStyle = mut; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.3; ctx.beginPath(); specRaw.forEach((v, i) => { const x = f.X(EG[i]), y = f.Y(v * scale); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(f.X(kv), f.by); ctx.lineTo(f.X(kv), f.by + f.bh); ctx.stroke();
+      ctx.restore();
+      ctx.font = `11px ${MONO}`; ctx.fillStyle = tok('--hole'); ctx.textAlign = 'right'; ctx.fillText(`E_max = ${kv} keV`, f.bx + f.bw, py + 14);
+      let sumE = 0, sumN = 0; specF.forEach((v, i) => { sumE += v * EG[i]; sumN += v; });
+      ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText(`mittlere Energie: ${nf(sumE / sumN, 1)} keV`, f.bx + 4, py + 14);
+    }
+  });
+  ikv.addEventListener('input', () => { reset(); m.draw(); }); ial.addEventListener('input', () => { reset(); m.draw(); });
+  reset(); playBtn($('#tb-play'), m); m.draw();
+})();
+</script>

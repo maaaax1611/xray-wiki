@@ -1,0 +1,53 @@
+<!-- title: Rückprojektion eines Punktes
+     lib: rk -->
+<figure class="fig">
+<canvas aria-label="Rückprojektion eines einzelnen Punktes: links das Bild, rechts das Profil durch die Bildmitte mit einer 1/r-Referenzkurve." class="c-bp" id="cv-bp" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="bp-n">Anzahl Winkel</label><output id="bp-n-o"></output></div><input id="bp-n" max="180" min="1" step="1" type="range" value="6"/></div>
+<label class="chk"><input id="bp-f" type="checkbox"/> Rampenfilter vorher anwenden</label>
+</div>
+<figcaption><b>Abb. 3</b> Rekonstruktion eines einzelnen Punktes in der Bildmitte. Links das Bild (Graustufen so gestreckt, dass die Ausläufer sichtbar sind, negative Werte dunkelblau). Rechts das Profil vom Zentrum nach rechts, normiert auf den Wert im Zentrum. Mit wenigen Winkeln sieht man die einzelnen Strahlen als Stern. Mit vielen Winkeln entsteht eine Glocke, die wie \(1/r\) abfällt (gestrichelt). Schalte dann den Filter ein.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 3: Rückprojektion eines Punktes ---------- */
+(() => {
+  const c = $('#cv-bp'), inN = $('#bp-n'), iF = $('#bp-f');
+  const M = 129, C = 64, NSb = 321, CS = 160, SIG = 0.7;
+  const p0 = new Float64Array(NSb); for (let n = 0; n < NSb; n++) { const s = n - CS; p0[n] = Math.exp(-s * s / (2 * SIG * SIG)); }
+  const pf = new Float64Array(NSb);
+  for (let n = 0; n < NSb; n++) { let q = 0; for (let l = 0; l < NSb; l++) { const d = n - l; const hk = d === 0 ? 0.25 : (d % 2 ? -1 / (Math.PI * Math.PI * d * d) : 0); q += p0[l] * hk; } pf[n] = q; }
+  let img = null, off = null, prof = null;
+  function compute() {
+    const N = +inN.value, filt = iF.checked, p = filt ? pf : p0;
+    $('#bp-n-o').textContent = String(N);
+    img = new Float64Array(M * M);
+    for (let k = 0; k < N; k++) {
+      const t = k * Math.PI / N, ct = Math.cos(t), st = Math.sin(t);
+      for (let j = 0; j < M; j++) { const y = C - j; for (let i = 0; i < M; i++) { const u = (i - C) * ct + y * st + CS, n0 = Math.floor(u), fr = u - n0; if (n0 < 0 || n0 >= NSb - 1) continue; img[j * M + i] += p[n0] * (1 - fr) + p[n0 + 1] * fr; } }
+    }
+    const c0 = img[C * M + C];
+    prof = []; for (let i = C; i < M; i++) prof.push(img[C * M + i] / c0);
+    off = filt ? grayImg(img, M, M, 0, c0, { neg: c0 * 0.15 }) : grayImg(img, M, M, 0, c0 * 0.22);
+    m.draw();
+  }
+  const m = reg({ el: c, draw() {
+    if (!off) return;
+    const { ctx, w, h } = fit(c);
+    const narrow = w < 560; const s = narrow ? Math.min(w, h * 0.55) : Math.min(h, w * 0.48);
+    const ix = narrow ? (w - s) / 2 : 0, iy = narrow ? 0 : (h - s) / 2;
+    ctx.fillStyle = '#000'; ctx.fillRect(ix, iy, s, s); ctx.imageSmoothingEnabled = true; ctx.drawImage(off, ix, iy, s, s);
+    const B = narrow ? [0, s + 8, w, h - s - 8] : [s + 16, 0, w - s - 16, h];
+    const filt = iF.checked;
+    const f = frame(ctx, B[0], B[1], B[2], B[3], { x0: 0, x1: 64, y0: filt ? -0.3 : 0, y1: 1.05, xt: [0, 16, 32, 48, 64], yt: filt ? [-0.25, 0, 0.5, 1] : [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v, 2), xl: 'Abstand r vom Punkt (Pixel)', yl: 'Wert / Zentrum', l: 48 });
+    clipBox(ctx, f);
+    if (!filt) { const ref = prof[8] * 8; ctx.strokeStyle = tok('--muted'); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.4; ctx.beginPath(); for (let r = 1.5; r <= 64; r += 0.5) { const y = ref / r; r === 1.5 ? ctx.moveTo(f.X(r), f.Y(y)) : ctx.lineTo(f.X(r), f.Y(y)); } ctx.stroke(); ctx.setLineDash([]); }
+    else { ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(0)); ctx.lineTo(f.bx + f.bw, f.Y(0)); ctx.stroke(); }
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath(); prof.forEach((v, r) => r ? ctx.lineTo(f.X(r), f.Y(v)) : ctx.moveTo(f.X(r), f.Y(v))); ctx.stroke();
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillStyle = tok('--muted');
+    ctx.fillText(filt ? '— Profil (gefiltert)' : '— Profil   - - 1/r', f.bx + f.bw - 4, f.by + 12);
+  }});
+  inN.addEventListener('input', rafDebounce(compute)); iF.addEventListener('input', compute);
+  compute();
+})();
+</script>

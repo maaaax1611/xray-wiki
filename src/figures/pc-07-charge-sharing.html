@@ -1,0 +1,158 @@
+<!-- title: Charge Sharing und K-Fluoreszenz
+     lib: pc -->
+<figure class="fig">
+<div class="two mc">
+<canvas aria-label="Draufsicht auf 5 mal 5 Pixel mit simulierten Photoneneinschlägen, Ladungswolken und Fluoreszenzphotonen." class="c-grid" id="cv-grid" role="img"></canvas>
+<canvas aria-label="Gemessenes Spektrum aller Pixelereignisse für monoenergetische Einstrahlung, mit Photopeak, Escape-Peaks und Fluoreszenzpeaks." class="c-hist" id="cv-hist" role="img"></canvas>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="mc-e">Photonenenergie</label><output id="mc-e-o"></output></div><input id="mc-e" max="100" min="20" step="1" type="range" value="60"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-p">Pixelgröße</label><output id="mc-p-o"></output></div><input id="mc-p" max="500" min="50" step="5" type="range" value="225"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-s">Wolkenbreite σ</label><output id="mc-s-o"></output></div><input id="mc-s" max="40" min="2" step="1" type="range" value="15"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-t">Zählschwelle</label><output id="mc-t-o"></output></div><input id="mc-t" max="50" min="8" step="1" type="range" value="20"/></div>
+<label class="chk"><input id="mc-cs" type="checkbox"/> Charge Summing</label>
+<label class="chk"><input checked="" id="mc-log" type="checkbox"/> log. Achse</label>
+</div>
+<div class="readout" id="mc-read"></div>
+<figcaption><b>Abb. 7</b> Monte-Carlo-Simulation: Photonen treffen zufällig auf das mittlere Pixel. Fluoreszenz wird isotrop mit exponentieller Weglänge emittiert (Cd Kα: 115 µm, Te Kα: 60 µm), Ladung als 2D-Gauß verteilt, 1 keV Rauschen pro Pixel. Das Histogramm enthält alle Pixelereignisse über 5 keV. Vereinfachungen: keine Compton-Streuung, kein Entweichen von Fluoreszenz aus der Sensoroberfläche, keine Tiefenabhängigkeit.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 7: Charge Sharing / Fluoreszenz ---------- */
+(() => {
+  const cg = $('#cv-grid'), ch = $('#cv-hist');
+  const iE = $('#mc-e'), iP = $('#mc-p'), iS = $('#mc-s'), iT = $('#mc-t'), iCS = $('#mc-cs'), iL = $('#mc-log');
+  const NB = 220, BW = 0.5;
+  let H, nPh, sumM, sumM2, recent, peak, visT;
+  function P() { return { E: +iE.value, p: +iP.value, s: +iS.value, T: +iT.value, cs: iCS.checked }; }
+  function reset() {
+    const q = P();
+    $('#mc-e-o').textContent = `${q.E} keV`; $('#mc-p-o').textContent = `${q.p} µm`; $('#mc-s-o').textContent = `${q.s} µm`; $('#mc-t-o').textContent = `${q.T} keV`;
+    H = new Float64Array(NB); nPh = 0; sumM = 0; sumM2 = 0; recent = []; peak = 0; visT = 0;
+    for (let i = 0; i < 3000; i++) one(false);
+  }
+  function one(keep) {
+    const q = P(), p = q.p, sg = q.s, E0 = q.E;
+    const x0 = (Math.random()-0.5)*p, y0 = (Math.random()-0.5)*p;
+    const dep = []; let fl = null, Ep = E0;
+    if (E0 > 26.71) {
+      const el = (E0 > 31.81 && Math.random() < 0.5) ? 'Te' : 'Cd';
+      const pk = 0.86*(el === 'Cd' ? 0.84 : 0.875);
+      if (Math.random() < pk) {
+        const EK = el === 'Cd' ? 23.1 : 27.5, lam = el === 'Cd' ? 115 : 60;
+        const cz = 2*Math.random() - 1, ph = 2*Math.PI*Math.random(), s = -lam*Math.log(1 - Math.random());
+        const r = s*Math.sqrt(1 - cz*cz);
+        const x1 = x0 + r*Math.cos(ph), y1 = y0 + r*Math.sin(ph);
+        Ep = E0 - EK; dep.push({ x: x1, y: y1, E: EK }); fl = { x1, y1, el };
+      }
+    }
+    dep.unshift({ x: x0, y: y0, E: Ep });
+    const px = new Float64Array(25), k2 = Math.SQRT2*sg;
+    for (const d of dep) {
+      const fx = [], fy = [];
+      for (let k = -2; k <= 2; k++) {
+        const lo = (k-0.5)*p, hi = (k+0.5)*p;
+        fx.push(0.5*(erf((hi-d.x)/k2) - erf((lo-d.x)/k2)));
+        fy.push(0.5*(erf((hi-d.y)/k2) - erf((lo-d.y)/k2)));
+      }
+      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) px[j*5+i] += d.E*fx[i]*fy[j];
+    }
+    const clean = Float64Array.from(px);
+    for (let i = 0; i < 25; i++) px[i] += gauss()*1.0;
+    const ev = [];
+    if (q.cs) {
+      let im = 0; for (let i = 1; i < 25; i++) if (px[i] > px[im]) im = i;
+      const ix = im % 5, iy = (im/5) | 0; let sum = 0; const used = new Set();
+      for (let j = iy-1; j <= iy+1; j++) for (let i = ix-1; i <= ix+1; i++) if (i >= 0 && i < 5 && j >= 0 && j < 5) { const v = px[j*5+i]; used.add(j*5+i); if (v > 3) sum += v; }
+      if (sum > 5) ev.push(sum);
+      for (let i = 0; i < 25; i++) if (!used.has(i) && px[i] > 5) ev.push(px[i]);
+    } else {
+      for (let i = 0; i < 25; i++) if (px[i] > 5) ev.push(px[i]);
+    }
+    let mcount = 0;
+    for (const e of ev) { const b = Math.floor(e/BW); if (b >= 0 && b < NB) H[b]++; if (e >= q.T) mcount++; if (Math.abs(e - E0) < 3) peak++; }
+    nPh++; sumM += mcount; sumM2 += mcount*mcount;
+    if (keep) { recent.push({ x0, y0, dep, fl, px: clean, E0, t: 0 }); if (recent.length > 9) recent.shift(); }
+  }
+  function readout() {
+    const mm = sumM/nPh, m2 = sumM2/nPh;
+    $('#mc-read').innerHTML = `<span class="k">Photonen:</span> ${nf(nPh)}  <span class="k">·</span>  <span class="k">Zählungen ≥ Schwelle pro Photon:</span> ${nf(mm,3)}  <span class="k">·</span>  <span class="k">im Photopeak (±3 keV):</span> ${nf(peak/nPh*100,1)} %  <span class="k">·</span>  <span class="k">⟨m⟩²/⟨m²⟩:</span> ${nf(m2 ? mm*mm/m2 : 0,3)}`;
+  }
+  const mg = reg({ el: cg, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (nPh < 150000) for (let i = 0; i < 60; i++) one(false);
+      visT += dt; if (visT > 0.45) { visT = 0; one(true); }
+      recent.forEach(r => r.t += dt);
+      mh.draw(); readout();
+    },
+    draw() {
+      const { ctx, w, h } = fit(cg);
+      const q = P(), size = Math.min(w, h) - 24, cell = size/5, ox = (w - size)/2, oy = 6;
+      const s = cell/q.p;
+      const fg = tok('--fg'), mut = tok('--muted'), acc = tok('--accent'), rule = tok('--rule');
+      const lastR = recent[recent.length-1];
+      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) {
+        const x = ox + i*cell, y = oy + j*cell;
+        if (lastR) { const fr = Math.min(1, lastR.px[j*5+i]/lastR.E0); if (fr > 0.01) { ctx.fillStyle = rgba(acc, 0.12 + 0.6*fr); ctx.fillRect(x, y, cell, cell); } }
+        ctx.strokeStyle = (i === 2 && j === 2) ? fg : rule; ctx.lineWidth = (i === 2 && j === 2) ? 1.6 : 1;
+        ctx.strokeRect(x + 0.5, y + 0.5, cell - 1, cell - 1);
+      }
+      const cx = ox + 2.5*cell, cy = oy + 2.5*cell;
+      ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, size, size); ctx.clip();
+      recent.forEach((r, k) => {
+        const a = Math.max(0.15, 1 - (recent.length - 1 - k)*0.11);
+        r.dep.forEach((d, di) => {
+          const X = cx + d.x*s, Y = cy + d.y*s;
+          const rad = Math.max(2, 2*q.s*s);
+          const grd = ctx.createRadialGradient(X, Y, 0, X, Y, rad);
+          const cc = di === 0 ? tok('--elec') : tok('--bin2');
+          grd.addColorStop(0, rgba(cc, 0.55*a)); grd.addColorStop(1, rgba(cc, 0));
+          ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(X, Y, rad, 0, 7); ctx.fill();
+        });
+        const X0 = cx + r.x0*s, Y0 = cy + r.y0*s;
+        if (r.fl) {
+          ctx.strokeStyle = rgba(tok('--bin2'), a); ctx.lineWidth = 1.4; ctx.setLineDash([4,3]);
+          ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(cx + r.fl.x1*s, cy + r.fl.y1*s); ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle = rgba(tok('--bin2'), a); ctx.beginPath(); ctx.arc(cx + r.fl.x1*s, cy + r.fl.y1*s, 3, 0, 7); ctx.fill();
+          if (k === recent.length-1) { ctx.font = `11px ${MONO}`; ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText(`${r.fl.el} Kα`, cx + r.fl.x1*s + 6, cy + r.fl.y1*s - 4); }
+        }
+        ctx.fillStyle = rgba(fg, a); ctx.beginPath(); ctx.arc(X0, Y0, 2.8, 0, 7); ctx.fill();
+      });
+      ctx.restore();
+      // Maßstab
+      const L = 100*s, by = oy + size + 12;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox, by); ctx.lineTo(ox + L, by); ctx.stroke();
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('100 µm', ox + L + 6, by + 4);
+    }
+  });
+  const mh = reg({ el: ch, draw() {
+    const { ctx, w, h } = fit(ch);
+    const q = P(), log = iL.checked;
+    const xmax = Math.max(50, Math.ceil((q.E + 12)/10)*10);
+    let mx = 1; for (let i = 0; i < NB; i++) if (i*BW <= xmax) mx = Math.max(mx, H[i]);
+    const val = v => log ? Math.log10(1 + v)/Math.log10(1 + mx) : v/mx;
+    const xt = []; for (let v = 0; v <= xmax; v += xmax > 80 ? 20 : 10) xt.push(v);
+    const f = frame(ctx, w, h, { x0: 0, x1: xmax, y0: 0, y1: 1.08, xt, yt: [], xl: 'gemessene Energie pro Pixelereignis (keV)', yl: log ? 'Ereignisse (log)' : 'Ereignisse', l: 26 });
+    clipBox(ctx, f);
+    ctx.fillStyle = rgba(tok('--accent'), 0.85);
+    for (let i = 0; i < NB; i++) { const e = i*BW; if (e > xmax) break; const v = val(H[i]); if (v <= 0) continue; ctx.fillRect(f.X(e), f.Y(v), Math.max(1, f.X(e+BW) - f.X(e)), f.Y(0) - f.Y(v)); }
+    ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(f.X(q.T), f.by); ctx.lineTo(f.X(q.T), f.by+f.bh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    const marks = [[q.E, 'E₀']];
+    if (q.E > 26.71) { marks.push([23.1, 'Cd Kα']); marks.push([q.E - 23.1, 'Esc Cd']); }
+    if (q.E > 31.81) { marks.push([27.5, 'Te Kα']); marks.push([q.E - 27.5, 'Esc Te']); }
+    ctx.font = `10px ${MONO}`; ctx.textAlign = 'center';
+    const placed = [];
+    marks.sort((a, b) => a[0] - b[0]).forEach(([e, t]) => {
+      if (e < 5 || e > xmax) return;
+      const x = f.X(e); let row = 0; while (placed.some(([px, pr]) => pr === row && Math.abs(px - x) < 40)) row++;
+      placed.push([x, row]);
+      ctx.fillStyle = tok('--muted'); ctx.fillRect(x - 0.5, f.by, 1, 6 + row*12);
+      ctx.fillStyle = tok('--fg'); ctx.fillText(t, x, f.by + 16 + row*12);
+    });
+    ctx.fillStyle = tok('--hole'); ctx.textAlign = 'left'; ctx.fillText('Schwelle', f.X(q.T) + 4, f.by + f.bh - 6);
+  }});
+  [iE, iP, iS, iT, iCS].forEach(el => el.addEventListener('input', () => { reset(); mg.draw(); mh.draw(); readout(); }));
+  iL.addEventListener('input', () => mh.draw());
+  reset(); for (let i = 0; i < 6; i++) one(true); readout(); mg.draw(); mh.draw();
+})();
+</script>

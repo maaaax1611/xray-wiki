@@ -1,0 +1,84 @@
+<!-- title: Fourier-Slice-Theorem
+     lib: rk -->
+<figure class="fig">
+<div class="three">
+<div><div class="lbl">Bild und Projektion</div><canvas aria-label="Thorax-Phantom mit Projektionsrichtung und Profil." class="c-sq" id="cv-sl-a" role="img"></canvas></div>
+<div><div class="lbl">2D-Spektrum |F(u, v)|</div><canvas aria-label="Betrag der 2D-Fourier-Transformierten des Phantoms, logarithmisch, mit einer Linie unter dem Projektionswinkel." class="c-sq" id="cv-sl-b" role="img"></canvas></div>
+<div><div class="lbl">Vergleich entlang der Linie</div><canvas aria-label="Vergleich: Betrag des 1D-Spektrums der Projektion und Werte des 2D-Spektrums entlang der Linie." class="c-sq" id="cv-sl-c" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="sl-th">Winkel θ</label><output id="sl-th-o"></output></div><input id="sl-th" max="179" min="0" step="1" type="range" value="20"/></div>
+<button class="btn" id="sl-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 4</b> Links: Phantom aus Baustein 7 mit Projektionsprofil unter dem Winkel θ. Mitte: Betrag des 2D-Spektrums des Bildes (logarithmisch, Ursprung in der Mitte) mit der Linie unter demselben Winkel. Rechts: Betrag des 1D-Spektrums der Projektion (Linie) und die Werte aus dem 2D-Spektrum entlang der Linie (Punkte), beide logarithmisch. Sie liegen übereinander. Kleine Abweichungen bei hohen Frequenzen kommen daher, dass das Bild gerastert, die Projektion aber exakt berechnet ist.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 4: Fourier-Slice ---------- */
+(() => {
+  const ca = $('#cv-sl-a'), cb = $('#cv-sl-b'), cc = $('#cv-sl-c'), ith = $('#sl-th');
+  const N = NG;
+  const re = Float64Array.from(TRUTH), im = new Float64Array(N * N);
+  const rr = new Float64Array(N), ri = new Float64Array(N);
+  for (let j = 0; j < N; j++) { for (let i = 0; i < N; i++) { rr[i] = re[j * N + i]; ri[i] = im[j * N + i]; } fft(rr, ri, false); for (let i = 0; i < N; i++) { re[j * N + i] = rr[i]; im[j * N + i] = ri[i]; } }
+  for (let i = 0; i < N; i++) { for (let j = 0; j < N; j++) { rr[j] = re[j * N + i]; ri[j] = im[j * N + i]; } fft(rr, ri, false); for (let j = 0; j < N; j++) { re[j * N + i] = rr[j]; im[j * N + i] = ri[j]; } }
+  const MAG = new Float64Array(N * N);
+  for (let v = 0; v < N; v++) for (let u = 0; u < N; u++) { const sv = (v + N / 2) % N, su = (u + N / 2) % N; MAG[v * N + u] = Math.hypot(re[sv * N + su], im[sv * N + su]) * DX * DX; }
+  const LOG = MAG.map(v => Math.log10(v + 1e-6));
+  let lmax = -Infinity; for (const v of LOG) lmax = Math.max(lmax, v);
+  const specImg = grayImg(LOG, N, N, lmax - 4.5, lmax);
+  const phImg = grayImg(TRUTH, N, N, 0, 0.65);
+  let th = 20 * Math.PI / 180, cur = null;
+  function bil(U, V) { if (U < 0 || V < 0 || U > N - 1 || V > N - 1) return NaN; const u0 = Math.min(N - 2, Math.floor(U)), v0 = Math.min(N - 2, Math.floor(V)), fu = U - u0, fv = V - v0; return MAG[v0 * N + u0] * (1 - fu) * (1 - fv) + MAG[v0 * N + u0 + 1] * fu * (1 - fv) + MAG[(v0 + 1) * N + u0] * (1 - fu) * fv + MAG[(v0 + 1) * N + u0 + 1] * fu * fv; }
+  function compute() {
+    const p = projA(th); const a = Float64Array.from(p), b = new Float64Array(N); fft(a, b, false);
+    const P1 = [], F2 = [];
+    for (let k = -N / 2; k < N / 2; k++) { const kk = (k + N) % N; P1.push([k, Math.hypot(a[kk], b[kk]) * DX]); F2.push([k, bil(k * Math.cos(th) + N / 2, -k * Math.sin(th) + N / 2)]); }
+    cur = { p, P1, F2 };
+    $('#sl-th-o').textContent = `${nf(th * 180 / Math.PI, 0)}°`;
+  }
+  const mA = reg({ el: ca, anim: true, playing: !reduceMotion,
+    step(dt) { th = (th + dt * 0.35) % Math.PI; ith.value = Math.round(th * 180 / Math.PI); compute(); mB.draw(); mC.draw(); },
+    draw() {
+      if (!cur) return;
+      const { ctx, w, h } = fit(ca); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+      const V = 24, sc = Math.min(w, h) / (2 * V), cx = w / 2, cy = h / 2, P = (x, y) => [cx + x * sc, cy - y * sc];
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(phImg, cx - HW * sc, cy - HW * sc, 2 * HW * sc, 2 * HW * sc);
+      const n = [Math.cos(th), Math.sin(th)], r = [-Math.sin(th), Math.cos(th)];
+      ctx.strokeStyle = 'rgba(120,160,255,0.28)'; ctx.lineWidth = 1;
+      for (let s = -15; s <= 15; s += 3) { ctx.beginPath(); ctx.moveTo(...P(s * n[0] - 18 * r[0], s * n[1] - 18 * r[1])); ctx.lineTo(...P(s * n[0] + 17 * r[0], s * n[1] + 17 * r[1])); ctx.stroke(); }
+      ctx.strokeStyle = '#ddd'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(...P(-16 * n[0] + 17 * r[0], -16 * n[1] + 17 * r[1])); ctx.lineTo(...P(16 * n[0] + 17 * r[0], 16 * n[1] + 17 * r[1])); ctx.stroke();
+      let pm = 0; for (const v of cur.p) pm = Math.max(pm, v);
+      ctx.strokeStyle = '#f5b83d'; ctx.lineWidth = 2; ctx.beginPath();
+      cur.p.forEach((v, i) => { const s = -HW + (i + 0.5) * DX, q = v / pm * 6; const pt = P(s * n[0] + (17.6 + q) * r[0], s * n[1] + (17.6 + q) * r[1]); i ? ctx.lineTo(...pt) : ctx.moveTo(...pt); }); ctx.stroke();
+      ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`θ = ${nf(th * 180 / Math.PI, 0)}°`, 8, 16);
+    }
+  });
+  const mB = reg({ el: cb, draw() {
+    const { ctx, w, h } = fit(cb); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    const s = Math.min(w, h); ctx.imageSmoothingEnabled = true; ctx.drawImage(specImg, (w - s) / 2, (h - s) / 2, s, s);
+    const cx = w / 2, cy = h / 2, L = s / 2;
+    ctx.strokeStyle = '#f5b83d'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - L * Math.cos(th), cy + L * Math.sin(th)); ctx.lineTo(cx + L * Math.cos(th), cy - L * Math.sin(th)); ctx.stroke();
+    ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('u →', w - 34, h - 8); ctx.fillText('v ↑', 8, 16);
+  }});
+  const mC = reg({ el: cc, draw() {
+    if (!cur) return;
+    const { ctx, w, h } = fit(cc);
+    let mx = -Infinity; cur.P1.forEach(([, v]) => mx = Math.max(mx, Math.log10(v + 1e-9)));
+    const y1 = Math.ceil(mx * 2) / 2 + 1.1, y0 = y1 - 5.2;
+    const kmax = N / 2 / (N * DX);
+    const yt = []; for (let v = Math.ceil(y0); v <= y1; v++) yt.push(v);
+    const f = frame(ctx, 0, 0, w, h, { x0: -kmax, x1: kmax, y0, y1, xt: [-2, -1, 0, 1, 2], yt, yf: v => '10' + (v < 0 ? '⁻' : '') + '⁰¹²³⁴⁵⁶⁷⁸⁹'[Math.abs(v)], xl: 'Frequenz ω (1/cm)', yl: '|P|', l: 42 });
+    clipBox(ctx, f);
+    const om = k => k / (N * DX);
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.8; ctx.beginPath(); cur.P1.forEach(([k, v], i) => { const x = f.X(om(k)), y = f.Y(Math.log10(v + 1e-9)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+    ctx.fillStyle = tok('--bin2');
+    cur.F2.forEach(([k, v]) => { if (!isFinite(v) || k % 2) return; ctx.beginPath(); ctx.arc(f.X(om(k)), f.Y(Math.log10(v + 1e-9)), 2.2, 0, 7); ctx.fill(); });
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'right';
+    ctx.fillStyle = tok('--accent'); ctx.fillText('— 1D-Spektrum Projektion', f.bx + f.bw - 2, f.by + 10);
+    ctx.fillStyle = tok('--bin2'); ctx.fillText('● 2D-Spektrum auf Linie', f.bx + f.bw - 2, f.by + 24);
+  }});
+  ith.addEventListener('input', () => { th = +ith.value * Math.PI / 180; if (mA.playing) { mA.playing = false; $('#sl-play').textContent = 'Abspielen'; } compute(); mA.draw(); mB.draw(); mC.draw(); });
+  playBtn($('#sl-play'), mA); compute(); mA.draw(); mB.draw(); mC.draw();
+})();
+</script>

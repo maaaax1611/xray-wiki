@@ -3,178 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photonen zählen im CT</title>
+<title>Photonen zählen</title>
+<!-- Erzeugt von build.py aus src/pages/physik/photon-counting.md. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <script>
 window.MathJax = {
-  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
   svg: { fontCache: 'global' },
   options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
-<style>
-/* Layout: lange Lektüre-Spalte mit klebrigem Inhaltsverzeichnis links; Abbildungen als "Messplätze" in der Spalte. Tiefe = Ebene 1–5. */
-:root {
-  --bg: #f2f4f6;
-  --surface: #fbfcfd;
-  --fg: #16202a;
-  --muted: #5a6875;
-  --rule: #d3dae1;
-  --grid: #e3e8ed;
-  --accent: #2448b8;
-  --accent-soft: #dfe6fa;
-  --elec: #2b66d9;
-  --hole: #c8424f;
-  --bin0: #3a6fd8;
-  --bin1: #14937f;
-  --bin2: #c9900e;
-  --bin3: #c8424f;
-  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
-  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
-  color-scheme: dark;
-}
-
-* { box-sizing: border-box; }
-body {
-  background: var(--bg); color: var(--fg);
-  font-family: var(--font-body); font-size: 17px; line-height: 1.62;
-  -webkit-font-smoothing: antialiased;
-}
-.wrap {
-  max-width: 1160px; margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 40px 80px;
-}
-@media (min-width: 1100px) {
-  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
-  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
-  .toc-mobile { display: none; }
-}
-@media (max-width: 1099px) { nav.toc { display: none; } }
-
-main { min-width: 0; max-width: 800px; }
-
-/* Typo */
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
-h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
-h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
-p { margin: 0.9em 0; }
-a { color: var(--accent); }
-strong { font-weight: 600; }
-.mono, code { font-family: var(--font-mono); font-size: 0.86em; }
-.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-.lede { font-size: 1.2rem; line-height: 1.5; color: var(--fg); max-width: 34em; margin-top: 18px; }
-.muted { color: var(--muted); }
-
-/* TOC */
-nav.toc { font-family: var(--font-display); font-size: 15px; }
-nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
-nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
-nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
-nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
-nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
-nav.toc .lv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 14px; padding-left: 8px; }
-.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
-.toc-mobile summary { cursor: pointer; color: var(--muted); }
-.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
-
-/* Abschnitte */
-section { padding-top: 64px; scroll-margin-top: 20px; }
-.level { display: flex; align-items: center; gap: 10px; }
-.depth { display: inline-flex; gap: 3px; }
-.depth i { display: block; width: 14px; height: 6px; border-radius: 1px; background: var(--rule); }
-.depth i.f { background: var(--accent); }
-
-/* Abbildungen */
-figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
-figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
-figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
-canvas { display: block; width: 100%; max-width: 100%; }
-.c-concept { aspect-ratio: 2.1 / 1; }
-.c-wp { aspect-ratio: 2 / 1; }
-.c-q { aspect-ratio: 2 / 1; }
-.c-pulse { aspect-ratio: 2.4 / 1; }
-.c-dead { aspect-ratio: 1.8 / 1; }
-.c-grid { aspect-ratio: 1 / 1; }
-.c-hist { aspect-ratio: 1.25 / 1; }
-.c-spec { aspect-ratio: 2 / 1; }
-.c-mu { aspect-ratio: 2.2 / 1; }
-@media (max-width: 560px) { .c-concept { aspect-ratio: 1.35 / 1; } .c-pulse { aspect-ratio: 1.6 / 1; } }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.two.mc { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
-@media (max-width: 640px) { .two, .two.mc { grid-template-columns: minmax(0, 1fr); } }
-.svgbox { overflow-x: auto; }
-.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
-
-/* Bedienelemente */
-.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
-.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
-.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
-.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
-input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
-.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
-.btn:hover { border-color: var(--muted); }
-.btn:focus-visible, input:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; color: var(--fg); flex: 0 0 auto; }
-.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
-.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); margin-top: 10px; line-height: 1.6; }
-.readout span.k { color: var(--muted); }
-
-/* Tabellen */
-.tbl { overflow-x: auto; margin: 20px 0; }
-table { border-collapse: collapse; width: 100%; font-size: 15px; }
-th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
-th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
-td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-table.small td, table.small th { padding: 4px 10px 4px 0; font-size: 13px; }
-.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
-
-/* Formeln, Hinweise */
-.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
-mjx-container[display="true"] { margin: 0.6em 0 !important; }
-.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; color: var(--fg); }
-.note p { margin: 0.4em 0; }
-ul.tight { padding-left: 1.2em; }
-ul.tight li { margin: 0.35em 0; }
-.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
-footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
-
-/* SVG-Diagramme */
-.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); }
-.d-surf { fill: var(--surface); } .d-bg { fill: var(--bg); } .d-soft { fill: var(--accent-soft); }
-.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
-.d-ste { stroke: var(--elec); fill: none; } .d-sth { stroke: var(--hole); fill: none; }
-.d-e { fill: var(--elec); } .d-h { fill: var(--hole); }
-.d-b0 { fill: var(--bin0); } .d-b1 { fill: var(--bin1); } .d-b2 { fill: var(--bin2); } .d-b3 { fill: var(--bin3); }
-.d-scint { fill: var(--accent-soft); }
-svg text { font-family: var(--font-display); }
-svg text.m { font-family: var(--font-mono); }
-
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-html { scroll-behavior: smooth; }
-body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14px; margin: 0 0 18px; } .backlink a { text-decoration: none; }
-</style>
-
-<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/pc.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -201,639 +45,663 @@ body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14p
       <li><a href="#zahlen"><span class="n">A</span><span>Zahlen auf einen Blick</span></a></li>
     </ol>
   </nav>
-
   <main>
-    <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#physik">Physik</a></p>
-    <header>
-      <div class="eyebrow">Detektorphysik · Computertomographie</div>
+    <header id="ueberblick">
+      <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#physik">Physik</a></p>
+      <div class="topbar"><div class="eyebrow">Detektorphysik · Computertomographie</div>
+        <div class="theme" role="group" aria-label="Darstellung"><button type="button" data-t="light">Hell</button><button type="button" data-t="dark">Dunkel</button><button type="button" data-t="system">System</button></div></div>
       <h1>Photonen zählen</h1>
       <p class="lede">Wie ein Photon-Counting-Detektor im CT funktioniert: von der Grundidee über Halbleiterphysik und Ausleseelektronik bis zur Materialzerlegung. Jeder Abschnitt geht eine Ebene tiefer.</p>
-
-      <figure class="fig" id="fig-concept">
-        <canvas id="cv-concept" class="c-concept" role="img" aria-label="Animation: links summiert ein energieintegrierender Detektor die Energie aller Photonen eines Frames, rechts sortiert ein photonenzählender Detektor jedes Photon nach Energie in vier Bins."></canvas>
-        <div class="ctrls">
-          <button class="btn" type="button" id="concept-play">Pause</button>
-          <span class="muted" style="font-size:14px">Beide Detektoren sehen dieselben Photonen. Farbe = Energie-Bin des Photons.</span>
-        </div>
-        <figcaption><b>Abb. 1</b> Derselbe Photonenstrom, zwei Messprinzipien. Der energieintegrierende Detektor (links) liefert pro Frame eine einzige Zahl, die Summe der deponierten Energie plus Elektronikrauschen. Der photonenzählende Detektor (rechts) registriert jedes Photon einzeln und sortiert es per Schwellen in Energie-Bins.</figcaption>
-      </figure>
-
-      <details class="toc-mobile">
-        <summary>Inhalt</summary>
-        <ol>
-          <li><a href="#konzept">Zählen statt integrieren</a></li>
-          <li><a href="#konversion">Direkte Konversion</a></li>
-          <li><a href="#signal">Ladungstransport &amp; Signal</a></li>
-          <li><a href="#asic">Vom Puls zum Zählerstand</a></li>
-          <li><a href="#pileup">Totzeit &amp; Pile-up</a></li>
-          <li><a href="#sharing">Charge Sharing &amp; Fluoreszenz</a></li>
-          <li><a href="#kalibrierung">Polarisation &amp; Kalibrierung</a></li>
-          <li><a href="#bins">Spektren &amp; Energie-Bins</a></li>
-          <li><a href="#zerlegung">Materialzerlegung</a></li>
-          <li><a href="#bildqualitaet">MTF, NPS, DQE</a></li>
-          <li><a href="#systeme">Systeme &amp; Sensortypen</a></li>
-          <li><a href="#zahlen">Zahlen auf einen Blick</a></li>
-        </ol>
-      </details>
+<figure class="fig" id="fig-concept">
+<canvas aria-label="Animation: links summiert ein energieintegrierender Detektor die Energie aller Photonen eines Frames, rechts sortiert ein photonenzählender Detektor jedes Photon nach Energie in vier Bins." class="c-concept" id="cv-concept" role="img"></canvas>
+<div class="ctrls">
+<button class="btn" id="concept-play" type="button">Pause</button>
+<span class="muted" style="font-size:14px">Beide Detektoren sehen dieselben Photonen. Farbe = Energie-Bin des Photons.</span>
+</div>
+<figcaption><b>Abb. 1</b> Derselbe Photonenstrom, zwei Messprinzipien. Der energieintegrierende Detektor (links) liefert pro Frame eine einzige Zahl, die Summe der deponierten Energie plus Elektronikrauschen. Der photonenzählende Detektor (rechts) registriert jedes Photon einzeln und sortiert es per Schwellen in Energie-Bins.</figcaption>
+</figure>
+      <details class="toc-mobile"><summary>Inhalt</summary><ol><li><a href="#konzept">Zählen statt integrieren</a></li><li><a href="#konversion">Direkte Konversion</a></li><li><a href="#signal">Ladungstransport &amp; Signal</a></li><li><a href="#asic">Vom Puls zum Zählerstand</a></li><li><a href="#pileup">Totzeit &amp; Pile-up</a></li><li><a href="#sharing">Charge Sharing &amp; Fluoreszenz</a></li><li><a href="#kalibrierung">Polarisation &amp; Kalibrierung</a></li><li><a href="#bins">Spektren &amp; Energie-Bins</a></li><li><a href="#zerlegung">Materialzerlegung</a></li><li><a href="#bildqualitaet">MTF, NPS, DQE</a></li><li><a href="#systeme">Systeme &amp; Sensortypen</a></li><li><a href="#zahlen">Zahlen auf einen Blick</a></li></ol></details>
     </header>
-
-    <!-- 01 -->
-    <section id="konzept">
-      <div class="level"><span class="depth"><i class="f"></i><i></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 1 · Konzept</span></div>
-      <h2>Zählen statt integrieren</h2>
-      <p>Ein CT misst in jeder Projektion, wie stark der Patient die Röntgenstrahlung entlang jedes Strahls schwächt. Konventionelle Detektoren tun das, indem sie während eines kurzen Zeitfensters (eines <em>Frames</em> oder einer <em>Projektion</em>, typisch einige hundert Mikrosekunden) die gesamte deponierte Energie aufsummieren. Das Ergebnis ist ein Strom bzw. eine Ladung, die proportional zur Summe der Photonenenergien ist.</p>
-      <p>Ein Photon-Counting-Detektor (PCD) macht etwas grundsätzlich anderes: Er erkennt <strong>jedes einzelne Röntgenquant als eigenes elektrisches Ereignis</strong>, misst dessen Pulshöhe und vergleicht sie mit mehreren Energieschwellen. Am Ende eines Frames stehen pro Pixel nicht eine, sondern mehrere Zahlen: wie viele Photonen über 20 keV, über 35 keV, über 50 keV und so weiter gekommen sind.</p>
-
-      <h3>Drei Konsequenzen dieser Idee</h3>
-      <p><strong>1. Elektronikrauschen verschwindet aus dem Signal.</strong> Beim integrierenden Detektor addiert sich das Rauschen der Ausleseelektronik zu jedem Messwert. Bei wenigen Photonen, etwa hinter dicken Körperteilen oder bei sehr niedriger Dosis, dominiert es. Beim PCD liegt die unterste Schwelle (z. B. 20 keV) weit über dem Rauschpegel (rund 1 keV). Rauschen erzeugt dann praktisch keine Zählereignisse. Was bleibt, ist reines Poisson-Rauschen der Photonen.</p>
-      <p><strong>2. Jedes Photon bekommt dasselbe Gewicht.</strong> Ein integrierender Detektor gewichtet jedes Photon mit seiner Energie \(E\). Hochenergetische Photonen tragen aber den <em>geringsten</em> Kontrast, weil die Schwächungsunterschiede zwischen Geweben mit steigender Energie kleiner werden. Der PCD zählt jedes Photon gleich (Gewicht 1) oder sogar mit einem optimierten, energieabhängigen Gewicht. Das verbessert das Kontrast-Rausch-Verhältnis, vor allem für Iod.</p>
-      <p><strong>3. Spektrale Information in jedem Scan.</strong> Mit mehreren Energie-Bins pro Pixel bekommt man aus jeder Aufnahme eine grobe Spektralmessung. Daraus lassen sich Materialien trennen, virtuelle monoenergetische Bilder rechnen oder Kontrastmittel mit K-Kante gezielt darstellen.</p>
-
-      <div class="tbl">
-        <table>
-          <thead><tr><th></th><th>Energieintegrierend (EID)</th><th>Photonenzählend (PCD)</th></tr></thead>
-          <tbody>
-            <tr><td>Konversion</td><td>indirekt: Szintillator → Licht → Photodiode</td><td>direkt: Halbleiter → Ladung</td></tr>
-            <tr><td>Messgröße pro Pixel</td><td>\(\sum_i E_i\) + Rauschen</td><td>\(N(E \ge T_k)\) für mehrere Schwellen \(T_k\)</td></tr>
-            <tr><td>Gewichtung</td><td>\(w(E) \propto E\)</td><td>\(w(E) = 1\) oder frei wählbar</td></tr>
-            <tr><td>Elektronikrauschen</td><td>im Signal enthalten</td><td>durch Schwelle unterdrückt</td></tr>
-            <tr><td>Pixelgröße</td><td>durch Septen begrenzt (~1 mm am Detektor)</td><td>klein ohne Effizienzverlust (~0,15–0,3 mm)</td></tr>
-            <tr><td>Spektral</td><td>nur mit Dual-Source, kV-Switching, Dual-Layer</td><td>intrinsisch, 2–8 Bins</td></tr>
-            <tr><td>Hauptprobleme</td><td>Rauschen bei Niedrigdosis, Swank-Rauschen</td><td>Pile-up, Charge Sharing, Fluoreszenz, Polarisation</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Der Rest dieser Seite folgt dem Weg eines Photons: Absorption im Sensor, Ladungstransport, Signalentstehung, Pulsverarbeitung, Zählung. Danach geht es um die Effekte, die diesen idealen Weg stören, und schließlich darum, was man mit den Energie-Bins in der Bildgebung anfängt.</p>
-    </section>
-
-    <!-- 02 -->
-    <section id="konversion">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
-      <h2>Direkte Konversion im Halbleiter</h2>
-      <p>Damit ein einzelnes Photon als eigener Puls erkennbar ist, muss die Umwandlung in ein elektrisches Signal schnell und ohne Zwischenschritt geschehen. Ein Szintillator ist dafür ungeeignet: Er erzeugt einen Lichtblitz mit einer Abklingzeit von Mikrosekunden (bei GOS sogar mit langem Nachleuchten), und das Licht verteilt sich über mehrere Pixel. Ein PCD verwendet deshalb einen <strong>direkt konvertierenden Halbleiter</strong>.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 760 330" role="img" aria-label="Vergleich indirekte Konversion mit Szintillator und Photodiode gegen direkte Konversion in CdTe mit Elektron-Loch-Paaren und Pixelanoden.">
-          <defs>
-            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-fg"/></marker>
-            <marker id="are" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-e"/></marker>
-            <marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-h"/></marker>
-          </defs>
-          <!-- links: indirekt -->
-          <text x="20" y="24" class="d-fg" font-size="16" font-weight="600">Indirekt (EID)</text>
-          <text x="20" y="42" class="d-mut" font-size="13">Röntgen → Licht → Ladung, integriert</text>
-          <line x1="150" y1="58" x2="150" y2="118" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
-          <text x="160" y="80" class="d-mut m" font-size="11">Röntgenquant</text>
-          <!-- Szintillatorzellen mit Septen -->
-          <rect x="40" y="122" width="300" height="80" class="d-scint"/>
-          <g class="d-fg">
-            <rect x="40" y="122" width="5" height="80"/><rect x="115" y="122" width="5" height="80"/><rect x="190" y="122" width="5" height="80"/><rect x="265" y="122" width="5" height="80"/><rect x="335" y="122" width="5" height="80"/>
-          </g>
-          <circle cx="150" cy="150" r="5" class="d-acc"/>
-          <g class="d-sta" stroke-width="1.3">
-            <line x1="150" y1="150" x2="125" y2="200"/><line x1="150" y1="150" x2="140" y2="200"/><line x1="150" y1="150" x2="160" y2="200"/><line x1="150" y1="150" x2="178" y2="200"/>
-            <path d="M150 150 L186 168 L170 200" /><path d="M150 150 L122 175 L132 200"/>
-          </g>
-          <text x="352" y="150" class="d-fg" font-size="13">Szintillator</text>
-          <text x="352" y="166" class="d-mut" font-size="12">(z. B. GOS)</text>
-          <text x="352" y="186" class="d-mut" font-size="12">Septen gegen</text>
-          <text x="352" y="200" class="d-mut" font-size="12">Lichtübersprechen</text>
-          <rect x="40" y="206" width="300" height="22" class="d-fg" opacity="0.85"/>
-          <g class="d-bg"><rect x="45" y="210" width="68" height="14"/><rect x="120" y="210" width="68" height="14"/><rect x="195" y="210" width="68" height="14"/><rect x="270" y="210" width="65" height="14"/></g>
-          <text x="352" y="222" class="d-fg" font-size="13">Photodioden</text>
-          <path d="M60 268 Q 80 268 95 252 T 140 248 T 190 256 T 240 246 T 300 254" class="d-sta" stroke-width="2"/>
-          <text x="40" y="296" class="d-mut" font-size="12">Strom ∝ Σ Energie, über das Frame integriert.</text>
-          <text x="40" y="312" class="d-mut" font-size="12">Einzelne Photonen nicht mehr unterscheidbar.</text>
-
-          <!-- rechts: direkt -->
-          <text x="420" y="24" class="d-fg" font-size="16" font-weight="600">Direkt (PCD)</text>
-          <text x="420" y="42" class="d-mut" font-size="13">Röntgen → Ladung, pro Photon ein Puls</text>
-          <rect x="430" y="104" width="250" height="5" class="d-fg"/>
-          <text x="688" y="111" class="d-fg" font-size="13">Kathode, −U</text>
-          <rect x="430" y="109" width="250" height="110" class="d-soft"/>
-          <text x="688" y="160" class="d-fg" font-size="13">CdTe</text>
-          <text x="688" y="176" class="d-mut" font-size="12">~1,6 mm</text>
-          <line x1="560" y1="58" x2="560" y2="140" class="d-st" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
-          <g>
-            <circle cx="556" cy="150" r="3.4" class="d-e"/><circle cx="563" cy="146" r="3.4" class="d-e"/><circle cx="560" cy="156" r="3.4" class="d-e"/><circle cx="566" cy="154" r="3.4" class="d-e"/>
-            <circle cx="552" cy="144" r="3.4" class="d-h"/><circle cx="568" cy="147" r="3.4" class="d-h"/><circle cx="557" cy="140" r="3.4" class="d-h"/><circle cx="563" cy="159" r="3.4" class="d-h"/>
-          </g>
-          <line x1="560" y1="164" x2="560" y2="208" class="d-ste" stroke-width="2" marker-end="url(#are)"/>
-          <line x1="545" y1="140" x2="545" y2="118" class="d-sth" stroke-width="2" marker-end="url(#arh)"/>
-          <text x="572" y="196" class="d-fg" font-size="12">e⁻ zur Anode</text>
-          <text x="470" y="128" class="d-fg" font-size="12">Löcher</text>
-          <!-- Pixelanoden -->
-          <g class="d-fg"><rect x="436" y="219" width="54" height="6"/><rect x="498" y="219" width="54" height="6"/><rect x="560" y="219" width="54" height="6" class="d-acc"/><rect x="622" y="219" width="54" height="6"/></g>
-          <text x="688" y="227" class="d-fg" font-size="13">Pixelanoden</text>
-          <rect x="430" y="232" width="250" height="26" rx="2" class="d-fg" opacity="0.85"/>
-          <text x="555" y="250" class="d-bg" font-size="12" text-anchor="middle" style="fill:var(--bg)">ASIC: ein Kanal pro Pixel</text>
-          <path d="M440 300 L470 300 L476 274 L486 300 L540 300 L546 284 L556 300 L610 300 L616 268 L626 300 L670 300" class="d-sta" stroke-width="2"/>
-          <text x="430" y="320" class="d-mut" font-size="12">Pulshöhe ∝ Energie des einzelnen Photons</text>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 2</b> Links: Im Szintillator wird das Quant in Licht umgewandelt, das sich ausbreitet und über Septen auf ein Pixel begrenzt wird. Die Photodiode integriert. Rechts: Im Halbleiter erzeugt das Quant direkt Elektron-Loch-Paare. Das Feld zieht die Elektronen zur Pixelanode, jedes Photon erzeugt einen eigenen Strompuls. Die Pixel sind nur durch die Elektrodenstruktur definiert.</figcaption>
-      </figure>
-
-      <h3>Absorption</h3>
-      <p>Der Sensor muss die Röntgenquanten in wenigen Millimetern stoppen. Entscheidend sind hohe Ordnungszahl und Dichte, denn der Photoeffekt skaliert ungefähr mit \(Z^4/E^3\). <strong>CdTe</strong> (Z = 48 und 52, ρ = 5,85 g/cm³) und die Legierung <strong>CdZnTe (CZT)</strong> erfüllen das. Bei 1,5–2 mm Dicke wird der diagnostisch wichtige Teil des CT-Spektrums nahezu vollständig absorbiert, erst am oberen Ende (über ~100 keV) sinkt die Quanteneffizienz merklich. Silizium (Z = 14) absorbiert viel schwächer und braucht eine andere Geometrie (siehe <a href="#systeme">Abschnitt 11</a>).</p>
-
-      <h3>Erzeugung von Ladungsträgern</h3>
-      <p>Das absorbierte Photon überträgt seine Energie auf ein Photoelektron, das auf seinem Weg durch den Kristall viele Elektron-Loch-Paare erzeugt. Im Mittel kostet ein Paar die Energie \(W\), etwa das Dreifache der Bandlücke, weil ein Teil der Energie an Gitterschwingungen geht:</p>
-      <div class="eq">$$N = \frac{E}{W}, \qquad W_{\mathrm{CdTe}} \approx 4{,}43\ \mathrm{eV}$$</div>
-      <p>Ein 60-keV-Photon erzeugt also rund 13 500 Paare, das sind etwa 2,2 fC. Die Zahl der Paare schwankt weniger als nach Poisson zu erwarten, weil die Erzeugungsprozesse nicht unabhängig sind. Das beschreibt der Fano-Faktor \(F\):</p>
-      <div class="eq">$$\sigma_N = \sqrt{F\,N}, \qquad F \approx 0{,}1 \quad\Rightarrow\quad \Delta E_{\mathrm{FWHM}} = 2{,}355\,\sqrt{F\,W\,E} \approx 0{,}4\ \mathrm{keV}\ \text{bei 60 keV}$$</div>
-      <p>Diese Fano-Grenze ist eine theoretische Untergrenze. Reale CT-Detektoren erreichen einige keV, weil Elektronikrauschen, unvollständige Ladungssammlung und Charge Sharing dominieren. Das sind die Themen der nächsten Abschnitte.</p>
-    </section>
-
-    <!-- 03 -->
-    <section id="signal">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
-      <h2>Ladungstransport und Signalentstehung</h2>
-      <p>Eine Hochspannung von einigen hundert Volt pro Millimeter zieht die Elektronen zu den Pixelanoden und die Löcher zur gemeinsamen Kathode. Die Driftgeschwindigkeit ist \(v = \mu E\). Elektronen und Löcher unterscheiden sich in CdTe stark:</p>
-      <div class="tbl"><table class="small">
-        <thead><tr><th>Größe</th><th class="num">Elektronen</th><th class="num">Löcher</th></tr></thead>
-        <tbody>
-          <tr><td>Beweglichkeit μ</td><td class="num">~1100 cm²/Vs</td><td class="num">~100 cm²/Vs</td></tr>
-          <tr><td>Mobilitäts-Lebensdauer-Produkt μτ</td><td class="num">~10⁻³ cm²/V</td><td class="num">~10⁻⁴ cm²/V</td></tr>
-          <tr><td>Driftzeit über 1,6 mm bei 1000 V</td><td class="num">~23 ns</td><td class="num">~250 ns</td></tr>
-        </tbody>
-      </table></div>
-      <p>Ladungsträger können unterwegs an Störstellen eingefangen werden (<em>Trapping</em>). Die mittlere Driftlänge bis zum Einfang ist \(\lambda = \mu\tau E\). Bei einem planaren Detektor mit zwei großflächigen Elektroden hängt die gesammelte Ladung deshalb von der Interaktionstiefe \(x\) ab, gemessen von der Kathode. Das beschreibt die <strong>Hecht-Gleichung</strong>:</p>
-      <div class="eq">$$\mathrm{CCE}(x) = \frac{\lambda_e}{d}\left(1 - e^{-(d-x)/\lambda_e}\right) + \frac{\lambda_h}{d}\left(1 - e^{-x/\lambda_h}\right)$$</div>
-
-      <h3>Wo das Signal wirklich entsteht: das Shockley-Ramo-Theorem</h3>
-      <p>Ein häufiges Missverständnis: Das Signal entsteht nicht erst, wenn die Elektronen an der Anode „ankommen“. Schon während der Drift <em>influenziert</em> jede bewegte Ladung einen Strom auf allen Elektroden. Wie groß dieser Strom auf einer bestimmten Elektrode ist, bestimmt das <strong>Gewichtungspotential</strong> \(\varphi_w\). Man erhält es, indem man die Laplace-Gleichung löst, mit der betrachteten Elektrode auf Potential 1 und allen anderen auf 0. Raumladung und tatsächliche Bias-Spannung spielen dafür keine Rolle.</p>
-      <div class="eq">$$Q_{\mathrm{ind}} = -q\,\Delta\varphi_w, \qquad i(t) = q\,\vec v \cdot \vec E_w$$</div>
-      <p>Bei einem planaren Detektor fällt \(\varphi_w\) linear von 1 an der Anode auf 0 an der Kathode ab. Elektronen und Löcher tragen dann je nach Tiefe zum Signal bei. Ist das Pixel aber klein gegenüber der Sensordicke, bleibt \(\varphi_w\) im größten Teil des Volumens nahe null und steigt erst kurz vor der Anode steil an. Das ist der <strong>Small-Pixel-Effekt</strong>: Fast das gesamte Signal stammt von den Elektronen auf ihren letzten Mikrometern, die Löcher tragen kaum bei. Ihr schlechter Transport fällt damit kaum noch ins Gewicht.</p>
-
-      <figure class="fig">
-        <div class="two">
-          <canvas id="cv-wp" class="c-wp" role="img" aria-label="Berechnetes Gewichtungspotential eines Pixels im Querschnitt durch den Sensor."></canvas>
-          <canvas id="cv-q" class="c-q" role="img" aria-label="Gewichtungspotential auf der Pixelachse und induzierte Ladung über der Zeit, verglichen mit einem planaren Detektor."></canvas>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="wp-p">Pixelbreite / Dicke</label><output id="wp-p-o"></output></div><input id="wp-p" type="range" min="0.06" max="1.5" step="0.01" value="0.14"></div>
-          <div class="ctrl"><div class="lab"><label for="wp-x">Interaktionstiefe (ab Kathode)</label><output id="wp-x-o"></output></div><input id="wp-x" type="range" min="0.02" max="0.98" step="0.01" value="0.5"></div>
-          <div class="ctrl"><div class="lab"><label for="wp-mt">μτ der Löcher</label><output id="wp-mt-o"></output></div><input id="wp-mt" type="range" min="-6" max="-3" step="0.05" value="-4.5"></div>
-        </div>
-        <div class="readout" id="wp-read"></div>
-        <figcaption><b>Abb. 3</b> Links: numerisch gelöstes Gewichtungspotential des mittleren Pixels (2D-Schnitt, Höhenlinien in Zehntelstufen). Der Punkt markiert die Interaktion, blau driften die Elektronen zur Anode, rot die Löcher zur Kathode. Rechts oben: \(\varphi_w\) auf der Pixelachse, rechts unten: induzierte Ladung über der Zeit. Gestrichelt ist jeweils der planare Fall. Annahmen: d = 1,6 mm, 1000 V, μₑ = 1100 cm²/Vs, μₕ = 100 cm²/Vs, (μτ)ₑ = 3·10⁻³ cm²/V.</figcaption>
-      </figure>
-      <p>Schiebe die Pixelbreite nach oben, bis sie größer als die Dicke ist: Das Gewichtungspotential wird linear, die Kurve der induzierten Ladung bekommt einen langsamen Anteil durch die Löcher, und mit kleinem μτ der Löcher bleibt die gesammelte Ladung unter 100 %. Das erzeugt im Spektrum den niederenergetischen Ausläufer (Tail). Bei kleinen Pixeln ist die induzierte Ladung fast unabhängig von der Tiefe.</p>
-      <div class="note"><p>Der Preis kleiner Pixel: Die Ladungswolke ist im Verhältnis zur Pixelgröße nicht mehr vernachlässigbar, und mehr Ereignisse verteilen sich auf Nachbarpixel. Darum geht es in <a href="#sharing">Abschnitt 6</a>.</p></div>
-    </section>
-
-    <!-- 04 -->
-    <section id="asic">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span><span class="eyebrow">Ebene 3 · Elektronik</span></div>
-      <h2>Vom Ladungspuls zum Zählerstand</h2>
-      <p>Unter jedem Pixel sitzt ein eigener Signalverarbeitungskanal im ASIC, der per Flip-Chip-Bonding direkt mit dem Sensor verbunden ist. Die Kette ist in allen photonenzählenden Systemen im Prinzip gleich.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 760 250" role="img" aria-label="Blockschaltbild: Pixel, ladungsempfindlicher Verstärker, Pulsformer, vier Komparatoren mit Schwellen, vier Zähler, Auslese.">
-          <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-mut"/></marker></defs>
-          <!-- Pixel -->
-          <rect x="10" y="100" width="70" height="50" rx="3" class="d-soft"/>
-          <text x="45" y="129" text-anchor="middle" class="d-fg" font-size="13">Pixel</text>
-          <line x1="80" y1="125" x2="112" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-          <!-- CSA -->
-          <path d="M115 95 L115 155 L175 125 Z" class="d-surf" style="stroke:var(--fg)" stroke-width="1.5"/>
-          <text x="133" y="130" class="d-fg m" font-size="11">CSA</text>
-          <path d="M120 95 L120 72 L170 72 L170 120" class="d-st" stroke-width="1.2"/>
-          <line x1="140" y1="66" x2="140" y2="78" class="d-st" stroke-width="2"/><line x1="146" y1="66" x2="146" y2="78" class="d-st" stroke-width="2"/>
-          <text x="128" y="60" class="d-mut m" font-size="10">C_f</text>
-          <text x="110" y="182" class="d-mut" font-size="12">V = Q / C_f</text>
-          <path d="M100 215 L118 215 L120 196 L150 200 L170 204" class="d-sta" stroke-width="1.8"/>
-          <line x1="175" y1="125" x2="207" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-          <!-- Shaper -->
-          <rect x="210" y="100" width="90" height="50" rx="3" class="d-surf" style="stroke:var(--fg)" stroke-width="1.5"/>
-          <text x="255" y="122" text-anchor="middle" class="d-fg" font-size="13">Pulsformer</text>
-          <text x="255" y="139" text-anchor="middle" class="d-mut m" font-size="10">CR-RCⁿ, τ_p</text>
-          <path d="M218 215 L236 215 C242 196 250 196 256 206 C262 214 272 215 290 215" class="d-sta" stroke-width="1.8"/>
-          <text x="210" y="182" class="d-mut" font-size="12">Höhe ∝ E</text>
-          <line x1="300" y1="125" x2="340" y2="125" class="d-stm" stroke-width="1.5"/>
-          <line x1="340" y1="50" x2="340" y2="200" class="d-stm" stroke-width="1.5"/>
-          <!-- Komparatoren -->
-          <g font-size="11">
-            <g transform="translate(0,0)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b0"/><text x="415" y="54" class="d-fg m">T₁ 20 keV</text></g>
-            <g transform="translate(0,50)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b1"/><text x="415" y="54" class="d-fg m">T₂ 35 keV</text></g>
-            <g transform="translate(0,100)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b2"/><text x="415" y="54" class="d-fg m">T₃ 50 keV</text></g>
-            <g transform="translate(0,150)"><line x1="340" y1="50" x2="372" y2="50" class="d-stm" stroke-width="1.5"/><path d="M375 34 L375 66 L405 50 Z" class="d-b3"/><text x="415" y="54" class="d-fg m">T₄ 65 keV</text></g>
-          </g>
-          <text x="352" y="236" class="d-mut" font-size="12">Komparatoren + Trim-DAC</text>
-          <!-- Zähler -->
-          <g>
-            <line x1="490" y1="50" x2="532" y2="50" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-            <line x1="490" y1="100" x2="532" y2="100" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-            <line x1="490" y1="150" x2="532" y2="150" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-            <line x1="490" y1="200" x2="532" y2="200" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-            <rect x="535" y="36" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin0)" stroke-width="1.5"/><text x="583" y="54" text-anchor="middle" class="d-fg m" font-size="11">Zähler 1</text>
-            <rect x="535" y="86" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin1)" stroke-width="1.5"/><text x="583" y="104" text-anchor="middle" class="d-fg m" font-size="11">Zähler 2</text>
-            <rect x="535" y="136" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin2)" stroke-width="1.5"/><text x="583" y="154" text-anchor="middle" class="d-fg m" font-size="11">Zähler 3</text>
-            <rect x="535" y="186" width="96" height="28" rx="3" class="d-surf" style="stroke:var(--bin3)" stroke-width="1.5"/><text x="583" y="204" text-anchor="middle" class="d-fg m" font-size="11">Zähler 4</text>
-          </g>
-          <line x1="631" y1="125" x2="668" y2="125" class="d-stm" stroke-width="1.5" marker-end="url(#ar2)"/>
-          <path d="M631 50 L650 50 L650 200 L631 200" class="d-stm" stroke-width="1.5"/>
-          <rect x="670" y="100" width="80" height="50" rx="3" class="d-soft"/>
-          <text x="710" y="122" text-anchor="middle" class="d-fg" font-size="13">Auslese</text>
-          <text x="710" y="139" text-anchor="middle" class="d-mut m" font-size="10">pro Frame</text>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 4</b> Signalkette eines Pixelkanals. Der ladungsempfindliche Verstärker (CSA) wandelt die influenzierte Ladung in eine Spannungsstufe um, der Pulsformer macht daraus einen kurzen Puls, dessen Höhe proportional zur Energie ist. Jeder Komparator inkrementiert seinen Zähler, wenn der Puls seine Schwelle überschreitet. Die Zähler messen also integrale Spektren \(N(E \ge T_k)\), die Bins ergeben sich als Differenzen.</figcaption>
-      </figure>
-
-      <h3>Rauschen und Formungszeit</h3>
-      <p class="muted" style="font-size:15px">Grundlagen zu thermischem Rauschen, Schrotrauschen und Filtern stehen auf der Seite <a href="../grundlagen/e-technik.html#rauschen">„E-Technik kompakt“</a>.</p>
-      <p>Das Rauschen der Kette wird als äquivalente Rauschladung (ENC) angegeben, also die Ladung am Eingang, die ein gleich großes Ausgangssignal erzeugen würde. Drei Beiträge konkurrieren:</p>
-      <div class="eq">$$\mathrm{ENC}^2 \approx \underbrace{a\,\frac{C_{\mathrm{in}}^2}{\tau_p}}_{\text{seriell, weiß}} \;+\; \underbrace{b\,I_{\mathrm{leak}}\,\tau_p}_{\text{parallel}} \;+\; \underbrace{c\,C_{\mathrm{in}}^2}_{1/f}$$</div>
-      <p>Eine kurze Peaking-Zeit \(\tau_p\) ist nötig, damit sich Pulse bei hohen Raten nicht überlappen, erhöht aber das serielle Rauschen. Kleine Pixel helfen doppelt: kleinere Eingangskapazität \(C_{\mathrm{in}}\) und weniger Leckstrom pro Kanal. Typische Werte liegen bei 100–200 e⁻ rms, also etwa 0,5–1 keV. Gegenüber Schwellen ab 20 keV ist das vernachlässigbar.</p>
-
-      <h3>Schwellen und Kalibrierung pro Pixel</h3>
-      <p>Die Schwellen werden global über DACs eingestellt. Weil Verstärkung und Offset von Pixel zu Pixel streuen, hat jeder Kanal zusätzlich Trim-DACs, mit denen die effektive Schwelle in keV über alle Pixel angeglichen wird. Die Zähler (typisch 12–24 Bit) werden pro Projektion ausgelesen. Oft gibt es zwei Zählerbänke, sodass eine gelesen wird, während die andere zählt, ohne Totzeit zwischen den Frames.</p>
-
-      <figure class="fig">
-        <canvas id="cv-pulse" class="c-pulse" role="img" aria-label="Simuliertes Signal am Ausgang des Pulsformers mit vier Schwellen. Bei hoher Rate überlappen sich Pulse."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="pl-rate">Rate pro Pixel</label><output id="pl-rate-o"></output></div><input id="pl-rate" type="range" min="-0.3" max="2.3" step="0.01" value="0.7"></div>
-          <div class="ctrl"><div class="lab"><label for="pl-tp">Peaking-Zeit τ_p</label><output id="pl-tp-o"></output></div><input id="pl-tp" type="range" min="4" max="40" step="1" value="10"></div>
-          <button class="btn" type="button" id="pl-play">Pause</button>
-        </div>
-        <div class="tbl" style="margin:12px 0 0"><table class="small" id="pl-table"></table></div>
-        <figcaption><b>Abb. 5</b> Simulierter Ausgang des Pulsformers (CR-RC-Pulsform, 0,7 keV Rauschen), Photonenenergien aus einem 120-kV-Spektrum hinter 10 cm Wasser. Die Striche am unteren Rand markieren die wahren Ankunftszeiten, eingefärbt nach wahrer Energie. Die Tabelle stammt aus einer schnelleren Hintergrundsimulation mit denselben Parametern. Erhöhe die Rate: Pulse verschmelzen (Pile-up), Zählungen gehen verloren, und gleichzeitig wandern Ereignisse in höhere Bins.</figcaption>
-      </figure>
-    </section>
-
-    <!-- 05 -->
-    <section id="pileup">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
-      <h2>Zählrate, Totzeit und Pile-up</h2>
-      <p>Die Herausforderung für Photon Counting im CT ist der Fluss. Hinter Luft oder am Rand des Patienten treffen bis zu 10⁸–10⁹ Photonen pro mm² und Sekunde auf den Detektor. Bei einer Pixelfläche von ~0,05 mm² sind das bis zu einige 10⁷ Ereignisse pro Sekunde und Kanal. Die Pulse dauern aber einige 10 ns. Das Verhältnis \(n\tau\) ist damit nicht mehr klein.</p>
-
-      <h3>Zwei Totzeitmodelle</h3>
-      <p>Nach jedem gezählten Ereignis ist der Kanal für eine Totzeit \(\tau\) blind. Zwei idealisierte Modelle beschreiben die gemessene Rate \(m\) als Funktion der wahren Rate \(n\):</p>
-      <div class="eq">$$\text{nicht-paralysierbar:}\quad m = \frac{n}{1 + n\tau} \qquad\qquad \text{paralysierbar:}\quad m = n\,e^{-n\tau}$$</div>
-      <p>Im nicht-paralysierbaren Fall nähert sich \(m\) asymptotisch \(1/\tau\). Im paralysierbaren Fall verlängert jedes Photon, auch ein nicht gezähltes, die Totzeit. Die gemessene Rate erreicht bei \(n = 1/\tau\) ihr Maximum \(1/(e\tau)\) und <em>fällt danach wieder</em>. Das ist kritisch: Eine gemessene Rate gehört dann zu zwei wahren Raten, und hinter Luft kann ein Pixel weniger zählen als hinter Gewebe. Ein Komparator am Ausgang eines Pulsformers verhält sich weitgehend paralysierbar, reale Systeme liegen zwischen beiden Modellen.</p>
-
-      <figure class="fig">
-        <canvas id="cv-dead" class="c-dead" role="img" aria-label="Gemessene gegen wahre Zählrate für ideales, nicht-paralysierbares und paralysierbares Totzeitmodell, doppelt-logarithmisch."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="dt-tau">Totzeit τ</label><output id="dt-tau-o"></output></div><input id="dt-tau" type="range" min="2" max="100" step="1" value="20"></div>
-        </div>
-        <figcaption><b>Abb. 6</b> Gemessene gegen wahre Rate. Der Punkt markiert das Maximum des paralysierbaren Modells bei \(n = 1/\tau\). Rechts davon ist die Kennlinie nicht mehr eindeutig invertierbar.</figcaption>
-      </figure>
-
-      <h3>Spektrale Folgen</h3>
-      <p>Pile-up kostet nicht nur Zählungen, es verfälscht auch Energien:</p>
-      <ul class="tight">
-        <li><strong>Peak-Pile-up:</strong> Zwei Photonen kommen fast gleichzeitig. Ihre Pulse addieren sich zu einem Puls der Höhe ≈ \(E_1 + E_2\). Statt zwei niederenergetischer Zählungen gibt es eine hochenergetische.</li>
-        <li><strong>Tail-Pile-up:</strong> Ein Puls sitzt auf dem Ausläufer des vorigen. Seine Höhe ist zu groß (oder bei bipolarer Formung zu klein).</li>
-      </ul>
-      <p>Das Spektrum verschiebt sich zu höheren Energien, während die Gesamtzahl sinkt. Für die Materialzerlegung ist das gefährlich, weil sie gerade auf dem Verhältnis zwischen den Bins beruht. Abb. 5 zeigt beide Effekte direkt: Bei hoher Rate steigen die gezählten Ereignisse in den oberen Bins über die wahren Werte, während die unterste Schwelle Zählungen verliert.</p>
-
-      <h3>Gegenmaßnahmen</h3>
-      <ul class="tight">
-        <li><strong>Kleine Pixel:</strong> Der Fluss pro Kanal sinkt mit der Fläche. Das ist der wichtigste Hebel und ein Grund für Pixel von ~0,2 mm.</li>
-        <li><strong>Kurze Pulsformung</strong> und schnelle Rücksetzung des CSA, im Tausch gegen etwas mehr Rauschen.</li>
-        <li><strong>Pile-up-Trigger oder Retrigger-Logik:</strong> Ein zusätzlicher Komparator erkennt, ob ein Puls über der Schwelle bleibt, und zählt Mehrfachereignisse.</li>
-        <li><strong>Formfilter (Bowtie)</strong> vor dem Patienten senken den Fluss an den Rändern, wo wenig Gewebe durchstrahlt wird.</li>
-        <li><strong>Modellbasierte Korrektur:</strong> Pixelweise kalibrierte Funktionen \(m_k(n)\) pro Schwelle, meist über Messungen mit variablem Röhrenstrom gewonnen.</li>
-      </ul>
-    </section>
-
-    <!-- 06 -->
-    <section id="sharing">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
-      <h2>Charge Sharing und K-Fluoreszenz</h2>
-      <p>Bisher wurde angenommen, dass ein Photon genau ein Ereignis in genau einem Pixel erzeugt. Zwei Effekte brechen diese Annahme, und beide werden mit kleineren Pixeln stärker.</p>
-
-      <h3>Charge Sharing</h3>
-      <p>Die Elektronenwolke ist zu Beginn nur wenige Mikrometer groß, weitet sich aber während der Drift durch Diffusion und gegenseitige Abstoßung auf:</p>
-      <div class="eq">$$\sigma_{\mathrm{diff}} = \sqrt{2 D t}, \qquad D = \frac{\mu k_B T}{q} \approx 28\ \mathrm{cm^2/s}\ (\text{Elektronen, CdTe})$$</div>
-      <p>Nach ~20 ns Drift ergibt das σ ≈ 10 µm, mit Coulomb-Abstoßung bei hohen Energien eher 15–25 µm. Trifft ein Photon nahe einer Pixelgrenze, verteilt sich seine Ladung auf zwei oder vier Pixel. Jedes sieht dann ein Ereignis mit zu niedriger Energie. Liegt der Anteil über der Schwelle, wird das Photon <em>doppelt</em> gezählt, liegt er darunter, geht es verloren oder wird zu niedrig eingeordnet.</p>
-
-      <h3>K-Fluoreszenz</h3>
-      <p>Liegt die Photonenenergie über einer K-Kante (Cd: 26,7 keV, Te: 31,8 keV), wird meist ein K-Schalen-Elektron herausgeschlagen. Die Lücke füllt sich unter Aussendung eines Fluoreszenzphotons (Cd Kα ≈ 23,1 keV, Te Kα ≈ 27,5 keV). Die Fluoreszenzausbeute liegt bei ~85 %. Dieses Photon fliegt in CdTe typisch 50–120 µm weit, das ist vergleichbar mit der Pixelgröße. Folgen:</p>
-      <ul class="tight">
-        <li>Im Primärpixel bleibt \(E - E_{K\alpha}\) übrig: ein <strong>Escape-Peak</strong>.</li>
-        <li>Im Nachbarpixel entsteht ein zusätzliches Ereignis bei ~23–27 keV: eine <strong>Fluoreszenzzählung</strong>.</li>
-        <li>Ein Photon kann so zwei Zählungen in verschiedenen Pixeln auslösen, die <strong>korreliert</strong> sind. Das hat Folgen für Rauschspektrum und DQE (siehe <a href="#bildqualitaet">Abschnitt 10</a>).</li>
-      </ul>
-
-      <figure class="fig">
-        <div class="two mc">
-          <canvas id="cv-grid" class="c-grid" role="img" aria-label="Draufsicht auf 5 mal 5 Pixel mit simulierten Photoneneinschlägen, Ladungswolken und Fluoreszenzphotonen."></canvas>
-          <canvas id="cv-hist" class="c-hist" role="img" aria-label="Gemessenes Spektrum aller Pixelereignisse für monoenergetische Einstrahlung, mit Photopeak, Escape-Peaks und Fluoreszenzpeaks."></canvas>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="mc-e">Photonenenergie</label><output id="mc-e-o"></output></div><input id="mc-e" type="range" min="20" max="100" step="1" value="60"></div>
-          <div class="ctrl"><div class="lab"><label for="mc-p">Pixelgröße</label><output id="mc-p-o"></output></div><input id="mc-p" type="range" min="50" max="500" step="5" value="225"></div>
-          <div class="ctrl"><div class="lab"><label for="mc-s">Wolkenbreite σ</label><output id="mc-s-o"></output></div><input id="mc-s" type="range" min="2" max="40" step="1" value="15"></div>
-          <div class="ctrl"><div class="lab"><label for="mc-t">Zählschwelle</label><output id="mc-t-o"></output></div><input id="mc-t" type="range" min="8" max="50" step="1" value="20"></div>
-          <label class="chk"><input id="mc-cs" type="checkbox"> Charge Summing</label>
-          <label class="chk"><input id="mc-log" type="checkbox" checked> log. Achse</label>
-        </div>
-        <div class="readout" id="mc-read"></div>
-        <figcaption><b>Abb. 7</b> Monte-Carlo-Simulation: Photonen treffen zufällig auf das mittlere Pixel. Fluoreszenz wird isotrop mit exponentieller Weglänge emittiert (Cd Kα: 115 µm, Te Kα: 60 µm), Ladung als 2D-Gauß verteilt, 1 keV Rauschen pro Pixel. Das Histogramm enthält alle Pixelereignisse über 5 keV. Vereinfachungen: keine Compton-Streuung, kein Entweichen von Fluoreszenz aus der Sensoroberfläche, keine Tiefenabhängigkeit.</figcaption>
-      </figure>
-
-      <h3>Gegenmaßnahmen im ASIC</h3>
-      <p>Abb. 7 zeigt die Grundidee der Korrektur: Wer weiß, dass benachbarte Pixel <em>gleichzeitig</em> ein Signal sehen, kann diese Teilsignale wieder zusammenführen.</p>
-      <ul class="tight">
-        <li><strong>Charge Summing:</strong> Die analogen Signale benachbarter Pixel (z. B. jedes 2×2-Knotens) werden summiert, ein Arbitrierungsmechanismus ordnet das rekonstruierte Ereignis dem Pixel mit dem größten Anteil zu. Bekannt geworden ist das Prinzip mit dem Medipix3-ASIC.</li>
-        <li><strong>Anti-Coincidence:</strong> Ereignisse, die innerhalb eines kurzen Zeitfensters in Nachbarpixeln auftreten, werden als ein Ereignis gewertet bzw. die kleinere Zählung verworfen.</li>
-      </ul>
-      <p>Beide Verfahren brauchen Kommunikation zwischen Pixeln und verlängern die effektive Totzeit, denn jedes Ereignis belegt jetzt mehrere Kanäle. Es entsteht ein dritter Zielkonflikt, zusätzlich zu Rauschen gegen Rate und Auflösung gegen Charge Sharing: spektrale Treue gegen Zählratenfähigkeit.</p>
-    </section>
-
-    <!-- 07 -->
-    <section id="kalibrierung">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
-      <h2>Polarisation, Drift und Kalibrierung</h2>
-      <h3>Polarisation</h3>
-      <p>Bei hohem Fluss werden Löcher, die langsamer und kürzer leben als Elektronen, in tiefen Störstellen eingefangen und bilden eine positive Raumladung. Sie verformt das elektrische Feld: Nahe der Kathode kann es so weit zusammenbrechen, dass Ladung dort kaum noch gesammelt wird. Sichtbar wird das als Einbruch der Zählrate, Verschiebung der Energieskala und zeitabhängiges Verhalten über Sekunden bis Minuten. Es gibt auch die Variante, dass sich unter Bias-Spannung allein über längere Zeit ein Raumladungsfeld aufbaut (Schottky-Kontakte), was periodisches Abschalten der Spannung erfordert.</p>
-      <p>Gegenmittel sind gute Kristallqualität mit wenig tiefen Störstellen, eine passende Kontakttechnologie (ohmsch gegen Schottky, mit Kompromiss zwischen Leckstrom und Polarisationsneigung), Temperaturkontrolle und in manchen Ansätzen eine Bestrahlung mit Infrarotlicht, die die Fallen in einen stabilen Zustand bringt.</p>
-
-      <h3>Was kalibriert werden muss</h3>
-      <div class="tbl">
-        <table>
-          <thead><tr><th>Größe</th><th>Warum</th><th>Wie, typischerweise</th></tr></thead>
-          <tbody>
-            <tr><td>Schwellen-Equalisierung</td><td>Offset und Gain streuen pro Pixel</td><td>Rauschflanke oder Testpulse, Trim-DACs pixelweise setzen</td></tr>
-            <tr><td>Energieskala (keV ↔ DAC)</td><td>Schwellen sollen in keV gleich sein</td><td>bekannte Linien: Fluoreszenzfolien, Radionuklide (z. B. Am-241, 59,5 keV), K-Kanten-Filter</td></tr>
-            <tr><td>Ratenabhängigkeit</td><td>Totzeit, Pile-up, Polarisation</td><td>Messungen bei variablem Röhrenstrom und Filterung, pixelweise Korrekturkurven pro Schwelle</td></tr>
-            <tr><td>Spektrale Antwort</td><td>Basis für Materialzerlegung</td><td>Modell der Detector Response Function plus Kalibrierphantome bekannter Zusammensetzung</td></tr>
-            <tr><td>Temperatur</td><td>Leckstrom, Gain und Schwellen driften</td><td>aktive Kühlung, Temperaturmodell der Korrekturen</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Ein CT ist bei pixelweisen Inhomogenitäten unerbittlich: Was im Projektionsbild ein Unterschied von wenigen Promille ist, wird nach der Rekonstruktion zu einem Ring. Ein PCD hat viele Pixel, mehrere Schwellen pro Pixel und ratenabhängiges Verhalten. Entsprechend aufwendig sind Kalibrierung und Stabilität.</p>
-    </section>
-
-    <!-- 08 -->
-    <section id="bins">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
-      <h2>Spektren und Energie-Bins</h2>
-      <p>Hinter dem Patienten trifft ein Spektrum auf jedes Pixel, das durch die Röhre (Bremsstrahlung plus Wolfram-Linien), die Vorfilterung und die durchstrahlten Gewebe geformt wurde. Weiche Photonen werden stärker geschwächt, das Spektrum <em>härtet auf</em>. Die Schwellen schneiden dieses Spektrum in Bins. Was in welchem Bin landet, hängt davon ab, was der Strahl durchquert hat. Genau diese Information nutzt die Materialzerlegung.</p>
-      <figure class="fig">
-        <canvas id="cv-spec" class="c-spec" role="img" aria-label="Röntgenspektrum vor und hinter dem Objekt, mit vier farbig markierten Energie-Bins."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="sp-kv">Röhrenspannung</label><output id="sp-kv-o"></output></div><input id="sp-kv" type="range" min="80" max="140" step="10" value="120"></div>
-          <div class="ctrl"><div class="lab"><label for="sp-w">Wasser</label><output id="sp-w-o"></output></div><input id="sp-w" type="range" min="0" max="40" step="1" value="20"></div>
-          <div class="ctrl"><div class="lab"><label for="sp-i">Iod (Flächendichte)</label><output id="sp-i-o"></output></div><input id="sp-i" type="range" min="0" max="100" step="1" value="0"></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="sp-t0">T₁</label><output id="sp-t0-o"></output></div><input id="sp-t0" type="range" min="15" max="120" step="1" value="20"></div>
-          <div class="ctrl"><div class="lab"><label for="sp-t1">T₂</label><output id="sp-t1-o"></output></div><input id="sp-t1" type="range" min="15" max="120" step="1" value="35"></div>
-          <div class="ctrl"><div class="lab"><label for="sp-t2">T₃</label><output id="sp-t2-o"></output></div><input id="sp-t2" type="range" min="15" max="120" step="1" value="50"></div>
-          <div class="ctrl"><div class="lab"><label for="sp-t3">T₄</label><output id="sp-t3-o"></output></div><input id="sp-t3" type="range" min="15" max="120" step="1" value="65"></div>
-        </div>
-        <div class="tbl" style="margin:12px 0 0"><table class="small" id="sp-table"></table></div>
-        <figcaption><b>Abb. 8</b> Photonenspektrum (Kramers-Modell mit Wolfram-Linien, 6 mm Al Vorfilterung) vor dem Objekt (gestrichelt) und dahinter (gefüllt, beide auf ihr Maximum normiert). Iod wird als Flächendichte im Strahl angegeben: 10 mg/cm² entsprechen etwa einem 1 cm dicken Gefäß mit 10 mg/ml. Die Tabelle vergleicht, welchen Anteil jedes Bin an den gezählten Photonen hat und welchen Anteil es an der Energie, also dem Gewicht in einem integrierenden Detektor, hätte. Ideale Detektorantwort angenommen.</figcaption>
-      </figure>
-      <p>Zwei Beobachtungen lohnen sich. Erstens: Mit mehr Wasser verschieben sich die Anteile zu den oberen Bins (Aufhärtung). Zweitens: Iod schwächt oberhalb seiner K-Kante bei 33,2 keV sprunghaft stärker. Ein Bin, der direkt über der Kante beginnt, reagiert deshalb empfindlich auf Iod, ein Bin knapp darunter kaum. Diese Asymmetrie ist mit zwei breiten Spektren (Dual-Energy) nur schwer zu nutzen, mit schmalen Bins dagegen direkt.</p>
-    </section>
-
-    <!-- 09 -->
-    <section id="zerlegung">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
-      <h2>Materialzerlegung</h2>
-      <p>Die Schwächung eines Materials setzt sich im CT-Energiebereich aus zwei physikalischen Prozessen zusammen: Photoeffekt (stark abhängig von Z, fällt etwa mit \(E^{-3}\)) und Compton-Streuung (abhängig von der Elektronendichte, nahezu flach, Klein-Nishina). Ohne K-Kanten gilt daher für jedes Material in guter Näherung:</p>
-      <div class="eq">$$\mu(E) = a_1\,f_{\mathrm{PE}}(E) + a_2\,f_{\mathrm{KN}}(E)$$</div>
-      <p>Zwei Basisfunktionen reichen also, oder äquivalent zwei Basismaterialien wie Wasser und Iod oder Wasser und Kalzium. Jedes weitere Material ist im Rahmen der Messgenauigkeit eine Linearkombination davon. Ein <strong>drittes</strong> Material lässt sich nur unabhängig bestimmen, wenn es eine K-Kante im genutzten Spektrum hat, die seine Energieabhängigkeit von der der beiden anderen unterscheidet.</p>
-
-      <figure class="fig">
-        <canvas id="cv-mu" class="c-mu" role="img" aria-label="Massenschwächungskoeffizienten von Wasser, kortikalem Knochen und Iod über der Energie mit K-Kante von Iod, logarithmische Achse."></canvas>
-        <figcaption><b>Abb. 9</b> Massenschwächungskoeffizienten (Näherungswerte nach NIST-Tabellen) von Wasser, kortikalem Knochen und Iod. Die farbigen Bänder zeigen die Bins aus Abb. 8. Die K-Kante von Iod bei 33,2 keV ist der Sprung, den spektrale Bins sichtbar machen.</figcaption>
-      </figure>
-
-      <h3>Vorwärtsmodell</h3>
-      <p>Für die Zerlegung im Projektionsraum beschreibt man den Erwartungswert der Zählungen im Bin \(b\) als Funktion der Linienintegrale \(A_k = \int \rho_k\,\mathrm{d}l\) der Basismaterialien:</p>
-      <div class="eq">$$\bar\lambda_b(\mathbf A) = \int N_0(E)\,S_b(E)\,\exp\!\Big(-\sum_k A_k\,f_k(E)\Big)\,\mathrm{d}E$$</div>
-      <p>\(N_0(E)\) ist das Röhrenspektrum, \(S_b(E)\) die spektrale Empfindlichkeit von Bin \(b\), also die Detector Response Function (mit Charge Sharing, Fluoreszenz, Tail) integriert zwischen den Schwellen. An \(S_b\) hängt die Genauigkeit der gesamten Zerlegung.</p>
-
-      <h3>Schätzung</h3>
-      <p>Die Bin-Zählungen \(y_b\) sind näherungsweise Poisson-verteilt. Daraus ergibt sich die Maximum-Likelihood-Schätzung</p>
-      <div class="eq">$$\hat{\mathbf A} = \arg\max_{\mathbf A}\ \sum_b \Big[\,y_b \ln \bar\lambda_b(\mathbf A) - \bar\lambda_b(\mathbf A)\,\Big]$$</div>
-      <p>Die Cramér-Rao-Schranke, also die Inverse der Fisher-Information \(\mathbf F_{kl} = \sum_b \frac{1}{\bar\lambda_b} \frac{\partial \bar\lambda_b}{\partial A_k}\frac{\partial \bar\lambda_b}{\partial A_l}\), gibt das kleinste erreichbare Rauschen der Basisbilder an. Mit ihr lassen sich Schwellen gezielt optimieren. Zwei praktische Punkte:</p>
-      <ul class="tight">
-        <li><strong>Rauschkorrelation:</strong> Die Basisbilder sind stark antikorreliert verrauscht, weil die Basisfunktionen ähnlich aussehen. Eine gemeinsame Regularisierung oder ein korreliertes Denoising verbessert die Ergebnisse deutlich.</li>
-        <li><strong>Alternativen:</strong> Zerlegung im Bildraum (einfacher, aber mit Aufhärtungsfehlern), oder One-Step-Rekonstruktion direkt aus den Bin-Rohdaten in Materialbilder (rechenintensiv, statistisch am saubersten).</li>
-      </ul>
-
-      <h3>Was daraus wird</h3>
-      <div class="tbl"><table>
-        <thead><tr><th>Bild</th><th>Berechnung</th><th>Nutzen</th></tr></thead>
-        <tbody>
-          <tr><td>Virtuelles monoenergetisches Bild (VMI)</td><td>\(\mu(E_0) = \sum_k a_k f_k(E_0)\) für frei wählbares \(E_0\)</td><td>niedrige keV für Iod-Kontrast, hohe keV gegen Metall- und Aufhärtungsartefakte</td></tr>
-          <tr><td>Iod-Map, virtuelles Nativbild</td><td>Basisbild Iod bzw. Wasser/Gewebe ohne Iod</td><td>Perfusion, Kontrastmittelanreicherung, Ersatz einer nativen Serie</td></tr>
-          <tr><td>Kalzium-Unterdrückung</td><td>Zerlegung mit Kalzium-Basis</td><td>Gefäßlumen trotz Plaque, Knochenmarködem</td></tr>
-          <tr><td>K-Kanten-Bildgebung</td><td>dritte Basis mit K-Kante</td><td>z. B. Gadolinium (50,2 keV) und Iod gleichzeitig unterscheiden</td></tr>
-          <tr><td>Optimal gewichtetes Bild</td><td>lineare Bin-Kombination mit maximalem CNR</td><td>Dosisreduktion bei gleicher Bildqualität</td></tr>
-        </tbody>
-      </table></div>
-    </section>
-
-    <!-- 10 -->
-    <section id="bildqualitaet">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
-      <h2>Bildqualität: MTF, NPS und DQE</h2>
-      <p>Die klassischen Kenngrößen gelten auch für PCDs, müssen aber mit Bedacht interpretiert werden, weil die Annahmen der linearen Systemtheorie nicht ohne Weiteres erfüllt sind.</p>
-
-      <h3>MTF</h3>
-      <p>Ohne Szintillator gibt es keine Lichtstreuung. Die MTF wird im Wesentlichen durch die Pixelapertur bestimmt und folgt nahezu der idealen sinc-Funktion. Charge Sharing verbreitert die Antwort leicht. Ein bemerkenswerter Effekt: Bei <em>hoher</em> Schwelle werden nur Ereignisse nahe der Pixelmitte vollständig gezählt, weil Randereignisse ihre Ladung teilen und unter die Schwelle fallen. Die effektive Apertur wird kleiner als das Pixel, und die MTF kann <em>über</em> der sinc-Kurve des geometrischen Pixels liegen. Die MTF ist damit schwellenabhängig.</p>
-
-      <h3>NPS und Mehrfachzählung</h3>
-      <p>Weil Elektronikrauschen nicht gezählt wird, besteht das Rauschen im Idealfall nur aus Photonenstatistik. Mehrfachzählungen ändern das: Wenn ein Photon in zwei benachbarten Pixeln gezählt wird, sind deren Werte korreliert. Das NPS ist dann nicht mehr flach (weiß), sondern bei niedrigen Ortsfrequenzen erhöht. Außerdem ist die Varianz der Gesamtzählung größer als ihr Mittelwert.</p>
-
-      <h3>DQE</h3>
-      <p>Sei \(m\) die Zahl der Zählungen, die ein einzelnes absorbiertes Photon auslöst (0, 1, 2 …). Analog zum Swank-Faktor eines Szintillators gilt bei der Ortsfrequenz null:</p>
-      <div class="eq">$$\mathrm{DQE}(0) = \eta \cdot \frac{\langle m\rangle^2}{\langle m^2\rangle}$$</div>
-      <p>mit der Quanteneffizienz \(\eta\). Ein Detektor, der jedes Photon genau einmal zählt, hat \(\langle m\rangle^2/\langle m^2\rangle = 1\). Zählt er 20 % der Photonen doppelt, ist \(\langle m\rangle = 1{,}2\), \(\langle m^2\rangle = 1{,}6\), und der Faktor sinkt auf 0,9. Abb. 7 berechnet diesen Faktor live: Stelle eine niedrige Schwelle und kleine Pixel ein und beobachte, wie er fällt. Mit Charge Summing kommt er näher an 1.</p>
-      <div class="note">
-        <p><strong>Messpraxis:</strong> Normen für die DQE-Messung digitaler Röntgendetektoren (z. B. die Reihe IEC 62220) gehen von einem linearen, verschiebungsinvarianten System mit linearisierter Kennlinie aus. Für PCDs braucht es zusätzlich eine ratenabhängige Linearisierung, eine Festlegung, welche Schwelle bzw. welche Bin-Kombination betrachtet wird, und die Messung bei Flüssen, die klinisch relevant sind, weil Pile-up die Antwort verändert. Die Werte hängen von Schwelle und Rate ab und sind nicht als einzelne Zahl vergleichbar.</p>
-      </div>
-    </section>
-
-    <!-- 11 -->
-    <section id="systeme">
-      <div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
-      <h2>Systeme und Sensortypen</h2>
-      <h3>CdTe / CZT, Face-on</h3>
-      <p>Der Sensor liegt flach zum Strahl, die Röntgenquanten treten durch die Kathode ein. Vorteile: hohe Absorption in wenigen Millimetern, kompakte Module. Nachteile: Fluoreszenz bei 23–27 keV, Polarisation, anspruchsvolle Kristallherstellung. Das erste klinisch zugelassene PCD-CT, das Siemens NAEOTOM Alpha (FDA-Zulassung 2021), verwendet CdTe in einer Dual-Source-Geometrie.</p>
-      <h3>Silizium, Edge-on</h3>
-      <p>Silizium absorbiert schwach. Man stellt die Sensoren deshalb hochkant, sodass der Strahl mehrere Zentimeter Silizium durchquert. Entlang der Tiefe kann man den Sensor zusätzlich segmentieren, was den Fluss pro Kanal verteilt und Tiefeninformation liefert. Vorteile: ausgereifte Materialqualität, keine Polarisation, keine störende K-Fluoreszenz im relevanten Bereich. Nachteile: Bei niedriger Ordnungszahl dominiert Compton-Streuung im Sensor, was zusätzliche niederenergetische Ereignisse erzeugt, und die Geometrie ist mechanisch aufwendig. Dieser Ansatz wird unter anderem als „Deep Silicon“ verfolgt.</p>
-      <h3>Typische Betriebsmodi</h3>
-      <ul class="tight">
-        <li><strong>Ultra-High-Resolution (UHR):</strong> Die kleinen Subpixel werden einzeln ausgelesen. Die Ortsauflösung reicht für Felsenbein, Lunge oder Koronarstents.</li>
-        <li><strong>Standard / spektral:</strong> Subpixel werden zu Makropixeln zusammengefasst, alle Bins werden für VMI und Materialbilder genutzt.</li>
-        <li><strong>Niedrigdosis:</strong> Profitiert direkt vom fehlenden Elektronikrauschen.</li>
-      </ul>
-    </section>
-
-    <!-- A -->
-    <section id="zahlen">
-      <div class="eyebrow">Anhang</div>
-      <h2>Zahlen auf einen Blick</h2>
-      <p class="muted">Typische Größenordnungen bei Raumtemperatur. Werte für μτ schwanken je nach Kristallqualität und Hersteller um mindestens eine Größenordnung.</p>
-      <div class="tbl"><table>
-        <thead><tr><th>Größe</th><th class="num">CdTe</th><th class="num">CZT</th><th class="num">Si</th></tr></thead>
-        <tbody>
-          <tr><td>Ordnungszahlen</td><td class="num">48 / 52</td><td class="num">48 / 30 / 52</td><td class="num">14</td></tr>
-          <tr><td>Dichte (g/cm³)</td><td class="num">5,85</td><td class="num">~5,8</td><td class="num">2,33</td></tr>
-          <tr><td>Bandlücke (eV)</td><td class="num">1,44</td><td class="num">~1,57</td><td class="num">1,12</td></tr>
-          <tr><td>Paarerzeugungsenergie W (eV)</td><td class="num">4,43</td><td class="num">~4,6</td><td class="num">3,62</td></tr>
-          <tr><td>μₑ (cm²/Vs)</td><td class="num">~1100</td><td class="num">~1000</td><td class="num">~1400</td></tr>
-          <tr><td>μₕ (cm²/Vs)</td><td class="num">~100</td><td class="num">50–100</td><td class="num">~450</td></tr>
-          <tr><td>(μτ)ₑ (cm²/V)</td><td class="num">~10⁻³</td><td class="num">10⁻³–10⁻²</td><td class="num">&gt; 1</td></tr>
-          <tr><td>(μτ)ₕ (cm²/V)</td><td class="num">~10⁻⁴</td><td class="num">~10⁻⁵</td><td class="num">~1</td></tr>
-          <tr><td>K-Kanten (keV)</td><td class="num">Cd 26,7 · Te 31,8</td><td class="num">wie CdTe</td><td class="num">1,8</td></tr>
-        </tbody>
-      </table></div>
-      <div class="tbl"><table>
-        <thead><tr><th>Größe</th><th class="num">Typischer Wert</th></tr></thead>
-        <tbody>
-          <tr><td>Sensordicke CdTe/CZT</td><td class="num">1,5–3 mm</td></tr>
-          <tr><td>Bias-Spannung</td><td class="num">einige 100 V/mm</td></tr>
-          <tr><td>Pixelgröße am Detektor</td><td class="num">~0,1–0,3 mm</td></tr>
-          <tr><td>Energieschwellen pro Pixel</td><td class="num">2–8</td></tr>
-          <tr><td>Unterste Schwelle</td><td class="num">~20–25 keV</td></tr>
-          <tr><td>Elektronikrauschen (ENC)</td><td class="num">~0,5–1 keV rms</td></tr>
-          <tr><td>Peaking-Zeit / Totzeit</td><td class="num">~10–30 ns</td></tr>
-          <tr><td>Fluss am Detektor (unabgeschwächt)</td><td class="num">bis ~10⁸–10⁹ mm⁻²s⁻¹</td></tr>
-          <tr><td>Ladungswolke (σ, nach Drift)</td><td class="num">~10–25 µm</td></tr>
-          <tr><td>K-Fluoreszenz Cd / Te (Kα)</td><td class="num">23,1 / 27,5 keV</td></tr>
-          <tr><td>K-Kanten Kontrastmittel</td><td class="num">I 33,2 · Gd 50,2 · W 69,5 · Au 80,7 · Bi 90,5 keV</td></tr>
-        </tbody>
-      </table></div>
-    </section>
-
-    <footer>
-      Alle Simulationen auf dieser Seite sind didaktische Modelle mit typischen Parametern aus der Literatur. Sie zeigen Zusammenhänge und Größenordnungen, keine Herstellerdaten.
-    </footer>
+<section id="konzept">
+<div class="level"><span class="depth"><i class="f"></i><i></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 1 · Konzept</span></div>
+<h2>Zählen statt integrieren</h2>
+<p>Ein CT misst in jeder Projektion, wie stark der Patient die Röntgenstrahlung entlang jedes Strahls schwächt. Konventionelle Detektoren tun das, indem sie während eines kurzen Zeitfensters (eines <em>Frames</em> oder einer <em>Projektion</em>, typisch einige hundert Mikrosekunden) die gesamte deponierte Energie aufsummieren. Das Ergebnis ist ein Strom bzw. eine Ladung, die proportional zur Summe der Photonenenergien ist.</p>
+<p>Ein Photon-Counting-Detektor (PCD) macht etwas grundsätzlich anderes: Er erkennt <strong>jedes einzelne Röntgenquant als eigenes elektrisches Ereignis</strong>, misst dessen Pulshöhe und vergleicht sie mit mehreren Energieschwellen. Am Ende eines Frames stehen pro Pixel nicht eine, sondern mehrere Zahlen: wie viele Photonen über 20 keV, über 35 keV, über 50 keV und so weiter gekommen sind.</p>
+<h3>Drei Konsequenzen dieser Idee</h3>
+<p><strong>1. Elektronikrauschen verschwindet aus dem Signal.</strong> Beim integrierenden Detektor addiert sich das Rauschen der Ausleseelektronik zu jedem Messwert. Bei wenigen Photonen, etwa hinter dicken Körperteilen oder bei sehr niedriger Dosis, dominiert es. Beim PCD liegt die unterste Schwelle (z. B. 20 keV) weit über dem Rauschpegel (rund 1 keV). Rauschen erzeugt dann praktisch keine Zählereignisse. Was bleibt, ist reines Poisson-Rauschen der Photonen.</p>
+<p><strong>2. Jedes Photon bekommt dasselbe Gewicht.</strong> Ein integrierender Detektor gewichtet jedes Photon mit seiner Energie <span class="arithmatex">\(E\)</span>. Hochenergetische Photonen tragen aber den <em>geringsten</em> Kontrast, weil die Schwächungsunterschiede zwischen Geweben mit steigender Energie kleiner werden. Der PCD zählt jedes Photon gleich (Gewicht 1) oder sogar mit einem optimierten, energieabhängigen Gewicht. Das verbessert das Kontrast-Rausch-Verhältnis, vor allem für Iod.</p>
+<p><strong>3. Spektrale Information in jedem Scan.</strong> Mit mehreren Energie-Bins pro Pixel bekommt man aus jeder Aufnahme eine grobe Spektralmessung. Daraus lassen sich Materialien trennen, virtuelle monoenergetische Bilder rechnen oder Kontrastmittel mit K-Kante gezielt darstellen.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Energieintegrierend (EID)</th>
+<th>Photonenzählend (PCD)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Konversion</td>
+<td>indirekt: Szintillator → Licht → Photodiode</td>
+<td>direkt: Halbleiter → Ladung</td>
+</tr>
+<tr>
+<td>Messgröße pro Pixel</td>
+<td><span class="arithmatex">\(\sum_i E_i\)</span> + Rauschen</td>
+<td><span class="arithmatex">\(N(E \ge T_k)\)</span> für mehrere Schwellen <span class="arithmatex">\(T_k\)</span></td>
+</tr>
+<tr>
+<td>Gewichtung</td>
+<td><span class="arithmatex">\(w(E) \propto E\)</span></td>
+<td><span class="arithmatex">\(w(E) = 1\)</span> oder frei wählbar</td>
+</tr>
+<tr>
+<td>Elektronikrauschen</td>
+<td>im Signal enthalten</td>
+<td>durch Schwelle unterdrückt</td>
+</tr>
+<tr>
+<td>Pixelgröße</td>
+<td>durch Septen begrenzt (~1 mm am Detektor)</td>
+<td>klein ohne Effizienzverlust (~0,15–0,3 mm)</td>
+</tr>
+<tr>
+<td>Spektral</td>
+<td>nur mit Dual-Source, kV-Switching, Dual-Layer</td>
+<td>intrinsisch, 2–8 Bins</td>
+</tr>
+<tr>
+<td>Hauptprobleme</td>
+<td>Rauschen bei Niedrigdosis, Swank-Rauschen</td>
+<td>Pile-up, Charge Sharing, Fluoreszenz, Polarisation</td>
+</tr>
+</tbody>
+</table></div>
+<p>Der Rest dieser Seite folgt dem Weg eines Photons: Absorption im Sensor, Ladungstransport, Signalentstehung, Pulsverarbeitung, Zählung. Danach geht es um die Effekte, die diesen idealen Weg stören, und schließlich darum, was man mit den Energie-Bins in der Bildgebung anfängt.</p>
+</section>
+<section id="konversion">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
+<h2>Direkte Konversion im Halbleiter</h2>
+<p>Damit ein einzelnes Photon als eigener Puls erkennbar ist, muss die Umwandlung in ein elektrisches Signal schnell und ohne Zwischenschritt geschehen. Ein Szintillator ist dafür ungeeignet: Er erzeugt einen Lichtblitz mit einer Abklingzeit von Mikrosekunden (bei GOS sogar mit langem Nachleuchten), und das Licht verteilt sich über mehrere Pixel. Ein PCD verwendet deshalb einen <strong>direkt konvertierenden Halbleiter</strong>.</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Vergleich indirekte Konversion mit Szintillator und Photodiode gegen direkte Konversion in CdTe mit Elektron-Loch-Paaren und Pixelanoden." role="img" viewbox="0 0 760 330">
+<defs>
+<marker id="ar" markerheight="7" markerwidth="7" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-fg" d="M0,0 L10,5 L0,10 z"></path></marker>
+<marker id="are" markerheight="6" markerwidth="6" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-e" d="M0,0 L10,5 L0,10 z"></path></marker>
+<marker id="arh" markerheight="6" markerwidth="6" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-h" d="M0,0 L10,5 L0,10 z"></path></marker>
+</defs>
+<!-- links: indirekt -->
+<text class="d-fg" font-size="16" font-weight="600" x="20" y="24">Indirekt (EID)</text>
+<text class="d-mut" font-size="13" x="20" y="42">Röntgen → Licht → Ladung, integriert</text>
+<line class="d-st" marker-end="url(#ar)" stroke-dasharray="5 4" stroke-width="2" x1="150" x2="150" y1="58" y2="118"></line>
+<text class="d-mut m" font-size="11" x="160" y="80">Röntgenquant</text>
+<!-- Szintillatorzellen mit Septen -->
+<rect class="d-scint" height="80" width="300" x="40" y="122"></rect>
+<g class="d-fg">
+<rect height="80" width="5" x="40" y="122"></rect><rect height="80" width="5" x="115" y="122"></rect><rect height="80" width="5" x="190" y="122"></rect><rect height="80" width="5" x="265" y="122"></rect><rect height="80" width="5" x="335" y="122"></rect>
+</g>
+<circle class="d-acc" cx="150" cy="150" r="5"></circle>
+<g class="d-sta" stroke-width="1.3">
+<line x1="150" x2="125" y1="150" y2="200"></line><line x1="150" x2="140" y1="150" y2="200"></line><line x1="150" x2="160" y1="150" y2="200"></line><line x1="150" x2="178" y1="150" y2="200"></line>
+<path d="M150 150 L186 168 L170 200"></path><path d="M150 150 L122 175 L132 200"></path>
+</g>
+<text class="d-fg" font-size="13" x="352" y="150">Szintillator</text>
+<text class="d-mut" font-size="12" x="352" y="166">(z. B. GOS)</text>
+<text class="d-mut" font-size="12" x="352" y="186">Septen gegen</text>
+<text class="d-mut" font-size="12" x="352" y="200">Lichtübersprechen</text>
+<rect class="d-fg" height="22" opacity="0.85" width="300" x="40" y="206"></rect>
+<g class="d-bg"><rect height="14" width="68" x="45" y="210"></rect><rect height="14" width="68" x="120" y="210"></rect><rect height="14" width="68" x="195" y="210"></rect><rect height="14" width="65" x="270" y="210"></rect></g>
+<text class="d-fg" font-size="13" x="352" y="222">Photodioden</text>
+<path class="d-sta" d="M60 268 Q 80 268 95 252 T 140 248 T 190 256 T 240 246 T 300 254" stroke-width="2"></path>
+<text class="d-mut" font-size="12" x="40" y="296">Strom ∝ Σ Energie, über das Frame integriert.</text>
+<text class="d-mut" font-size="12" x="40" y="312">Einzelne Photonen nicht mehr unterscheidbar.</text>
+<!-- rechts: direkt -->
+<text class="d-fg" font-size="16" font-weight="600" x="420" y="24">Direkt (PCD)</text>
+<text class="d-mut" font-size="13" x="420" y="42">Röntgen → Ladung, pro Photon ein Puls</text>
+<rect class="d-fg" height="5" width="250" x="430" y="104"></rect>
+<text class="d-fg" font-size="13" x="688" y="111">Kathode, −U</text>
+<rect class="d-soft" height="110" width="250" x="430" y="109"></rect>
+<text class="d-fg" font-size="13" x="688" y="160">CdTe</text>
+<text class="d-mut" font-size="12" x="688" y="176">~1,6 mm</text>
+<line class="d-st" marker-end="url(#ar)" stroke-dasharray="5 4" stroke-width="2" x1="560" x2="560" y1="58" y2="140"></line>
+<g>
+<circle class="d-e" cx="556" cy="150" r="3.4"></circle><circle class="d-e" cx="563" cy="146" r="3.4"></circle><circle class="d-e" cx="560" cy="156" r="3.4"></circle><circle class="d-e" cx="566" cy="154" r="3.4"></circle>
+<circle class="d-h" cx="552" cy="144" r="3.4"></circle><circle class="d-h" cx="568" cy="147" r="3.4"></circle><circle class="d-h" cx="557" cy="140" r="3.4"></circle><circle class="d-h" cx="563" cy="159" r="3.4"></circle>
+</g>
+<line class="d-ste" marker-end="url(#are)" stroke-width="2" x1="560" x2="560" y1="164" y2="208"></line>
+<line class="d-sth" marker-end="url(#arh)" stroke-width="2" x1="545" x2="545" y1="140" y2="118"></line>
+<text class="d-fg" font-size="12" x="572" y="196">e⁻ zur Anode</text>
+<text class="d-fg" font-size="12" x="470" y="128">Löcher</text>
+<!-- Pixelanoden -->
+<g class="d-fg"><rect height="6" width="54" x="436" y="219"></rect><rect height="6" width="54" x="498" y="219"></rect><rect class="d-acc" height="6" width="54" x="560" y="219"></rect><rect height="6" width="54" x="622" y="219"></rect></g>
+<text class="d-fg" font-size="13" x="688" y="227">Pixelanoden</text>
+<rect class="d-fg" height="26" opacity="0.85" rx="2" width="250" x="430" y="232"></rect>
+<text class="d-bg" font-size="12" style="fill:var(--bg)" text-anchor="middle" x="555" y="250">ASIC: ein Kanal pro Pixel</text>
+<path class="d-sta" d="M440 300 L470 300 L476 274 L486 300 L540 300 L546 284 L556 300 L610 300 L616 268 L626 300 L670 300" stroke-width="2"></path>
+<text class="d-mut" font-size="12" x="430" y="320">Pulshöhe ∝ Energie des einzelnen Photons</text>
+</svg>
+</div>
+<figcaption><b>Abb. 2</b> Links: Im Szintillator wird das Quant in Licht umgewandelt, das sich ausbreitet und über Septen auf ein Pixel begrenzt wird. Die Photodiode integriert. Rechts: Im Halbleiter erzeugt das Quant direkt Elektron-Loch-Paare. Das Feld zieht die Elektronen zur Pixelanode, jedes Photon erzeugt einen eigenen Strompuls. Die Pixel sind nur durch die Elektrodenstruktur definiert.</figcaption>
+</figure>
+<h3>Absorption</h3>
+<p>Der Sensor muss die Röntgenquanten in wenigen Millimetern stoppen. Entscheidend sind hohe Ordnungszahl und Dichte, denn der Photoeffekt skaliert ungefähr mit <span class="arithmatex">\(Z^4/E^3\)</span>. <strong>CdTe</strong> (Z = 48 und 52, ρ = 5,85 g/cm³) und die Legierung <strong>CdZnTe (CZT)</strong> erfüllen das. Bei 1,5–2 mm Dicke wird der diagnostisch wichtige Teil des CT-Spektrums nahezu vollständig absorbiert, erst am oberen Ende (über ~100 keV) sinkt die Quanteneffizienz merklich. Silizium (Z = 14) absorbiert viel schwächer und braucht eine andere Geometrie (siehe <a href="#systeme">Abschnitt 11</a>).</p>
+<h3>Erzeugung von Ladungsträgern</h3>
+<p>Das absorbierte Photon überträgt seine Energie auf ein Photoelektron, das auf seinem Weg durch den Kristall viele Elektron-Loch-Paare erzeugt. Im Mittel kostet ein Paar die Energie <span class="arithmatex">\(W\)</span>, etwa das Dreifache der Bandlücke, weil ein Teil der Energie an Gitterschwingungen geht:</p>
+<div class="eq">\[
+N = \frac{E}{W}, \qquad W_{\mathrm{CdTe}} \approx 4{,}43\ \mathrm{eV}
+\]</div>
+<p>Ein 60-keV-Photon erzeugt also rund 13 500 Paare, das sind etwa 2,2 fC. Die Zahl der Paare schwankt weniger als nach Poisson zu erwarten, weil die Erzeugungsprozesse nicht unabhängig sind. Das beschreibt der Fano-Faktor <span class="arithmatex">\(F\)</span>:</p>
+<div class="eq">\[
+\sigma_N = \sqrt{F\,N}, \qquad F \approx 0{,}1 \quad\Rightarrow\quad \Delta E_{\mathrm{FWHM}} = 2{,}355\,\sqrt{F\,W\,E} \approx 0{,}4\ \mathrm{keV}\ \text{bei 60 keV}
+\]</div>
+<p>Diese Fano-Grenze ist eine theoretische Untergrenze. Reale CT-Detektoren erreichen einige keV, weil Elektronikrauschen, unvollständige Ladungssammlung und Charge Sharing dominieren. Das sind die Themen der nächsten Abschnitte.</p>
+</section>
+<section id="signal">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span><span class="eyebrow">Ebene 2 · Sensor</span></div>
+<h2>Ladungstransport und Signalentstehung</h2>
+<p>Eine Hochspannung von einigen hundert Volt pro Millimeter zieht die Elektronen zu den Pixelanoden und die Löcher zur gemeinsamen Kathode. Die Driftgeschwindigkeit ist <span class="arithmatex">\(v = \mu E\)</span>. Elektronen und Löcher unterscheiden sich in CdTe stark:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Größe</th>
+<th class="num">Elektronen</th>
+<th class="num">Löcher</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Beweglichkeit μ</td>
+<td class="num">~1100 cm²/Vs</td>
+<td class="num">~100 cm²/Vs</td>
+</tr>
+<tr>
+<td>Mobilitäts-Lebensdauer-Produkt μτ</td>
+<td class="num">~10⁻³ cm²/V</td>
+<td class="num">~10⁻⁴ cm²/V</td>
+</tr>
+<tr>
+<td>Driftzeit über 1,6 mm bei 1000 V</td>
+<td class="num">~23 ns</td>
+<td class="num">~250 ns</td>
+</tr>
+</tbody>
+</table></div>
+<p>Ladungsträger können unterwegs an Störstellen eingefangen werden (<em>Trapping</em>). Die mittlere Driftlänge bis zum Einfang ist <span class="arithmatex">\(\lambda = \mu\tau E\)</span>. Bei einem planaren Detektor mit zwei großflächigen Elektroden hängt die gesammelte Ladung deshalb von der Interaktionstiefe <span class="arithmatex">\(x\)</span> ab, gemessen von der Kathode. Das beschreibt die <strong>Hecht-Gleichung</strong>:</p>
+<div class="eq">\[
+\mathrm{CCE}(x) = \frac{\lambda_e}{d}\left(1 - e^{-(d-x)/\lambda_e}\right) + \frac{\lambda_h}{d}\left(1 - e^{-x/\lambda_h}\right)
+\]</div>
+<h3>Wo das Signal wirklich entsteht: das Shockley-Ramo-Theorem</h3>
+<p>Ein häufiges Missverständnis: Das Signal entsteht nicht erst, wenn die Elektronen an der Anode „ankommen“. Schon während der Drift <em>influenziert</em> jede bewegte Ladung einen Strom auf allen Elektroden. Wie groß dieser Strom auf einer bestimmten Elektrode ist, bestimmt das <strong>Gewichtungspotential</strong> <span class="arithmatex">\(\varphi_w\)</span>. Man erhält es, indem man die Laplace-Gleichung löst, mit der betrachteten Elektrode auf Potential 1 und allen anderen auf 0. Raumladung und tatsächliche Bias-Spannung spielen dafür keine Rolle.</p>
+<div class="eq">\[
+Q_{\mathrm{ind}} = -q\,\Delta\varphi_w, \qquad i(t) = q\,\vec v \cdot \vec E_w
+\]</div>
+<p>Bei einem planaren Detektor fällt <span class="arithmatex">\(\varphi_w\)</span> linear von 1 an der Anode auf 0 an der Kathode ab. Elektronen und Löcher tragen dann je nach Tiefe zum Signal bei. Ist das Pixel aber klein gegenüber der Sensordicke, bleibt <span class="arithmatex">\(\varphi_w\)</span> im größten Teil des Volumens nahe null und steigt erst kurz vor der Anode steil an. Das ist der <strong>Small-Pixel-Effekt</strong>: Fast das gesamte Signal stammt von den Elektronen auf ihren letzten Mikrometern, die Löcher tragen kaum bei. Ihr schlechter Transport fällt damit kaum noch ins Gewicht.</p>
+<figure class="fig">
+<div class="two">
+<canvas aria-label="Berechnetes Gewichtungspotential eines Pixels im Querschnitt durch den Sensor." class="c-wp" id="cv-wp" role="img"></canvas>
+<canvas aria-label="Gewichtungspotential auf der Pixelachse und induzierte Ladung über der Zeit, verglichen mit einem planaren Detektor." class="c-q" id="cv-q" role="img"></canvas>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="wp-p">Pixelbreite / Dicke</label><output id="wp-p-o"></output></div><input id="wp-p" max="1.5" min="0.06" step="0.01" type="range" value="0.14"/></div>
+<div class="ctrl"><div class="lab"><label for="wp-x">Interaktionstiefe (ab Kathode)</label><output id="wp-x-o"></output></div><input id="wp-x" max="0.98" min="0.02" step="0.01" type="range" value="0.5"/></div>
+<div class="ctrl"><div class="lab"><label for="wp-mt">μτ der Löcher</label><output id="wp-mt-o"></output></div><input id="wp-mt" max="-3" min="-6" step="0.05" type="range" value="-4.5"/></div>
+</div>
+<div class="readout" id="wp-read"></div>
+<figcaption><b>Abb. 3</b> Links: numerisch gelöstes Gewichtungspotential des mittleren Pixels (2D-Schnitt, Höhenlinien in Zehntelstufen). Der Punkt markiert die Interaktion, blau driften die Elektronen zur Anode, rot die Löcher zur Kathode. Rechts oben: \(\varphi_w\) auf der Pixelachse, rechts unten: induzierte Ladung über der Zeit. Gestrichelt ist jeweils der planare Fall. Annahmen: d = 1,6 mm, 1000 V, μₑ = 1100 cm²/Vs, μₕ = 100 cm²/Vs, (μτ)ₑ = 3·10⁻³ cm²/V.</figcaption>
+</figure>
+<p>Schiebe die Pixelbreite nach oben, bis sie größer als die Dicke ist: Das Gewichtungspotential wird linear, die Kurve der induzierten Ladung bekommt einen langsamen Anteil durch die Löcher, und mit kleinem μτ der Löcher bleibt die gesammelte Ladung unter 100 %. Das erzeugt im Spektrum den niederenergetischen Ausläufer (Tail). Bei kleinen Pixeln ist die induzierte Ladung fast unabhängig von der Tiefe.</p>
+<div class="note">
+<p>Der Preis kleiner Pixel: Die Ladungswolke ist im Verhältnis zur Pixelgröße nicht mehr vernachlässigbar, und mehr Ereignisse verteilen sich auf Nachbarpixel. Darum geht es in <a href="#sharing">Abschnitt 6</a>.</p>
+</div>
+</section>
+<section id="asic">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span><span class="eyebrow">Ebene 3 · Elektronik</span></div>
+<h2>Vom Ladungspuls zum Zählerstand</h2>
+<p>Unter jedem Pixel sitzt ein eigener Signalverarbeitungskanal im ASIC, der per Flip-Chip-Bonding direkt mit dem Sensor verbunden ist. Die Kette ist in allen photonenzählenden Systemen im Prinzip gleich.</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Blockschaltbild: Pixel, ladungsempfindlicher Verstärker, Pulsformer, vier Komparatoren mit Schwellen, vier Zähler, Auslese." role="img" viewbox="0 0 760 250">
+<defs><marker id="ar2" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-mut" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<!-- Pixel -->
+<rect class="d-soft" height="50" rx="3" width="70" x="10" y="100"></rect>
+<text class="d-fg" font-size="13" text-anchor="middle" x="45" y="129">Pixel</text>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="80" x2="112" y1="125" y2="125"></line>
+<!-- CSA -->
+<path class="d-surf" d="M115 95 L115 155 L175 125 Z" stroke-width="1.5" style="stroke:var(--fg)"></path>
+<text class="d-fg m" font-size="11" x="133" y="130">CSA</text>
+<path class="d-st" d="M120 95 L120 72 L170 72 L170 120" stroke-width="1.2"></path>
+<line class="d-st" stroke-width="2" x1="140" x2="140" y1="66" y2="78"></line><line class="d-st" stroke-width="2" x1="146" x2="146" y1="66" y2="78"></line>
+<text class="d-mut m" font-size="10" x="128" y="60">C_f</text>
+<text class="d-mut" font-size="12" x="110" y="182">V = Q / C_f</text>
+<path class="d-sta" d="M100 215 L118 215 L120 196 L150 200 L170 204" stroke-width="1.8"></path>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="175" x2="207" y1="125" y2="125"></line>
+<!-- Shaper -->
+<rect class="d-surf" height="50" rx="3" stroke-width="1.5" style="stroke:var(--fg)" width="90" x="210" y="100"></rect>
+<text class="d-fg" font-size="13" text-anchor="middle" x="255" y="122">Pulsformer</text>
+<text class="d-mut m" font-size="10" text-anchor="middle" x="255" y="139">CR-RCⁿ, τ_p</text>
+<path class="d-sta" d="M218 215 L236 215 C242 196 250 196 256 206 C262 214 272 215 290 215" stroke-width="1.8"></path>
+<text class="d-mut" font-size="12" x="210" y="182">Höhe ∝ E</text>
+<line class="d-stm" stroke-width="1.5" x1="300" x2="340" y1="125" y2="125"></line>
+<line class="d-stm" stroke-width="1.5" x1="340" x2="340" y1="50" y2="200"></line>
+<!-- Komparatoren -->
+<g font-size="11">
+<g transform="translate(0,0)"><line class="d-stm" stroke-width="1.5" x1="340" x2="372" y1="50" y2="50"></line><path class="d-b0" d="M375 34 L375 66 L405 50 Z"></path><text class="d-fg m" x="415" y="54">T₁ 20 keV</text></g>
+<g transform="translate(0,50)"><line class="d-stm" stroke-width="1.5" x1="340" x2="372" y1="50" y2="50"></line><path class="d-b1" d="M375 34 L375 66 L405 50 Z"></path><text class="d-fg m" x="415" y="54">T₂ 35 keV</text></g>
+<g transform="translate(0,100)"><line class="d-stm" stroke-width="1.5" x1="340" x2="372" y1="50" y2="50"></line><path class="d-b2" d="M375 34 L375 66 L405 50 Z"></path><text class="d-fg m" x="415" y="54">T₃ 50 keV</text></g>
+<g transform="translate(0,150)"><line class="d-stm" stroke-width="1.5" x1="340" x2="372" y1="50" y2="50"></line><path class="d-b3" d="M375 34 L375 66 L405 50 Z"></path><text class="d-fg m" x="415" y="54">T₄ 65 keV</text></g>
+</g>
+<text class="d-mut" font-size="12" x="352" y="236">Komparatoren + Trim-DAC</text>
+<!-- Zähler -->
+<g>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="490" x2="532" y1="50" y2="50"></line>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="490" x2="532" y1="100" y2="100"></line>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="490" x2="532" y1="150" y2="150"></line>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="490" x2="532" y1="200" y2="200"></line>
+<rect class="d-surf" height="28" rx="3" stroke-width="1.5" style="stroke:var(--bin0)" width="96" x="535" y="36"></rect><text class="d-fg m" font-size="11" text-anchor="middle" x="583" y="54">Zähler 1</text>
+<rect class="d-surf" height="28" rx="3" stroke-width="1.5" style="stroke:var(--bin1)" width="96" x="535" y="86"></rect><text class="d-fg m" font-size="11" text-anchor="middle" x="583" y="104">Zähler 2</text>
+<rect class="d-surf" height="28" rx="3" stroke-width="1.5" style="stroke:var(--bin2)" width="96" x="535" y="136"></rect><text class="d-fg m" font-size="11" text-anchor="middle" x="583" y="154">Zähler 3</text>
+<rect class="d-surf" height="28" rx="3" stroke-width="1.5" style="stroke:var(--bin3)" width="96" x="535" y="186"></rect><text class="d-fg m" font-size="11" text-anchor="middle" x="583" y="204">Zähler 4</text>
+</g>
+<line class="d-stm" marker-end="url(#ar2)" stroke-width="1.5" x1="631" x2="668" y1="125" y2="125"></line>
+<path class="d-stm" d="M631 50 L650 50 L650 200 L631 200" stroke-width="1.5"></path>
+<rect class="d-soft" height="50" rx="3" width="80" x="670" y="100"></rect>
+<text class="d-fg" font-size="13" text-anchor="middle" x="710" y="122">Auslese</text>
+<text class="d-mut m" font-size="10" text-anchor="middle" x="710" y="139">pro Frame</text>
+</svg>
+</div>
+<figcaption><b>Abb. 4</b> Signalkette eines Pixelkanals. Der ladungsempfindliche Verstärker (CSA) wandelt die influenzierte Ladung in eine Spannungsstufe um, der Pulsformer macht daraus einen kurzen Puls, dessen Höhe proportional zur Energie ist. Jeder Komparator inkrementiert seinen Zähler, wenn der Puls seine Schwelle überschreitet. Die Zähler messen also integrale Spektren \(N(E \ge T_k)\), die Bins ergeben sich als Differenzen.</figcaption>
+</figure>
+<h3>Rauschen und Formungszeit</h3>
+<p class="muted" style="font-size:15px">Grundlagen zu thermischem Rauschen, Schrotrauschen und Filtern stehen auf der Seite <a href="../grundlagen/e-technik.html#rauschen">„E-Technik kompakt“</a>.</p>
+<p>Das Rauschen der Kette wird als äquivalente Rauschladung (ENC) angegeben, also die Ladung am Eingang, die ein gleich großes Ausgangssignal erzeugen würde. Drei Beiträge konkurrieren:</p>
+<div class="eq">\[
+\mathrm{ENC}^2 \approx \underbrace{a\,\frac{C_{\mathrm{in}}^2}{\tau_p}}_{\text{seriell, weiß}} \;+\; \underbrace{b\,I_{\mathrm{leak}}\,\tau_p}_{\text{parallel}} \;+\; \underbrace{c\,C_{\mathrm{in}}^2}_{1/f}
+\]</div>
+<p>Eine kurze Peaking-Zeit <span class="arithmatex">\(\tau_p\)</span> ist nötig, damit sich Pulse bei hohen Raten nicht überlappen, erhöht aber das serielle Rauschen. Kleine Pixel helfen doppelt: kleinere Eingangskapazität <span class="arithmatex">\(C_{\mathrm{in}}\)</span> und weniger Leckstrom pro Kanal. Typische Werte liegen bei 100–200 e⁻ rms, also etwa 0,5–1 keV. Gegenüber Schwellen ab 20 keV ist das vernachlässigbar.</p>
+<h3>Schwellen und Kalibrierung pro Pixel</h3>
+<p>Die Schwellen werden global über DACs eingestellt. Weil Verstärkung und Offset von Pixel zu Pixel streuen, hat jeder Kanal zusätzlich Trim-DACs, mit denen die effektive Schwelle in keV über alle Pixel angeglichen wird. Die Zähler (typisch 12–24 Bit) werden pro Projektion ausgelesen. Oft gibt es zwei Zählerbänke, sodass eine gelesen wird, während die andere zählt, ohne Totzeit zwischen den Frames.</p>
+<figure class="fig">
+<canvas aria-label="Simuliertes Signal am Ausgang des Pulsformers mit vier Schwellen. Bei hoher Rate überlappen sich Pulse." class="c-pulse" id="cv-pulse" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="pl-rate">Rate pro Pixel</label><output id="pl-rate-o"></output></div><input id="pl-rate" max="2.3" min="-0.3" step="0.01" type="range" value="0.7"/></div>
+<div class="ctrl"><div class="lab"><label for="pl-tp">Peaking-Zeit τ_p</label><output id="pl-tp-o"></output></div><input id="pl-tp" max="40" min="4" step="1" type="range" value="10"/></div>
+<button class="btn" id="pl-play" type="button">Pause</button>
+</div>
+<div class="tbl" style="margin:12px 0 0"><table class="small" id="pl-table"></table></div>
+<figcaption><b>Abb. 5</b> Simulierter Ausgang des Pulsformers (CR-RC-Pulsform, 0,7 keV Rauschen), Photonenenergien aus einem 120-kV-Spektrum hinter 10 cm Wasser. Die Striche am unteren Rand markieren die wahren Ankunftszeiten, eingefärbt nach wahrer Energie. Die Tabelle stammt aus einer schnelleren Hintergrundsimulation mit denselben Parametern. Erhöhe die Rate: Pulse verschmelzen (Pile-up), Zählungen gehen verloren, und gleichzeitig wandern Ereignisse in höhere Bins.</figcaption>
+</figure>
+</section>
+<section id="pileup">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+<h2>Zählrate, Totzeit und Pile-up</h2>
+<p>Die Herausforderung für Photon Counting im CT ist der Fluss. Hinter Luft oder am Rand des Patienten treffen bis zu 10⁸–10⁹ Photonen pro mm² und Sekunde auf den Detektor. Bei einer Pixelfläche von ~0,05 mm² sind das bis zu einige 10⁷ Ereignisse pro Sekunde und Kanal. Die Pulse dauern aber einige 10 ns. Das Verhältnis <span class="arithmatex">\(n\tau\)</span> ist damit nicht mehr klein.</p>
+<h3>Zwei Totzeitmodelle</h3>
+<p>Nach jedem gezählten Ereignis ist der Kanal für eine Totzeit <span class="arithmatex">\(\tau\)</span> blind. Zwei idealisierte Modelle beschreiben die gemessene Rate <span class="arithmatex">\(m\)</span> als Funktion der wahren Rate <span class="arithmatex">\(n\)</span>:</p>
+<div class="eq">\[
+\text{nicht-paralysierbar:}\quad m = \frac{n}{1 + n\tau} \qquad\qquad \text{paralysierbar:}\quad m = n\,e^{-n\tau}
+\]</div>
+<p>Im nicht-paralysierbaren Fall nähert sich <span class="arithmatex">\(m\)</span> asymptotisch <span class="arithmatex">\(1/\tau\)</span>. Im paralysierbaren Fall verlängert jedes Photon, auch ein nicht gezähltes, die Totzeit. Die gemessene Rate erreicht bei <span class="arithmatex">\(n = 1/\tau\)</span> ihr Maximum <span class="arithmatex">\(1/(e\tau)\)</span> und <em>fällt danach wieder</em>. Das ist kritisch: Eine gemessene Rate gehört dann zu zwei wahren Raten, und hinter Luft kann ein Pixel weniger zählen als hinter Gewebe. Ein Komparator am Ausgang eines Pulsformers verhält sich weitgehend paralysierbar, reale Systeme liegen zwischen beiden Modellen.</p>
+<figure class="fig">
+<canvas aria-label="Gemessene gegen wahre Zählrate für ideales, nicht-paralysierbares und paralysierbares Totzeitmodell, doppelt-logarithmisch." class="c-dead" id="cv-dead" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="dt-tau">Totzeit τ</label><output id="dt-tau-o"></output></div><input id="dt-tau" max="100" min="2" step="1" type="range" value="20"/></div>
+</div>
+<figcaption><b>Abb. 6</b> Gemessene gegen wahre Rate. Der Punkt markiert das Maximum des paralysierbaren Modells bei \(n = 1/\tau\). Rechts davon ist die Kennlinie nicht mehr eindeutig invertierbar.</figcaption>
+</figure>
+<h3>Spektrale Folgen</h3>
+<p>Pile-up kostet nicht nur Zählungen, es verfälscht auch Energien:</p>
+<ul class="tight">
+<li><strong>Peak-Pile-up:</strong> Zwei Photonen kommen fast gleichzeitig. Ihre Pulse addieren sich zu einem Puls der Höhe ≈ <span class="arithmatex">\(E_1 + E_2\)</span>. Statt zwei niederenergetischer Zählungen gibt es eine hochenergetische.</li>
+<li><strong>Tail-Pile-up:</strong> Ein Puls sitzt auf dem Ausläufer des vorigen. Seine Höhe ist zu groß (oder bei bipolarer Formung zu klein).</li>
+</ul>
+<p>Das Spektrum verschiebt sich zu höheren Energien, während die Gesamtzahl sinkt. Für die Materialzerlegung ist das gefährlich, weil sie gerade auf dem Verhältnis zwischen den Bins beruht. Abb. 5 zeigt beide Effekte direkt: Bei hoher Rate steigen die gezählten Ereignisse in den oberen Bins über die wahren Werte, während die unterste Schwelle Zählungen verliert.</p>
+<h3>Gegenmaßnahmen</h3>
+<ul class="tight">
+<li><strong>Kleine Pixel:</strong> Der Fluss pro Kanal sinkt mit der Fläche. Das ist der wichtigste Hebel und ein Grund für Pixel von ~0,2 mm.</li>
+<li><strong>Kurze Pulsformung</strong> und schnelle Rücksetzung des CSA, im Tausch gegen etwas mehr Rauschen.</li>
+<li><strong>Pile-up-Trigger oder Retrigger-Logik:</strong> Ein zusätzlicher Komparator erkennt, ob ein Puls über der Schwelle bleibt, und zählt Mehrfachereignisse.</li>
+<li><strong>Formfilter (Bowtie)</strong> vor dem Patienten senken den Fluss an den Rändern, wo wenig Gewebe durchstrahlt wird.</li>
+<li><strong>Modellbasierte Korrektur:</strong> Pixelweise kalibrierte Funktionen <span class="arithmatex">\(m_k(n)\)</span> pro Schwelle, meist über Messungen mit variablem Röhrenstrom gewonnen.</li>
+</ul>
+</section>
+<section id="sharing">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+<h2>Charge Sharing und K-Fluoreszenz</h2>
+<p>Bisher wurde angenommen, dass ein Photon genau ein Ereignis in genau einem Pixel erzeugt. Zwei Effekte brechen diese Annahme, und beide werden mit kleineren Pixeln stärker.</p>
+<h3>Charge Sharing</h3>
+<p>Die Elektronenwolke ist zu Beginn nur wenige Mikrometer groß, weitet sich aber während der Drift durch Diffusion und gegenseitige Abstoßung auf:</p>
+<div class="eq">\[
+\sigma_{\mathrm{diff}} = \sqrt{2 D t}, \qquad D = \frac{\mu k_B T}{q} \approx 28\ \mathrm{cm^2/s}\ (\text{Elektronen, CdTe})
+\]</div>
+<p>Nach ~20 ns Drift ergibt das σ ≈ 10 µm, mit Coulomb-Abstoßung bei hohen Energien eher 15–25 µm. Trifft ein Photon nahe einer Pixelgrenze, verteilt sich seine Ladung auf zwei oder vier Pixel. Jedes sieht dann ein Ereignis mit zu niedriger Energie. Liegt der Anteil über der Schwelle, wird das Photon <em>doppelt</em> gezählt, liegt er darunter, geht es verloren oder wird zu niedrig eingeordnet.</p>
+<h3>K-Fluoreszenz</h3>
+<p>Liegt die Photonenenergie über einer K-Kante (Cd: 26,7 keV, Te: 31,8 keV), wird meist ein K-Schalen-Elektron herausgeschlagen. Die Lücke füllt sich unter Aussendung eines Fluoreszenzphotons (Cd Kα ≈ 23,1 keV, Te Kα ≈ 27,5 keV). Die Fluoreszenzausbeute liegt bei ~85 %. Dieses Photon fliegt in CdTe typisch 50–120 µm weit, das ist vergleichbar mit der Pixelgröße. Folgen:</p>
+<ul class="tight">
+<li>Im Primärpixel bleibt <span class="arithmatex">\(E - E_{K\alpha}\)</span> übrig: ein <strong>Escape-Peak</strong>.</li>
+<li>Im Nachbarpixel entsteht ein zusätzliches Ereignis bei ~23–27 keV: eine <strong>Fluoreszenzzählung</strong>.</li>
+<li>Ein Photon kann so zwei Zählungen in verschiedenen Pixeln auslösen, die <strong>korreliert</strong> sind. Das hat Folgen für Rauschspektrum und DQE (siehe <a href="#bildqualitaet">Abschnitt 10</a>).</li>
+</ul>
+<figure class="fig">
+<div class="two mc">
+<canvas aria-label="Draufsicht auf 5 mal 5 Pixel mit simulierten Photoneneinschlägen, Ladungswolken und Fluoreszenzphotonen." class="c-grid" id="cv-grid" role="img"></canvas>
+<canvas aria-label="Gemessenes Spektrum aller Pixelereignisse für monoenergetische Einstrahlung, mit Photopeak, Escape-Peaks und Fluoreszenzpeaks." class="c-hist" id="cv-hist" role="img"></canvas>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="mc-e">Photonenenergie</label><output id="mc-e-o"></output></div><input id="mc-e" max="100" min="20" step="1" type="range" value="60"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-p">Pixelgröße</label><output id="mc-p-o"></output></div><input id="mc-p" max="500" min="50" step="5" type="range" value="225"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-s">Wolkenbreite σ</label><output id="mc-s-o"></output></div><input id="mc-s" max="40" min="2" step="1" type="range" value="15"/></div>
+<div class="ctrl"><div class="lab"><label for="mc-t">Zählschwelle</label><output id="mc-t-o"></output></div><input id="mc-t" max="50" min="8" step="1" type="range" value="20"/></div>
+<label class="chk"><input id="mc-cs" type="checkbox"/> Charge Summing</label>
+<label class="chk"><input checked="" id="mc-log" type="checkbox"/> log. Achse</label>
+</div>
+<div class="readout" id="mc-read"></div>
+<figcaption><b>Abb. 7</b> Monte-Carlo-Simulation: Photonen treffen zufällig auf das mittlere Pixel. Fluoreszenz wird isotrop mit exponentieller Weglänge emittiert (Cd Kα: 115 µm, Te Kα: 60 µm), Ladung als 2D-Gauß verteilt, 1 keV Rauschen pro Pixel. Das Histogramm enthält alle Pixelereignisse über 5 keV. Vereinfachungen: keine Compton-Streuung, kein Entweichen von Fluoreszenz aus der Sensoroberfläche, keine Tiefenabhängigkeit.</figcaption>
+</figure>
+<h3>Gegenmaßnahmen im ASIC</h3>
+<p>Abb. 7 zeigt die Grundidee der Korrektur: Wer weiß, dass benachbarte Pixel <em>gleichzeitig</em> ein Signal sehen, kann diese Teilsignale wieder zusammenführen.</p>
+<ul class="tight">
+<li><strong>Charge Summing:</strong> Die analogen Signale benachbarter Pixel (z. B. jedes 2×2-Knotens) werden summiert, ein Arbitrierungsmechanismus ordnet das rekonstruierte Ereignis dem Pixel mit dem größten Anteil zu. Bekannt geworden ist das Prinzip mit dem Medipix3-ASIC.</li>
+<li><strong>Anti-Coincidence:</strong> Ereignisse, die innerhalb eines kurzen Zeitfensters in Nachbarpixeln auftreten, werden als ein Ereignis gewertet bzw. die kleinere Zählung verworfen.</li>
+</ul>
+<p>Beide Verfahren brauchen Kommunikation zwischen Pixeln und verlängern die effektive Totzeit, denn jedes Ereignis belegt jetzt mehrere Kanäle. Es entsteht ein dritter Zielkonflikt, zusätzlich zu Rauschen gegen Rate und Auflösung gegen Charge Sharing: spektrale Treue gegen Zählratenfähigkeit.</p>
+</section>
+<section id="kalibrierung">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span><span class="eyebrow">Ebene 4 · Grenzen</span></div>
+<h2>Polarisation, Drift und Kalibrierung</h2>
+<h3>Polarisation</h3>
+<p>Bei hohem Fluss werden Löcher, die langsamer und kürzer leben als Elektronen, in tiefen Störstellen eingefangen und bilden eine positive Raumladung. Sie verformt das elektrische Feld: Nahe der Kathode kann es so weit zusammenbrechen, dass Ladung dort kaum noch gesammelt wird. Sichtbar wird das als Einbruch der Zählrate, Verschiebung der Energieskala und zeitabhängiges Verhalten über Sekunden bis Minuten. Es gibt auch die Variante, dass sich unter Bias-Spannung allein über längere Zeit ein Raumladungsfeld aufbaut (Schottky-Kontakte), was periodisches Abschalten der Spannung erfordert.</p>
+<p>Gegenmittel sind gute Kristallqualität mit wenig tiefen Störstellen, eine passende Kontakttechnologie (ohmsch gegen Schottky, mit Kompromiss zwischen Leckstrom und Polarisationsneigung), Temperaturkontrolle und in manchen Ansätzen eine Bestrahlung mit Infrarotlicht, die die Fallen in einen stabilen Zustand bringt.</p>
+<h3>Was kalibriert werden muss</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Größe</th>
+<th>Warum</th>
+<th>Wie, typischerweise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schwellen-Equalisierung</td>
+<td>Offset und Gain streuen pro Pixel</td>
+<td>Rauschflanke oder Testpulse, Trim-DACs pixelweise setzen</td>
+</tr>
+<tr>
+<td>Energieskala (keV ↔ DAC)</td>
+<td>Schwellen sollen in keV gleich sein</td>
+<td>bekannte Linien: Fluoreszenzfolien, Radionuklide (z. B. Am-241, 59,5 keV), K-Kanten-Filter</td>
+</tr>
+<tr>
+<td>Ratenabhängigkeit</td>
+<td>Totzeit, Pile-up, Polarisation</td>
+<td>Messungen bei variablem Röhrenstrom und Filterung, pixelweise Korrekturkurven pro Schwelle</td>
+</tr>
+<tr>
+<td>Spektrale Antwort</td>
+<td>Basis für Materialzerlegung</td>
+<td>Modell der Detector Response Function plus Kalibrierphantome bekannter Zusammensetzung</td>
+</tr>
+<tr>
+<td>Temperatur</td>
+<td>Leckstrom, Gain und Schwellen driften</td>
+<td>aktive Kühlung, Temperaturmodell der Korrekturen</td>
+</tr>
+</tbody>
+</table></div>
+<p>Ein CT ist bei pixelweisen Inhomogenitäten unerbittlich: Was im Projektionsbild ein Unterschied von wenigen Promille ist, wird nach der Rekonstruktion zu einem Ring. Ein PCD hat viele Pixel, mehrere Schwellen pro Pixel und ratenabhängiges Verhalten. Entsprechend aufwendig sind Kalibrierung und Stabilität.</p>
+</section>
+<section id="bins">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+<h2>Spektren und Energie-Bins</h2>
+<p>Hinter dem Patienten trifft ein Spektrum auf jedes Pixel, das durch die Röhre (Bremsstrahlung plus Wolfram-Linien), die Vorfilterung und die durchstrahlten Gewebe geformt wurde. Weiche Photonen werden stärker geschwächt, das Spektrum <em>härtet auf</em>. Die Schwellen schneiden dieses Spektrum in Bins. Was in welchem Bin landet, hängt davon ab, was der Strahl durchquert hat. Genau diese Information nutzt die Materialzerlegung.</p>
+<figure class="fig">
+<canvas aria-label="Röntgenspektrum vor und hinter dem Objekt, mit vier farbig markierten Energie-Bins." class="c-spec" id="cv-spec" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="sp-kv">Röhrenspannung</label><output id="sp-kv-o"></output></div><input id="sp-kv" max="140" min="80" step="10" type="range" value="120"/></div>
+<div class="ctrl"><div class="lab"><label for="sp-w">Wasser</label><output id="sp-w-o"></output></div><input id="sp-w" max="40" min="0" step="1" type="range" value="20"/></div>
+<div class="ctrl"><div class="lab"><label for="sp-i">Iod (Flächendichte)</label><output id="sp-i-o"></output></div><input id="sp-i" max="100" min="0" step="1" type="range" value="0"/></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="sp-t0">T₁</label><output id="sp-t0-o"></output></div><input id="sp-t0" max="120" min="15" step="1" type="range" value="20"/></div>
+<div class="ctrl"><div class="lab"><label for="sp-t1">T₂</label><output id="sp-t1-o"></output></div><input id="sp-t1" max="120" min="15" step="1" type="range" value="35"/></div>
+<div class="ctrl"><div class="lab"><label for="sp-t2">T₃</label><output id="sp-t2-o"></output></div><input id="sp-t2" max="120" min="15" step="1" type="range" value="50"/></div>
+<div class="ctrl"><div class="lab"><label for="sp-t3">T₄</label><output id="sp-t3-o"></output></div><input id="sp-t3" max="120" min="15" step="1" type="range" value="65"/></div>
+</div>
+<div class="tbl" style="margin:12px 0 0"><table class="small" id="sp-table"></table></div>
+<figcaption><b>Abb. 8</b> Photonenspektrum (Kramers-Modell mit Wolfram-Linien, 6 mm Al Vorfilterung) vor dem Objekt (gestrichelt) und dahinter (gefüllt, beide auf ihr Maximum normiert). Iod wird als Flächendichte im Strahl angegeben: 10 mg/cm² entsprechen etwa einem 1 cm dicken Gefäß mit 10 mg/ml. Die Tabelle vergleicht, welchen Anteil jedes Bin an den gezählten Photonen hat und welchen Anteil es an der Energie, also dem Gewicht in einem integrierenden Detektor, hätte. Ideale Detektorantwort angenommen.</figcaption>
+</figure>
+<p>Zwei Beobachtungen lohnen sich. Erstens: Mit mehr Wasser verschieben sich die Anteile zu den oberen Bins (Aufhärtung). Zweitens: Iod schwächt oberhalb seiner K-Kante bei 33,2 keV sprunghaft stärker. Ein Bin, der direkt über der Kante beginnt, reagiert deshalb empfindlich auf Iod, ein Bin knapp darunter kaum. Diese Asymmetrie ist mit zwei breiten Spektren (Dual-Energy) nur schwer zu nutzen, mit schmalen Bins dagegen direkt.</p>
+</section>
+<section id="zerlegung">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+<h2>Materialzerlegung</h2>
+<p>Die Schwächung eines Materials setzt sich im CT-Energiebereich aus zwei physikalischen Prozessen zusammen: Photoeffekt (stark abhängig von Z, fällt etwa mit <span class="arithmatex">\(E^{-3}\)</span>) und Compton-Streuung (abhängig von der Elektronendichte, nahezu flach, Klein-Nishina). Ohne K-Kanten gilt daher für jedes Material in guter Näherung:</p>
+<div class="eq">\[
+\mu(E) = a_1\,f_{\mathrm{PE}}(E) + a_2\,f_{\mathrm{KN}}(E)
+\]</div>
+<p>Zwei Basisfunktionen reichen also, oder äquivalent zwei Basismaterialien wie Wasser und Iod oder Wasser und Kalzium. Jedes weitere Material ist im Rahmen der Messgenauigkeit eine Linearkombination davon. Ein <strong>drittes</strong> Material lässt sich nur unabhängig bestimmen, wenn es eine K-Kante im genutzten Spektrum hat, die seine Energieabhängigkeit von der der beiden anderen unterscheidet.</p>
+<figure class="fig">
+<canvas aria-label="Massenschwächungskoeffizienten von Wasser, kortikalem Knochen und Iod über der Energie mit K-Kante von Iod, logarithmische Achse." class="c-mu" id="cv-mu" role="img"></canvas>
+<figcaption><b>Abb. 9</b> Massenschwächungskoeffizienten (Näherungswerte nach NIST-Tabellen) von Wasser, kortikalem Knochen und Iod. Die farbigen Bänder zeigen die Bins aus Abb. 8. Die K-Kante von Iod bei 33,2 keV ist der Sprung, den spektrale Bins sichtbar machen.</figcaption>
+</figure>
+<h3>Vorwärtsmodell</h3>
+<p>Für die Zerlegung im Projektionsraum beschreibt man den Erwartungswert der Zählungen im Bin <span class="arithmatex">\(b\)</span> als Funktion der Linienintegrale <span class="arithmatex">\(A_k = \int \rho_k\,\mathrm{d}l\)</span> der Basismaterialien:</p>
+<div class="eq">\[
+\bar\lambda_b(\mathbf A) = \int N_0(E)\,S_b(E)\,\exp\!\Big(-\sum_k A_k\,f_k(E)\Big)\,\mathrm{d}E
+\]</div>
+<p><span class="arithmatex">\(N_0(E)\)</span> ist das Röhrenspektrum, <span class="arithmatex">\(S_b(E)\)</span> die spektrale Empfindlichkeit von Bin <span class="arithmatex">\(b\)</span>, also die Detector Response Function (mit Charge Sharing, Fluoreszenz, Tail) integriert zwischen den Schwellen. An <span class="arithmatex">\(S_b\)</span> hängt die Genauigkeit der gesamten Zerlegung.</p>
+<h3>Schätzung</h3>
+<p>Die Bin-Zählungen <span class="arithmatex">\(y_b\)</span> sind näherungsweise Poisson-verteilt. Daraus ergibt sich die Maximum-Likelihood-Schätzung</p>
+<div class="eq">\[
+\hat{\mathbf A} = \arg\max_{\mathbf A}\ \sum_b \Big[\,y_b \ln \bar\lambda_b(\mathbf A) - \bar\lambda_b(\mathbf A)\,\Big]
+\]</div>
+<p>Die Cramér-Rao-Schranke, also die Inverse der Fisher-Information <span class="arithmatex">\(\mathbf F_{kl} = \sum_b \frac{1}{\bar\lambda_b} \frac{\partial \bar\lambda_b}{\partial A_k}\frac{\partial \bar\lambda_b}{\partial A_l}\)</span>, gibt das kleinste erreichbare Rauschen der Basisbilder an. Mit ihr lassen sich Schwellen gezielt optimieren. Zwei praktische Punkte:</p>
+<ul class="tight">
+<li><strong>Rauschkorrelation:</strong> Die Basisbilder sind stark antikorreliert verrauscht, weil die Basisfunktionen ähnlich aussehen. Eine gemeinsame Regularisierung oder ein korreliertes Denoising verbessert die Ergebnisse deutlich.</li>
+<li><strong>Alternativen:</strong> Zerlegung im Bildraum (einfacher, aber mit Aufhärtungsfehlern), oder One-Step-Rekonstruktion direkt aus den Bin-Rohdaten in Materialbilder (rechenintensiv, statistisch am saubersten).</li>
+</ul>
+<h3>Was daraus wird</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Bild</th>
+<th>Berechnung</th>
+<th>Nutzen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Virtuelles monoenergetisches Bild (VMI)</td>
+<td><span class="arithmatex">\(\mu(E_0) = \sum_k a_k f_k(E_0)\)</span> für frei wählbares <span class="arithmatex">\(E_0\)</span></td>
+<td>niedrige keV für Iod-Kontrast, hohe keV gegen Metall- und Aufhärtungsartefakte</td>
+</tr>
+<tr>
+<td>Iod-Map, virtuelles Nativbild</td>
+<td>Basisbild Iod bzw. Wasser/Gewebe ohne Iod</td>
+<td>Perfusion, Kontrastmittelanreicherung, Ersatz einer nativen Serie</td>
+</tr>
+<tr>
+<td>Kalzium-Unterdrückung</td>
+<td>Zerlegung mit Kalzium-Basis</td>
+<td>Gefäßlumen trotz Plaque, Knochenmarködem</td>
+</tr>
+<tr>
+<td>K-Kanten-Bildgebung</td>
+<td>dritte Basis mit K-Kante</td>
+<td>z. B. Gadolinium (50,2 keV) und Iod gleichzeitig unterscheiden</td>
+</tr>
+<tr>
+<td>Optimal gewichtetes Bild</td>
+<td>lineare Bin-Kombination mit maximalem CNR</td>
+<td>Dosisreduktion bei gleicher Bildqualität</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="bildqualitaet">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+<h2>Bildqualität: MTF, NPS und DQE</h2>
+<p>Die klassischen Kenngrößen gelten auch für PCDs, müssen aber mit Bedacht interpretiert werden, weil die Annahmen der linearen Systemtheorie nicht ohne Weiteres erfüllt sind.</p>
+<h3>MTF</h3>
+<p>Ohne Szintillator gibt es keine Lichtstreuung. Die MTF wird im Wesentlichen durch die Pixelapertur bestimmt und folgt nahezu der idealen sinc-Funktion. Charge Sharing verbreitert die Antwort leicht. Ein bemerkenswerter Effekt: Bei <em>hoher</em> Schwelle werden nur Ereignisse nahe der Pixelmitte vollständig gezählt, weil Randereignisse ihre Ladung teilen und unter die Schwelle fallen. Die effektive Apertur wird kleiner als das Pixel, und die MTF kann <em>über</em> der sinc-Kurve des geometrischen Pixels liegen. Die MTF ist damit schwellenabhängig.</p>
+<h3>NPS und Mehrfachzählung</h3>
+<p>Weil Elektronikrauschen nicht gezählt wird, besteht das Rauschen im Idealfall nur aus Photonenstatistik. Mehrfachzählungen ändern das: Wenn ein Photon in zwei benachbarten Pixeln gezählt wird, sind deren Werte korreliert. Das NPS ist dann nicht mehr flach (weiß), sondern bei niedrigen Ortsfrequenzen erhöht. Außerdem ist die Varianz der Gesamtzählung größer als ihr Mittelwert.</p>
+<h3>DQE</h3>
+<p>Sei <span class="arithmatex">\(m\)</span> die Zahl der Zählungen, die ein einzelnes absorbiertes Photon auslöst (0, 1, 2 …). Analog zum Swank-Faktor eines Szintillators gilt bei der Ortsfrequenz null:</p>
+<div class="eq">\[
+\mathrm{DQE}(0) = \eta \cdot \frac{\langle m\rangle^2}{\langle m^2\rangle}
+\]</div>
+<p>mit der Quanteneffizienz <span class="arithmatex">\(\eta\)</span>. Ein Detektor, der jedes Photon genau einmal zählt, hat <span class="arithmatex">\(\langle m\rangle^2/\langle m^2\rangle = 1\)</span>. Zählt er 20 % der Photonen doppelt, ist <span class="arithmatex">\(\langle m\rangle = 1{,}2\)</span>, <span class="arithmatex">\(\langle m^2\rangle = 1{,}6\)</span>, und der Faktor sinkt auf 0,9. Abb. 7 berechnet diesen Faktor live: Stelle eine niedrige Schwelle und kleine Pixel ein und beobachte, wie er fällt. Mit Charge Summing kommt er näher an 1.</p>
+<div class="note">
+<p><strong>Messpraxis:</strong> Normen für die DQE-Messung digitaler Röntgendetektoren (z. B. die Reihe IEC 62220) gehen von einem linearen, verschiebungsinvarianten System mit linearisierter Kennlinie aus. Für PCDs braucht es zusätzlich eine ratenabhängige Linearisierung, eine Festlegung, welche Schwelle bzw. welche Bin-Kombination betrachtet wird, und die Messung bei Flüssen, die klinisch relevant sind, weil Pile-up die Antwort verändert. Die Werte hängen von Schwelle und Rate ab und sind nicht als einzelne Zahl vergleichbar.</p>
+</div>
+</section>
+<section id="systeme">
+<div class="level"><span class="depth"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span><span class="eyebrow">Ebene 5 · Bildgebung</span></div>
+<h2>Systeme und Sensortypen</h2>
+<h3>CdTe / CZT, Face-on</h3>
+<p>Der Sensor liegt flach zum Strahl, die Röntgenquanten treten durch die Kathode ein. Vorteile: hohe Absorption in wenigen Millimetern, kompakte Module. Nachteile: Fluoreszenz bei 23–27 keV, Polarisation, anspruchsvolle Kristallherstellung. Das erste klinisch zugelassene PCD-CT, das Siemens NAEOTOM Alpha (FDA-Zulassung 2021), verwendet CdTe in einer Dual-Source-Geometrie.</p>
+<h3>Silizium, Edge-on</h3>
+<p>Silizium absorbiert schwach. Man stellt die Sensoren deshalb hochkant, sodass der Strahl mehrere Zentimeter Silizium durchquert. Entlang der Tiefe kann man den Sensor zusätzlich segmentieren, was den Fluss pro Kanal verteilt und Tiefeninformation liefert. Vorteile: ausgereifte Materialqualität, keine Polarisation, keine störende K-Fluoreszenz im relevanten Bereich. Nachteile: Bei niedriger Ordnungszahl dominiert Compton-Streuung im Sensor, was zusätzliche niederenergetische Ereignisse erzeugt, und die Geometrie ist mechanisch aufwendig. Dieser Ansatz wird unter anderem als „Deep Silicon“ verfolgt.</p>
+<h3>Typische Betriebsmodi</h3>
+<ul class="tight">
+<li><strong>Ultra-High-Resolution (UHR):</strong> Die kleinen Subpixel werden einzeln ausgelesen. Die Ortsauflösung reicht für Felsenbein, Lunge oder Koronarstents.</li>
+<li><strong>Standard / spektral:</strong> Subpixel werden zu Makropixeln zusammengefasst, alle Bins werden für VMI und Materialbilder genutzt.</li>
+<li><strong>Niedrigdosis:</strong> Profitiert direkt vom fehlenden Elektronikrauschen.</li>
+</ul>
+</section>
+<section id="zahlen">
+<div class="eyebrow">Anhang</div>
+<h2>Zahlen auf einen Blick</h2>
+<p class="muted">Typische Größenordnungen bei Raumtemperatur. Werte für μτ schwanken je nach Kristallqualität und Hersteller um mindestens eine Größenordnung.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Größe</th>
+<th class="num">CdTe</th>
+<th class="num">CZT</th>
+<th class="num">Si</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ordnungszahlen</td>
+<td class="num">48 / 52</td>
+<td class="num">48 / 30 / 52</td>
+<td class="num">14</td>
+</tr>
+<tr>
+<td>Dichte (g/cm³)</td>
+<td class="num">5,85</td>
+<td class="num">~5,8</td>
+<td class="num">2,33</td>
+</tr>
+<tr>
+<td>Bandlücke (eV)</td>
+<td class="num">1,44</td>
+<td class="num">~1,57</td>
+<td class="num">1,12</td>
+</tr>
+<tr>
+<td>Paarerzeugungsenergie W (eV)</td>
+<td class="num">4,43</td>
+<td class="num">~4,6</td>
+<td class="num">3,62</td>
+</tr>
+<tr>
+<td>μₑ (cm²/Vs)</td>
+<td class="num">~1100</td>
+<td class="num">~1000</td>
+<td class="num">~1400</td>
+</tr>
+<tr>
+<td>μₕ (cm²/Vs)</td>
+<td class="num">~100</td>
+<td class="num">50–100</td>
+<td class="num">~450</td>
+</tr>
+<tr>
+<td>(μτ)ₑ (cm²/V)</td>
+<td class="num">~10⁻³</td>
+<td class="num">10⁻³–10⁻²</td>
+<td class="num">&gt; 1</td>
+</tr>
+<tr>
+<td>(μτ)ₕ (cm²/V)</td>
+<td class="num">~10⁻⁴</td>
+<td class="num">~10⁻⁵</td>
+<td class="num">~1</td>
+</tr>
+<tr>
+<td>K-Kanten (keV)</td>
+<td class="num">Cd 26,7 · Te 31,8</td>
+<td class="num">wie CdTe</td>
+<td class="num">1,8</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Größe</th>
+<th class="num">Typischer Wert</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sensordicke CdTe/CZT</td>
+<td class="num">1,5–3 mm</td>
+</tr>
+<tr>
+<td>Bias-Spannung</td>
+<td class="num">einige 100 V/mm</td>
+</tr>
+<tr>
+<td>Pixelgröße am Detektor</td>
+<td class="num">~0,1–0,3 mm</td>
+</tr>
+<tr>
+<td>Energieschwellen pro Pixel</td>
+<td class="num">2–8</td>
+</tr>
+<tr>
+<td>Unterste Schwelle</td>
+<td class="num">~20–25 keV</td>
+</tr>
+<tr>
+<td>Elektronikrauschen (ENC)</td>
+<td class="num">~0,5–1 keV rms</td>
+</tr>
+<tr>
+<td>Peaking-Zeit / Totzeit</td>
+<td class="num">~10–30 ns</td>
+</tr>
+<tr>
+<td>Fluss am Detektor (unabgeschwächt)</td>
+<td class="num">bis ~10⁸–10⁹ mm⁻²s⁻¹</td>
+</tr>
+<tr>
+<td>Ladungswolke (σ, nach Drift)</td>
+<td class="num">~10–25 µm</td>
+</tr>
+<tr>
+<td>K-Fluoreszenz Cd / Te (Kα)</td>
+<td class="num">23,1 / 27,5 keV</td>
+</tr>
+<tr>
+<td>K-Kanten Kontrastmittel</td>
+<td class="num">I 33,2 · Gd 50,2 · W 69,5 · Au 80,7 · Bi 90,5 keV</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+    <footer>Alle Simulationen auf dieser Seite sind didaktische Modelle mit typischen Parametern aus der Literatur. Sie zeigen Zusammenhänge und Größenordnungen, keine Herstellerdaten.</footer>
   </main>
 </div>
-
+<script src="../assets/ui.js"></script>
+<script src="../assets/pc.js"></script>
 <script>
-(() => {
-'use strict';
-const $ = s => document.querySelector(s);
-const root = document.documentElement;
-const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
-const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
-const nf = (v, d=0) => v.toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
-
-function rgb(c) {
-  c = c.replace('#','');
-  if (c.length === 3) c = c.split('').map(x => x + x).join('');
-  const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255];
-}
-function rgba(c, a) { const [r,g,b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
-function gauss() { let u = 0, v = 0; while (u === 0) u = Math.random(); v = Math.random(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
-function erf(x) {
-  const s = Math.sign(x); x = Math.abs(x);
-  const t = 1 / (1 + 0.3275911 * x);
-  const y = 1 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592) * t * Math.exp(-x*x);
-  return s * y;
-}
-function fit(c) {
-  const r = c.getBoundingClientRect();
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const w = Math.max(1, r.width), h = Math.max(1, r.height);
-  const W = Math.round(w*dpr), H = Math.round(h*dpr);
-  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
-  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,w,h);
-  return { ctx, w, h };
-}
-const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
-const pow10 = v => '10' + String(Math.round(Math.log10(v))).split('').map(c => SUP[c]).join('');
-
-function frame(ctx, w, h, o) {
-  const L = o.l ?? 52, R = o.r ?? 14, T = o.t ?? 14, B = o.b ?? 38;
-  const bx = L, by = T, bw = Math.max(10, w-L-R), bh = Math.max(10, h-T-B);
-  const tx = v => o.xlog ? Math.log10(v) : v, ty = v => o.ylog ? Math.log10(v) : v;
-  const X = v => bx + (tx(v) - tx(o.x0)) / (tx(o.x1) - tx(o.x0)) * bw;
-  const Y = v => by + bh - (ty(v) - ty(o.y0)) / (ty(o.y1) - ty(o.y0)) * bh;
-  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
-  const grid = tok('--grid'), muted = tok('--muted');
-  for (const v of (o.xt || [])) {
-    const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by+bh); ctx.stroke();
-    ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by+bh+15);
-  }
-  for (const v of (o.yt || [])) {
-    const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx+bw, y); ctx.stroke();
-    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx-6, y+4);
-  }
-  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by+bh); ctx.lineTo(bx+bw, by+bh); ctx.stroke();
-  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
-  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx+bw/2, by+bh+31); }
-  if (o.yl) { ctx.save(); ctx.translate(13, by+bh/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
-  return { X, Y, bx, by, bw, bh };
-}
-function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
-
-/* ---------- Modulverwaltung ---------- */
-const mods = [];
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
-function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
-function redrawAll() { mods.forEach(m => m.draw()); }
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
-new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-let last = performance.now();
-function loop(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-function playBtn(btn, m) {
-  btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; });
-  if (!m.playing) btn.textContent = 'Abspielen';
-}
-
-/* ---------- Spektren & Schwächung ---------- */
-const WATER = [[10,5.33],[15,1.67],[20,0.81],[30,0.376],[40,0.268],[50,0.227],[60,0.206],[80,0.184],[100,0.171],[150,0.150]];
-const BONE  = [[10,28.5],[15,9.0],[20,4.0],[30,1.33],[40,0.665],[50,0.424],[60,0.315],[80,0.223],[100,0.186],[150,0.148]];
-const AL    = [[10,26.2],[15,7.96],[20,3.44],[30,1.13],[40,0.568],[50,0.368],[60,0.278],[80,0.202],[100,0.170],[150,0.138]];
-const I_LO  = [[10,162],[15,61],[20,22.1],[25,12.3],[30,8.6],[33.16,6.55]];
-const I_HI  = [[33.17,36.0],[40,22.1],[50,12.3],[60,7.6],[80,3.5],[100,1.94],[150,0.73]];
-function mu(t, E) {
-  if (E <= t[0][0]) return t[0][1];
-  for (let i = 0; i < t.length-1; i++) if (E <= t[i+1][0]) {
-    const [e0,m0] = t[i], [e1,m1] = t[i+1];
-    const f = Math.log(E/e0) / Math.log(e1/e0);
-    return Math.exp(Math.log(m0) + f*Math.log(m1/m0));
-  }
-  return t[t.length-1][1];
-}
-const muI = E => E < 33.17 ? mu(I_LO, E) : mu(I_HI, E);
-const EG = []; for (let e = 10; e <= 150.001; e += 0.5) EG.push(Math.round(e*10)/10);
-function tube(kvp) {
-  const g = (E, c) => Math.exp(-0.5*((E-c)/0.45)**2);
-  return EG.map(E => {
-    if (E >= kvp) return 0;
-    let n = (kvp - E) / E;
-    if (kvp > 69.5) { const a = 1.3*(kvp-69.5)/50; n += a*(g(E,59.3) + 0.55*g(E,58.0) + 0.32*g(E,67.2)); }
-    return n * Math.exp(-mu(AL, E)*2.7*0.6);
-  });
-}
-function transmit(spec, waterCm, iodMgCm2) {
-  return spec.map((n, i) => { const E = EG[i]; return n * Math.exp(-mu(WATER, E)*waterCm - muI(E)*iodMgCm2/1000); });
-}
-function sampler(spec) {
-  const cdf = []; let s = 0; for (const v of spec) { s += v; cdf.push(s); }
-  return () => {
-    const u = Math.random()*s; let lo = 0, hi = cdf.length-1;
-    while (lo < hi) { const m = (lo+hi) >> 1; if (cdf[m] < u) lo = m+1; else hi = m; }
-    return EG[lo] + (Math.random()-0.5)*0.5;
-  };
-}
-const BINC = ['--bin0','--bin1','--bin2','--bin3'];
-
 /* ---------- Abb. 1: Konzept ---------- */
 (() => {
   const c = $('#cv-concept');
@@ -939,7 +807,8 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   playBtn($('#concept-play'), m);
   m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 3: Gewichtungspotential ---------- */
 (() => {
   const cw = $('#cv-wp'), cq = $('#cv-q');
@@ -1066,7 +935,8 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   [ip, ix, imt].forEach(el => el.addEventListener('input', update));
   update();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 5: Pulse ---------- */
 (() => {
   const c = $('#cv-pulse'), ir = $('#pl-rate'), it = $('#pl-tp');
@@ -1151,7 +1021,8 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   playBtn($('#pl-play'), m);
   m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 6: Totzeit ---------- */
 (() => {
   const c = $('#cv-dead'), it = $('#dt-tau');
@@ -1182,7 +1053,8 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   it.addEventListener('input', () => m.draw());
   m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 7: Charge Sharing / Fluoreszenz ---------- */
 (() => {
   const cg = $('#cv-grid'), ch = $('#cv-hist');
@@ -1321,7 +1193,8 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   iL.addEventListener('input', () => mh.draw());
   reset(); for (let i = 0; i < 6; i++) one(true); readout(); mg.draw(); mh.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 8 + 9: Spektrum, Bins, μ(E) ---------- */
 (() => {
   const cs = $('#cv-spec'), cm = $('#cv-mu');
@@ -1399,16 +1272,6 @@ const BINC = ['--bin0','--bin1','--bin2','--bin3'];
   it.forEach((el, k) => el.addEventListener('input', () => update(k)));
   update();
 })();
-
-/* ---------- Inhaltsverzeichnis markieren ---------- */
-(() => {
-  const links = [...document.querySelectorAll('nav.toc a')];
-  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
-  const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); const a = map.get(e.target.id); if (a) a.classList.add('on'); } }), { rootMargin: '-30% 0px -60% 0px' });
-  document.querySelectorAll('main section').forEach(s => so.observe(s));
-})();
-})();
 </script>
-
 </body>
 </html>

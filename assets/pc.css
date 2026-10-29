@@ -1,0 +1,34 @@
+/* Zusatzstile der Seite physik/photon-counting (nur, was page.css nicht schon enthält). */
+.mono, code { font-family: var(--font-mono); font-size: 0.86em; }
+.lede { font-size: 1.2rem; line-height: 1.5; color: var(--fg); max-width: 34em; margin-top: 18px; }
+.level { display: flex; align-items: center; gap: 10px; }
+.depth { display: inline-flex; gap: 3px; }
+.depth i { display: block; width: 14px; height: 6px; border-radius: 1px; background: var(--rule); }
+.depth i.f { background: var(--accent); }
+.c-concept { aspect-ratio: 2.1 / 1; }
+.c-wp { aspect-ratio: 2 / 1; }
+.c-q { aspect-ratio: 2 / 1; }
+.c-pulse { aspect-ratio: 2.4 / 1; }
+.c-dead { aspect-ratio: 1.8 / 1; }
+.c-grid { aspect-ratio: 1 / 1; }
+.c-hist { aspect-ratio: 1.25 / 1; }
+.c-spec { aspect-ratio: 2 / 1; }
+.c-mu { aspect-ratio: 2.2 / 1; }
+@media (max-width: 560px) { .c-concept { aspect-ratio: 1.35 / 1; } .c-pulse { aspect-ratio: 1.6 / 1; } }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.two.mc { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
+@media (max-width: 640px) { .two, .two.mc { grid-template-columns: minmax(0, 1fr); } }
+.btn:focus-visible, input:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; color: var(--fg); flex: 0 0 auto; }
+.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); margin-top: 10px; line-height: 1.6; }
+.readout span.k { color: var(--muted); }
+table.small td, table.small th { padding: 4px 10px 4px 0; font-size: 13px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; color: var(--fg); }
+.note p { margin: 0.4em 0; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+.d-sth { stroke: var(--hole); fill: none; }
+.d-b0 { fill: var(--bin0); }
+.d-b1 { fill: var(--bin1); }
+.d-b3 { fill: var(--bin3); }
+.d-scint { fill: var(--accent-soft); }

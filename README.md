@@ -12,7 +12,7 @@ src/                     Quellen (hier wird bearbeitet)
   template.html            HTML-Gerüst
 build.py                 baut aus src/ die fertigen Seiten
 index.html, assets/      Startseite (liest manifest.json)
-grundlagen/, physik/     fertige Seiten (Lineare Algebra wird gebaut, die übrigen sind noch handgeschrieben)
+grundlagen/, physik/     fertige Seiten (von build.py erzeugt, nicht von Hand bearbeiten)
 widgets/                 Abbildungen einzeln zum Einbetten (Pfade bleiben stabil)
 manifest.json            Themengebiete, Seiten, Widgets
 ```
@@ -55,38 +55,8 @@ Formeln und Schriften werden von cdnjs bzw. Google Fonts geladen; ohne Internet 
 
 ## Widgets
 
-| Widget | Datei | Höhe (px, bei ~700 px Breite) |
-|---|---|---|
-| Die Messkette im CT | `widgets/gl-00-messkette.html` | 340 |
-| Elektromagnetisches Spektrum | `widgets/gl-01-em-spektrum.html` | 600 |
-| Röntgenröhre und Spektrum | `widgets/gl-02-roentgenroehre.html` | 620 |
-| Photoeffekt und Compton-Streuung | `widgets/gl-03-photoeffekt-compton.html` | 440 |
-| Schwächung in Materie | `widgets/gl-04-schwaechung.html` | 680 |
-| Bändermodell | `widgets/gl-05-baendermodell.html` | 460 |
-| Elektron-Loch-Paarerzeugung | `widgets/gl-06-paarerzeugung.html` | 600 |
-| Drift und Signalentstehung | `widgets/gl-07-drift-signal.html` | 760 |
-| Integrieren oder zählen | `widgets/gl-08-integrieren-zaehlen.html` | 600 |
-| Projektion, Sinogramm, Rekonstruktion | `widgets/gl-09-ct-rekonstruktion.html` | 580 |
-| Ablauf der gefilterten Rückprojektion | `widgets/rk-00-ablauf.html` | 360 |
-| Fourier-Reihe einer Rechteckwelle | `widgets/rk-01-fourier-reihe.html` | 560 |
-| Radon-Transformation und Sinogramm | `widgets/rk-02-radon-sinogramm.html` | 680 |
-| Rückprojektion eines Punktes | `widgets/rk-03-rueckprojektion-punkt.html` | 640 |
-| Fourier-Slice-Theorem | `widgets/rk-04-fourier-slice.html` | 560 |
-| Polare Abtastung und Rampenfilter | `widgets/rk-05-polare-abtastung.html` | 500 |
-| FBP-Labor | `widgets/rk-06-fbp-labor.html` | 720 |
-| Parallel-, Fächer- und Kegelstrahl | `widgets/rk-07-geometrien.html` | 400 |
-| Rekonstruktion als Gleichungssystem | `widgets/rk-08-gleichungssystem.html` | 360 |
-| Kaczmarz-Verfahren in 2D | `widgets/rk-09-kaczmarz.html` | 720 |
-| SART gegen FBP | `widgets/rk-10-sart.html` | 660 |
-| Zählen statt integrieren | `widgets/pc-01-zaehlen-vs-integrieren.html` | 580 |
-| Indirekte und direkte Konversion | `widgets/pc-02-direkte-konversion.html` | 520 |
-| Gewichtungspotential und Small-Pixel-Effekt | `widgets/pc-03-gewichtungspotential.html` | 540 |
-| Signalkette im ASIC | `widgets/pc-04-asic-signalkette.html` | 440 |
-| Pulse, Schwellen und Pile-up | `widgets/pc-05-pulse-pileup.html` | 780 |
-| Totzeitmodelle | `widgets/pc-06-totzeit.html` | 620 |
-| Charge Sharing und K-Fluoreszenz | `widgets/pc-07-charge-sharing.html` | 700 |
-| Spektrum und Energie-Bins und Schwächungskoeffizienten | `widgets/pc-08-spektrum-bins.html` | 1440 |
+Jede Abbildung liegt zusätzlich einzeln unter `widgets/<slug>.html`. Die vollständige Liste mit fertigen Einbettungs-Schnipseln steht auf der Startseite; `manifest.json` enthält dieselben Daten. Präfixe: `et-` E-Technik, `la-` Lineare Algebra, `gl-` Vom Photon zum Bild, `rk-` Rekonstruktion, `pc-` Photon Counting.
 
-## Neu bauen
+## Abbildungen ändern
 
-`manifest.json` listet alle Widgets mit Seite und Einbettungshöhe. Die Widgets wurden automatisch aus den Seiten in `physik/` erzeugt; wer eine Seite ändert, muss das betroffene Widget entsprechend anpassen. Für `grundlagen/e-technik.html` gibt es noch keine Einzel-Widgets.
+Jede Abbildung ist eine Datei in `src/figures/`: oben ein Kommentar mit Titel und Bibliothek, dann das Markup der `<figure>`, dann das Skript. `python build.py` setzt sie in die Seite ein und erzeugt daraus auch das Einzel-Widget. Gemeinsame Hilfsfunktionen einer Seite stehen in `src/lib/<lib>.js`, Zusatzstile in `src/lib/<lib>.css`.

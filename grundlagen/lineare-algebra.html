@@ -17,6 +17,7 @@ window.MathJax = {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
 <link rel="stylesheet" href="../assets/page.css">
+
 <script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
 </head>
 <body>
@@ -55,7 +56,6 @@ window.MathJax = {
 <section id="vektoren">
 <div class="step"><b>1</b><span class="eyebrow">Grundbegriffe</span></div>
 <h2>Vektoren</h2>
-
 <p>Ein <strong>Vektor</strong> <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span> ist eine Liste von <span class="arithmatex">\(n\)</span> Zahlen. Man kann ihn als Pfeil im Raum lesen, als Punkt oder einfach als Datensatz: ein Pixelbild mit 512 × 512 Pixeln ist ein Vektor mit 262 144 Einträgen, ein Embedding eines Netzes einer mit 768. Vektoren werden in diesem Text als Spalten geschrieben.</p>
 <div class="eq">\[
 \mathbf x = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix}, \qquad \mathbf x + \mathbf y = \begin{pmatrix} x_1 + y_1 \\ \vdots \\ x_n + y_n \end{pmatrix}, \qquad \alpha\mathbf x = \begin{pmatrix} \alpha x_1 \\ \vdots \\ \alpha x_n \end{pmatrix}
@@ -127,18 +127,16 @@ window.MathJax = {
 <p>Damit gibt es auch für Funktionen Längen, Winkel und Orthogonalität. Zum Beispiel sind <span class="arithmatex">\(\sin(kx)\)</span> und <span class="arithmatex">\(\cos(lx)\)</span> auf <span class="arithmatex">\([-\pi, \pi]\)</span> für alle ganzen <span class="arithmatex">\(k, l\)</span> paarweise orthogonal. Die Fourier-Reihe ist dann nichts anderes als die Koordinatendarstellung einer Funktion in dieser Orthogonalbasis (Abschnitt 10), und die Fourier-Koeffizienten sind Projektionen.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li><span class="arithmatex">\(\mathbf x^\top\mathbf y = \|\mathbf x\|\|\mathbf y\|\cos\theta\)</span>. Null heißt orthogonal.</li>
 <li>Projektion auf <span class="arithmatex">\(\mathbf x\)</span>: <span class="arithmatex">\(\frac{\mathbf x^\top\mathbf y}{\mathbf x^\top\mathbf x}\mathbf x\)</span>, der Rest steht senkrecht.</li>
 <li>Skalarprodukte allgemein: <span class="arithmatex">\(\mathbf x^\top M\mathbf y\)</span> mit SPD-Matrix <span class="arithmatex">\(M\)</span>, für Funktionen <span class="arithmatex">\(\int fg\)</span>.</li>
 </ul>
 </div>
-
 </section>
 <section id="matrizen">
 <div class="step"><b>2</b><span class="eyebrow">Grundbegriffe</span></div>
 <h2>Matrizen als Abbildungen</h2>
-
 <p>Eine <span class="arithmatex">\(m\times n\)</span>-Matrix <span class="arithmatex">\(A\)</span> ist eine Tabelle mit <span class="arithmatex">\(m\)</span> Zeilen und <span class="arithmatex">\(n\)</span> Spalten. Wichtiger als die Tabelle ist, was sie <em>tut</em>: Sie bildet einen Vektor <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span> auf einen Vektor <span class="arithmatex">\(A\mathbf x \in \mathbb R^m\)</span> ab, und zwar <strong>linear</strong>:</p>
 <div class="eq">\[
 A(\alpha\mathbf x + \beta\mathbf y) = \alpha A\mathbf x + \beta A\mathbf y
@@ -172,17 +170,15 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 \]</div>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Spalte <span class="arithmatex">\(j\)</span> von <span class="arithmatex">\(A\)</span> ist <span class="arithmatex">\(A\mathbf e_j\)</span>. <span class="arithmatex">\(A\mathbf x\)</span> ist die Linearkombination der Spalten mit den Gewichten <span class="arithmatex">\(x_j\)</span>.</li>
 <li><span class="arithmatex">\(AB\)</span> = erst <span class="arithmatex">\(B\)</span>, dann <span class="arithmatex">\(A\)</span>. Nicht kommutativ. <span class="arithmatex">\((AB)^\top = B^\top A^\top\)</span>, <span class="arithmatex">\((AB)^{-1} = B^{-1}A^{-1}\)</span>.</li>
 </ul>
 </div>
-
 </section>
 <section id="basis">
 <div class="step"><b>3</b><span class="eyebrow">Grundbegriffe</span></div>
 <h2>Lineare Unabhängigkeit, Basis und Rang</h2>
-
 <p>Vektoren <span class="arithmatex">\(\mathbf v_1, \dots, \mathbf v_k\)</span> sind <strong>linear unabhängig</strong>, wenn keiner sich als Linearkombination der anderen schreiben lässt. Gleichwertig: Die einzige Lösung von <span class="arithmatex">\(\alpha_1\mathbf v_1 + \dots + \alpha_k\mathbf v_k = \mathbf 0\)</span> ist <span class="arithmatex">\(\alpha_1 = \dots = \alpha_k = 0\)</span>. Jeder abhängige Vektor ist überflüssig, er fügt keine neue Richtung hinzu.</p>
 <ul class="tight">
 <li>Der <strong>Span</strong> einer Menge von Vektoren ist alles, was man aus ihnen kombinieren kann. Zwei unabhängige Vektoren im <span class="arithmatex">\(\mathbb R^3\)</span> spannen eine Ebene auf, drei unabhängige den ganzen Raum.</li>
@@ -229,7 +225,7 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 <p>Jede Spalte, die keine neue Richtung bringt, erzeugt eine Dimension im Nullraum. Eine Matrix mit <span class="arithmatex">\(r = \min(m, n)\)</span> hat <strong>vollen Rang</strong>. In der Praxis ist eine Matrix selten exakt rangdefizient, aber oft <em>fast</em>. Wie man das misst, zeigen Kondition (Abschnitt 6) und Singulärwerte (Abschnitt 11).</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Rang = Anzahl unabhängiger Spalten = Anzahl unabhängiger Zeilen = <span class="arithmatex">\(\dim\)</span> Spaltenraum.</li>
 <li><span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> ist lösbar genau dann, wenn <span class="arithmatex">\(\mathbf b\)</span> im Spaltenraum liegt. Eindeutig genau dann, wenn der Nullraum nur <span class="arithmatex">\(\mathbf 0\)</span> enthält.</li>
 </ul>
@@ -254,12 +250,10 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 \tilde A = B^{-1}AB
 \]</div>
 <p>Lesen von rechts: neue Koordinaten in alte übersetzen, <span class="arithmatex">\(A\)</span> anwenden, zurückübersetzen. Matrizen, die so zusammenhängen, heißen <strong>ähnlich</strong>. Sie beschreiben dieselbe Abbildung und haben deshalb dieselbe Determinante, Spur und dieselben Eigenwerte. Für Abbildungen zwischen verschiedenen Räumen (<span class="arithmatex">\(\mathbb R^n \to \mathbb R^m\)</span>) wechselt man in beiden Räumen getrennt die Basis, <span class="arithmatex">\(\tilde A = T^{-1}AS\)</span>. Der Kern von Abschnitt 9 und 11 ist genau diese Frage: Gibt es eine Basis, in der <span class="arithmatex">\(\tilde A\)</span> diagonal ist? Bei der Eigenzerlegung ist <span class="arithmatex">\(B = V\)</span>, bei der SVD sind <span class="arithmatex">\(S = V\)</span> und <span class="arithmatex">\(T = U\)</span>.</p>
-
 </section>
 <section id="determinante">
 <div class="step"><b>4</b><span class="eyebrow">Grundbegriffe</span></div>
 <h2>Determinante</h2>
-
 <p>Die <strong>Determinante</strong> einer quadratischen Matrix ist der Faktor, um den die Abbildung Flächen (in 2D) oder Volumina (in 3D und höher) ändert. Das Einheitsquadrat wird auf das Parallelogramm aus den beiden Spalten abgebildet, und dessen vorzeichenbehaftete Fläche ist <span class="arithmatex">\(\det A\)</span>:</p>
 <div class="eq">\[
 \det\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix} = ad - bc
@@ -288,18 +282,16 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 <p>Die erste Regel heißt Zyklizität: Produkte darf man in der Spur zyklisch verschieben, <span class="arithmatex">\(\operatorname{tr}(ABC) = \operatorname{tr}(CAB)\)</span>, aber nicht beliebig vertauschen. Ein Skalar ist seine eigene Spur, deshalb gilt der Trick <span class="arithmatex">\(\mathbf x^\top A\mathbf x = \operatorname{tr}(\mathbf x^\top A\mathbf x) = \operatorname{tr}(A\mathbf x\mathbf x^\top)\)</span>. So bekommt man z. B. den Erwartungswert einer quadratischen Form, <span class="arithmatex">\(\mathbb E[\mathbf x^\top A\mathbf x] = \operatorname{tr}(A C) + \boldsymbol\mu^\top A\boldsymbol\mu\)</span>. Weil die Spur die Summe der Eigenwerte ist, ändert sie sich bei einem Basiswechsel nicht. Für <span class="arithmatex">\(\operatorname{tr}A\)</span> gilt dasselbe wie für <span class="arithmatex">\(\det A\)</span>: Beide sind Invarianten der Abbildung, nicht der Matrixdarstellung.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li><span class="arithmatex">\(\det A\)</span> = vorzeichenbehafteter Volumenfaktor. <span class="arithmatex">\(\det A = 0\)</span> ⇔ Spalten abhängig ⇔ nicht invertierbar.</li>
 <li><span class="arithmatex">\(\det(AB) = \det A\det B\)</span>. Kleine Determinante heißt nicht schlecht konditioniert.</li>
 <li><span class="arithmatex">\(\operatorname{tr}A = \sum\lambda_i\)</span>, <span class="arithmatex">\(\operatorname{tr}(AB) = \operatorname{tr}(BA)\)</span>, <span class="arithmatex">\(\|A\|_F^2 = \operatorname{tr}(A^\top A)\)</span>.</li>
 </ul>
 </div>
-
 </section>
 <section id="lgs">
 <div class="step"><b>5</b><span class="eyebrow">Gleichungssysteme</span></div>
 <h2>Lineare Gleichungssysteme lösen</h2>
-
 <p>Ein lineares Gleichungssystem mit <span class="arithmatex">\(m\)</span> Gleichungen und <span class="arithmatex">\(n\)</span> Unbekannten schreibt man kompakt als <span class="arithmatex">\(A\mathbf x = \mathbf b\)</span>. Die Zeilensicht: Jede Gleichung ist eine Gerade (2D), Ebene (3D) oder Hyperebene, und die Lösung ist ihr gemeinsamer Schnitt. Die Spaltensicht: Gesucht sind die Gewichte, mit denen die Spalten von <span class="arithmatex">\(A\)</span> zusammen <span class="arithmatex">\(\mathbf b\)</span> ergeben.</p>
 <div class="tbl"><table>
 <thead>
@@ -349,18 +341,16 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 <p>Die Inverse berechnet man dafür praktisch nie: <span class="arithmatex">\(\mathbf x = A^{-1}\mathbf b\)</span> ist eine Schreibweise, gerechnet wird mit einer Zerlegung. In NumPy heißt das <code>np.linalg.solve(A, b)</code> statt <code>np.linalg.inv(A) @ b</code>, das ist schneller und genauer.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Lösungsmenge = spezielle Lösung + Nullraum, ein affiner Unterraum.</li>
 <li>Lösen = Zerlegen + Einsetzen. LU kostet <span class="arithmatex">\(O(n^3)\)</span> einmal, jede rechte Seite dann <span class="arithmatex">\(O(n^2)\)</span>. SPD: Cholesky.</li>
 <li>Nie explizit invertieren, wenn man nur <span class="arithmatex">\(A\mathbf x = \mathbf b\)</span> lösen will.</li>
 </ul>
 </div>
-
 </section>
 <section id="kondition">
 <div class="step"><b>6</b><span class="eyebrow">Gleichungssysteme</span></div>
 <h2>Kondition: Wie empfindlich ist die Lösung?</h2>
-
 <p>In der Praxis ist <span class="arithmatex">\(\mathbf b\)</span> gemessen und damit verrauscht. Die Frage ist, wie stark sich ein kleiner Fehler in <span class="arithmatex">\(\mathbf b\)</span> auf <span class="arithmatex">\(\mathbf x\)</span> auswirkt. Die Antwort gibt die <strong>Konditionszahl</strong>:</p>
 <div class="eq">\[
 \frac{\|\delta\mathbf x\|}{\|\mathbf x\|} \;\le\; \kappa(A)\,\frac{\|\delta\mathbf b\|}{\|\mathbf b\|}, \qquad \kappa(A) = \|A\|\,\|A^{-1}\| = \frac{\sigma_{\max}}{\sigma_{\min}}
@@ -379,17 +369,15 @@ A\mathbf x = \begin{pmatrix} | &amp; | &amp; \\ \mathbf a_1 &amp; \mathbf a_2 &a
 <p>Schlechte Kondition ist kein Rechenfehler, sondern eine Eigenschaft des Problems. Bessere Algorithmen helfen nur gegen Rundungsfehler, nicht gegen fehlende Information. Gegenmittel sind bessere Messungen (eine steilere zweite Gerade) oder <strong>Regularisierung</strong>, die Vorwissen über die Lösung einbringt (Abschnitt 7). Typische schlecht konditionierte Probleme sind Entfaltung (Deblurring), Rekonstruktion aus wenigen Projektionen und Polynomfits hohen Grades.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li><span class="arithmatex">\(\kappa(A) = \sigma_{\max}/\sigma_{\min}\)</span> verstärkt relative Fehler. <span class="arithmatex">\(\kappa \approx 1\)</span>: gutartig. <span class="arithmatex">\(\kappa \gg 1\)</span>: fast singulär.</li>
 <li>Gegen schlechte Kondition hilft Information (Messung, Vorwissen), nicht Rechengenauigkeit.</li>
 </ul>
 </div>
-
 </section>
 <section id="kq">
 <div class="step"><b>7</b><span class="eyebrow">Gleichungssysteme</span></div>
 <h2>Überbestimmte Systeme: kleinste Quadrate</h2>
-
 <p>Hat man mehr Gleichungen als Unbekannte, <span class="arithmatex">\(m &gt; n\)</span>, gibt es wegen Messrauschen fast nie eine exakte Lösung: <span class="arithmatex">\(\mathbf b\)</span> liegt nicht im Spaltenraum. Man sucht dann das <span class="arithmatex">\(\mathbf x\)</span>, dessen <strong>Residuum</strong> <span class="arithmatex">\(\mathbf r = \mathbf b - A\mathbf x\)</span> möglichst klein ist:</p>
 <div class="eq">\[
 \hat{\mathbf x} = \arg\min_{\mathbf x}\,\|A\mathbf x - \mathbf b\|_2^2
@@ -420,17 +408,15 @@ A^\top A\,\hat{\mathbf x} = A^\top\mathbf b \qquad\Longrightarrow\qquad \hat{\ma
 <p>Das <span class="arithmatex">\(\lambda I\)</span> hebt alle Eigenwerte von <span class="arithmatex">\(A^\top A\)</span> um <span class="arithmatex">\(\lambda\)</span> an, die Kondition verbessert sich drastisch. Der Preis ist ein kleiner systematischer Fehler (Bias). Welches λ richtig ist, entscheidet man über Validierung oder das Rauschniveau.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Kleinste Quadrate = Projektion von <span class="arithmatex">\(\mathbf b\)</span> auf den Spaltenraum. Normalengleichung <span class="arithmatex">\(A^\top A\hat{\mathbf x} = A^\top\mathbf b\)</span>.</li>
 <li>Numerisch über QR oder SVD lösen, nicht über <span class="arithmatex">\(A^\top A\)</span>. Ridge: <span class="arithmatex">\(+\lambda I\)</span> stabilisiert.</li>
 </ul>
 </div>
-
 </section>
 <section id="iterativ">
 <div class="step"><b>8</b><span class="eyebrow">Gleichungssysteme</span></div>
 <h2>Iterative Verfahren</h2>
-
 <p>LU und QR brauchen <span class="arithmatex">\(O(n^3)\)</span> Operationen und die ganze Matrix im Speicher. Für eine CT-Rekonstruktion mit <span class="arithmatex">\(512^2\)</span> Unbekannten und Millionen Messungen ist das unmöglich, die Systemmatrix ist aber <strong>dünn besetzt</strong> (jeder Strahl trifft nur wenige Pixel). Iterative Verfahren brauchen nur Matrix-Vektor-Produkte <span class="arithmatex">\(A\mathbf x\)</span> und <span class="arithmatex">\(A^\top\mathbf y\)</span> und nähern sich der Lösung schrittweise.</p>
 <ul class="tight">
 <li><strong>Jacobi und Gauß-Seidel:</strong> Gleichung <span class="arithmatex">\(i\)</span> wird nach <span class="arithmatex">\(x_i\)</span> aufgelöst, mit den aktuellen Werten der anderen Unbekannten. Gauß-Seidel verwendet neue Werte sofort. Konvergiert sicher für diagonaldominante Matrizen.</li>
@@ -453,17 +439,15 @@ A^\top A\,\hat{\mathbf x} = A^\top\mathbf b \qquad\Longrightarrow\qquad \hat{\ma
 </figure>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Iterative Verfahren brauchen nur <span class="arithmatex">\(A\mathbf x\)</span> und <span class="arithmatex">\(A^\top\mathbf y\)</span>: ideal für große, dünn besetzte Systeme.</li>
 <li>Die Konvergenzgeschwindigkeit hängt an der Kondition. Vorkonditionierung formt das Problem so um, dass κ kleiner wird.</li>
 </ul>
 </div>
-
 </section>
 <section id="eigen">
 <div class="step"><b>9</b><span class="eyebrow">Zerlegungen</span></div>
 <h2>Eigenwerte und Eigenvektoren</h2>
-
 <p>Die meisten Vektoren werden von einer Matrix gedreht und gestreckt. Einige wenige Richtungen werden nur gestreckt, ihre Richtung bleibt erhalten. Das sind die <strong>Eigenvektoren</strong>, und der Streckfaktor ist der <strong>Eigenwert</strong> λ:</p>
 <div class="eq">\[
 A\mathbf v = \lambda\mathbf v, \qquad \mathbf v \neq \mathbf 0
@@ -504,18 +488,16 @@ A = Q\Lambda Q^\top = \sum_{i=1}^n \lambda_i\,\mathbf q_i\mathbf q_i^\top
 <p>Kovarianzmatrizen, <span class="arithmatex">\(A^\top A\)</span>, Hesse-Matrizen und Graph-Laplace-Matrizen sind alle symmetrisch. Sind zusätzlich alle <span class="arithmatex">\(\lambda_i &gt; 0\)</span>, heißt <span class="arithmatex">\(A\)</span> <strong>positiv definit</strong>: <span class="arithmatex">\(\mathbf x^\top A\mathbf x &gt; 0\)</span> für alle <span class="arithmatex">\(\mathbf x \neq \mathbf 0\)</span>. Die Höhenlinien von <span class="arithmatex">\(\mathbf x^\top A\mathbf x\)</span> sind dann Ellipsen mit Halbachsen entlang der Eigenvektoren, genau die Ellipsen aus Abbildung 7. <span class="arithmatex">\(A^\top A\)</span> ist immer positiv semidefinit.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Diagonalisierbar ⇔ <span class="arithmatex">\(n\)</span> unabhängige Eigenvektoren ⇔ für jeden Eigenwert geometrische = algebraische Vielfachheit.</li>
 <li><span class="arithmatex">\(A\mathbf v = \lambda\mathbf v\)</span>: Richtung bleibt, Länge ändert sich um λ. <span class="arithmatex">\(\sum\lambda_i = \operatorname{tr}A\)</span>, <span class="arithmatex">\(\prod\lambda_i = \det A\)</span>.</li>
 <li>Symmetrisch ⇒ reelle Eigenwerte, orthogonale Eigenvektoren, <span class="arithmatex">\(A = Q\Lambda Q^\top\)</span>.</li>
 </ul>
 </div>
-
 </section>
 <section id="orthogonal">
 <div class="step"><b>10</b><span class="eyebrow">Zerlegungen</span></div>
 <h2>Orthogonalität, Projektionen und QR</h2>
-
 <p>Vektoren <span class="arithmatex">\(\mathbf q_1, \dots, \mathbf q_k\)</span> sind <strong>orthonormal</strong>, wenn sie paarweise senkrecht stehen und Länge 1 haben: <span class="arithmatex">\(\mathbf q_i^\top\mathbf q_j = 0\)</span> für <span class="arithmatex">\(i \neq j\)</span>, <span class="arithmatex">\(\mathbf q_i^\top\mathbf q_i = 1\)</span>. In einer Orthonormalbasis sind Koordinaten einfach Skalarprodukte, es gibt kein Gleichungssystem zu lösen: <span class="arithmatex">\(\mathbf x = \sum_i (\mathbf q_i^\top\mathbf x)\,\mathbf q_i\)</span>. Die Fourier-Zerlegung ist genau das, mit Sinus- und Kosinusfunktionen als Basis.</p>
 <p>Eine quadratische Matrix <span class="arithmatex">\(Q\)</span> mit orthonormalen Spalten heißt <strong>orthogonal</strong>. Sie ist eine Drehung oder Spiegelung und erhält Längen und Winkel:</p>
 <div class="eq">\[
@@ -551,18 +533,16 @@ P = A(A^\top A)^{-1}A^\top, \qquad\text{bei orthonormalen Spalten } Q:\; P = QQ^
 <p>Schreibt man die Koeffizienten mit, ergibt sich die <strong>QR-Zerlegung</strong> <span class="arithmatex">\(A = QR\)</span> mit orthonormalen Spalten in <span class="arithmatex">\(Q\)</span> und oberer Dreiecksmatrix <span class="arithmatex">\(R\)</span>. Damit wird kleinste Quadrate stabil: <span class="arithmatex">\(A^\top A\hat{\mathbf x} = A^\top\mathbf b\)</span> vereinfacht sich zu <span class="arithmatex">\(R\hat{\mathbf x} = Q^\top\mathbf b\)</span>, ohne die Kondition zu quadrieren. In der Praxis rechnet man QR nicht mit klassischem Gram-Schmidt (das verliert bei fast abhängigen Spalten die Orthogonalität), sondern mit Householder-Spiegelungen. Dasselbe Prinzip steckt im QR-Algorithmus, mit dem Bibliotheken Eigenwerte berechnen.</p>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Drehung <span class="arithmatex">\(R(\theta)\)</span>: orthogonal mit <span class="arithmatex">\(\det = 1\)</span>, <span class="arithmatex">\(R^{-1} = R^\top\)</span>. In 3D nicht kommutativ.</li>
 <li>Orthogonal: <span class="arithmatex">\(Q^\top Q = I\)</span>, erhält Längen, <span class="arithmatex">\(\kappa = 1\)</span>. Koordinaten in Orthonormalbasis = Skalarprodukte.</li>
 <li>Projektion <span class="arithmatex">\(P = QQ^\top\)</span>, <span class="arithmatex">\(P^2 = P\)</span>. QR: <span class="arithmatex">\(A = QR\)</span>, kleinste Quadrate über <span class="arithmatex">\(R\hat{\mathbf x} = Q^\top\mathbf b\)</span>.</li>
 </ul>
 </div>
-
 </section>
 <section id="svd">
 <div class="step"><b>11</b><span class="eyebrow">Zerlegungen</span></div>
 <h2>Singulärwertzerlegung (SVD)</h2>
-
 <p>Eigenwerte gibt es nur für quadratische Matrizen, und reelle orthogonale Eigenvektoren nur für symmetrische. Die <strong>Singulärwertzerlegung</strong> funktioniert für <em>jede</em> <span class="arithmatex">\(m\times n\)</span>-Matrix:</p>
 <div class="eq">\[
 A = U\Sigma V^\top = \sum_{i=1}^{r}\sigma_i\,\mathbf u_i\mathbf v_i^\top, \qquad \sigma_1 \ge \sigma_2 \ge \dots \ge \sigma_r &gt; 0
@@ -623,17 +603,15 @@ A_k = \sum_{i=1}^{k}\sigma_i\,\mathbf u_i\mathbf v_i^\top, \qquad \|A - A_k\|_F^
 </figure>
 <div class="merke">
 <div class="eyebrow">Merke</div>
-<ul class="tight">
+<ul>
 <li>Jede Matrix: <span class="arithmatex">\(A = U\Sigma V^\top\)</span>, drehen, strecken, drehen. <span class="arithmatex">\(\sigma_i = \sqrt{\lambda_i(A^\top A)}\)</span>.</li>
 <li>Rang, Kondition, Norm, Pseudoinverse und beste Rang-k-Näherung stehen alle in der SVD. PCA ist die SVD der zentrierten Daten.</li>
 </ul>
 </div>
-
 </section>
 <section id="kalkuel">
 <div class="eyebrow">Anhang A</div>
 <h2>Matrix-Kalkül</h2>
-
 <p>Für Optimierung braucht man Ableitungen nach Vektoren. Der <strong>Gradient</strong> <span class="arithmatex">\(\nabla f(\mathbf x)\)</span> einer skalaren Funktion ist der Vektor der partiellen Ableitungen, er zeigt in Richtung des steilsten Anstiegs. Die wichtigsten Regeln (Konvention: Gradient als Spaltenvektor):</p>
 <div class="tbl"><table>
 <thead>
@@ -689,12 +667,10 @@ H = \begin{pmatrix} \dfrac{\partial^2 f}{\partial x_1^2} &amp; \cdots &amp; \dfr
 <p>Sie beschreibt die Krümmung und ist symmetrisch. Am Punkt mit <span class="arithmatex">\(\nabla f = \mathbf 0\)</span> entscheiden ihre Eigenwerte: alle positiv heißt Minimum, alle negativ Maximum, gemischt Sattelpunkt. Für <span class="arithmatex">\(f = \tfrac12\|A\mathbf x - \mathbf b\|^2\)</span> ist <span class="arithmatex">\(H = A^\top A\)</span>, und deren Eigenwerte bestimmen die Höhenlinien und die Konvergenz in Abbildung 7.</p>
 <p>Ausführlicher, mit Kettenregel, Backpropagation, Taylor-Entwicklung und Optimierung, soll das eine eigene Seite „Vektoranalysis und Optimierung“ werden.</p>
 <p>Eine Faustregel zum Prüfen: Die Dimensionen müssen passen. Ist <span class="arithmatex">\(\mathbf x \in \mathbb R^n\)</span>, muss der Gradient auch in <span class="arithmatex">\(\mathbb R^n\)</span> liegen. Bei <span class="arithmatex">\(\|A\mathbf x - \mathbf b\|^2\)</span> mit <span class="arithmatex">\(A \in \mathbb R^{m\times n}\)</span> ist <span class="arithmatex">\(A\mathbf x - \mathbf b \in \mathbb R^m\)</span>, und erst <span class="arithmatex">\(A^\top\)</span> bringt es zurück nach <span class="arithmatex">\(\mathbb R^n\)</span>.</p>
-
 </section>
 <section id="formeln">
 <div class="eyebrow">Anhang B</div>
 <h2>Formeln und Notation</h2>
-
 <h3>Matrixklassen und ihre Zerlegungen</h3>
 <p>Welche Zerlegung existiert, hängt davon ab, was man über die Matrix weiß. Die Tabelle geht grob vom Allgemeinen zum Speziellen, ist aber keine strenge Kette: Symmetrisch heißt z. B. diagonalisierbar, aber nicht invertierbar. Erst positiv definit ist beides. Die Sonderzweige liegen quer dazu.</p>
 <div class="tbl"><table>
@@ -907,7 +883,7 @@ H = \begin{pmatrix} \dfrac{\partial^2 f}{\partial x_1^2} &amp; \cdots &amp; \dfr
     <footer>Alle Abbildungen rechnen live im Browser mit kleinen Beispielen. Für echte Probleme nimmt man LAPACK-basierte Bibliotheken wie NumPy oder PyTorch.</footer>
   </main>
 </div>
-<script src="../assets/core.js"></script>
+<script src="../assets/ui.js"></script>
 <script src="../assets/la.js"></script>
 <script>
 /* ---------- Vektoren ---------- */

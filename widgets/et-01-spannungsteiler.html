@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spannungsteiler</title>
+<!-- Erzeugt von build.py aus src/figures/et-01-spannungsteiler.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Spannungsteiler aus Spannungsquelle, R1 und R2 in Reihe, mit optionalem Lastwiderstand parallel zu R2. Die berechneten Ströme und Spannungen stehen neben den Bauteilen." id="vd-svg" role="img" viewbox="0 0 640 290">
+<defs><marker id="vd-ar" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-acc" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<g class="d-st" stroke-width="1.8">
+<line x1="90" x2="300" y1="40" y2="40"></line><line x1="90" x2="90" y1="40" y2="118"></line><line x1="90" x2="90" y1="142" y2="260"></line><line x1="90" x2="300" y1="260" y2="260"></line>
+<line stroke-width="2.4" x1="72" x2="108" y1="118" y2="118"></line><line stroke-width="4" x1="80" x2="100" y1="142" y2="142"></line>
+<line x1="300" x2="300" y1="40" y2="62"></line><rect height="56" rx="1" width="20" x="290" y="62"></rect><line x1="300" x2="300" y1="118" y2="182"></line>
+<rect height="56" rx="1" width="20" x="290" y="182"></rect><line x1="300" x2="300" y1="238" y2="260"></line>
+<line x1="300" x2="540" y1="150" y2="150"></line><line x1="300" x2="540" y1="260" y2="260"></line>
+<circle class="d-surf" cx="540" cy="150" r="4"></circle><circle class="d-surf" cx="540" cy="260" r="4"></circle>
+</g>
+<g class="d-st" id="vd-load" stroke-width="1.8">
+<line x1="440" x2="440" y1="150" y2="182"></line><rect height="56" rx="1" width="20" x="430" y="182"></rect><line x1="440" x2="440" y1="238" y2="260"></line>
+<text class="d-fg" font-size="14" stroke="none" x="462" y="214">R_L</text>
+<text class="d-mut m" font-size="12" id="vd-il" stroke="none" x="462" y="232"></text>
+</g>
+<circle class="d-fg" cx="300" cy="150" r="4"></circle>
+<line class="d-sta" marker-end="url(#vd-ar)" stroke-width="2" x1="150" x2="240" y1="28" y2="28"></line>
+<g class="d-fg" font-size="14">
+<text text-anchor="middle" x="40" y="135">U</text><text class="m" font-size="12" id="vd-u" text-anchor="middle" x="40" y="153"></text>
+<text class="d-acc" id="vd-i" text-anchor="middle" x="195" y="20"></text>
+<text x="322" y="88">R₁</text><text class="m d-mut" font-size="12" id="vd-r1" x="322" y="106"></text>
+<text id="vd-u1" text-anchor="end" x="230" y="94"></text>
+<text x="322" y="208">R₂</text><text class="m d-mut" font-size="12" id="vd-r2" x="322" y="226"></text>
+<text id="vd-u2" text-anchor="end" x="230" y="214"></text>
+<text x="556" y="208">U₂</text><text class="m" font-size="12" id="vd-u2b" x="556" y="226"></text>
+</g>
+<g class="d-stm" stroke-dasharray="3 3" stroke-width="1.2"><line x1="250" x2="250" y1="64" y2="116"></line><line x1="250" x2="250" y1="184" y2="236"></line><line x1="580" x2="580" y1="156" y2="254"></line></g>
+</svg>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="vd-us">Quellspannung U</label><output id="vd-us-o"></output></div><input id="vd-us" max="24" min="1" step="0.5" type="range" value="12"/></div>
+<div class="ctrl"><div class="lab"><label for="vd-r1s">R₁</label><output id="vd-r1s-o"></output></div><input id="vd-r1s" max="5" min="2" step="0.01" type="range" value="3"/></div>
+<div class="ctrl"><div class="lab"><label for="vd-r2s">R₂</label><output id="vd-r2s-o"></output></div><input id="vd-r2s" max="5" min="2" step="0.01" type="range" value="3.3"/></div>
+</div>
+<div class="ctrls">
+<label class="chk"><input id="vd-lc" type="checkbox"/> Last R_L anschließen</label>
+<div class="ctrl"><div class="lab"><label for="vd-rl">R_L</label><output id="vd-rl-o"></output></div><input id="vd-rl" max="6" min="2" step="0.01" type="range" value="3.5"/></div>
+</div>
+<div class="readout" id="vd-read"></div>
+<figcaption><b>Abb. 1</b> Spannungsteiler. Die Werte neben den Bauteilen rechnen live mit. Die Maschenregel siehst du direkt: \(U_1 + U_2 = U\). Schließt du eine Last an, liegt sie parallel zu \(R_2\), der untere Teil wird niederohmiger, und \(U_2\) sinkt. Wie stark, hängt vom Verhältnis \(R_L\) zu \(R_2\) ab. Das ist der Grund, warum Messgeräte und Verstärkereingänge einen hohen Eingangswiderstand haben sollen.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
+<script>
+/* ---------- Abb. 1: Spannungsteiler ---------- */
+(() => {
+  const iu = $('#vd-us'), i1 = $('#vd-r1s'), i2 = $('#vd-r2s'), il = $('#vd-rl'), ilc = $('#vd-lc');
+  function upd() {
+    const U = +iu.value, R1 = Math.pow(10, +i1.value), R2 = Math.pow(10, +i2.value), RL = Math.pow(10, +il.value), load = ilc.checked;
+    const R2e = load ? R2 * RL / (R2 + RL) : R2, I = U / (R1 + R2e), U2 = I * R2e, U1 = I * R1, IL = load ? U2 / RL : 0, I2 = U2 / R2;
+    $('#vd-us-o').textContent = `${nf(U, 1)} V`; $('#vd-r1s-o').textContent = SI(R1, 'Ω'); $('#vd-r2s-o').textContent = SI(R2, 'Ω'); $('#vd-rl-o').textContent = SI(RL, 'Ω');
+    $('#vd-u').textContent = `${nf(U, 1)} V`; $('#vd-i').textContent = `I = ${SI(I, 'A')}`;
+    $('#vd-r1').textContent = SI(R1, 'Ω'); $('#vd-r2').textContent = SI(R2, 'Ω');
+    $('#vd-u1').textContent = `U₁ = ${nf(U1, 2)} V`; $('#vd-u2').textContent = `U₂ = ${nf(U2, 2)} V`; $('#vd-u2b').textContent = `${nf(U2, 2)} V`;
+    $('#vd-il').textContent = load ? SI(IL, 'A') : '';
+    $('#vd-load').style.opacity = load ? '1' : '0.18'; il.disabled = !load;
+    const ideal = U * R2 / (R1 + R2);
+    $('#vd-read').innerHTML = `<span class="k">Maschenregel:</span> U₁ + U₂ = ${nf(U1, 2)} V + ${nf(U2, 2)} V = ${nf(U, 2)} V  <span class="k">·</span>  <span class="k">Leistung gesamt:</span> ${SI(U * I, 'W')}` +
+      (load ? `<br><span class="k">Knotenregel:</span> I = I₂ + I_L = ${SI(I2, 'A')} + ${SI(IL, 'A')}  <span class="k">·</span>  <span class="k">U₂ ohne Last:</span> ${nf(ideal, 2)} V, mit Last ${nf((U2 / ideal - 1) * 100, 1)} %` : '');
+  }
+  [iu, i1, i2, il, ilc].forEach(e => e.addEventListener('input', upd)); upd();
+})();
+</script>
+</body>
+</html>

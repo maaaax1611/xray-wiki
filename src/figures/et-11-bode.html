@@ -1,0 +1,46 @@
+<!-- title: Bode-Diagramm
+     lib: et -->
+<figure class="fig">
+<div class="two">
+<div><div class="lbl">Bode-Diagramm</div><canvas aria-label="Bode-Diagramm: Betrag in dB und Phase in Grad über der Frequenz, mit Markierung der gewählten Frequenz." class="c-sq" id="cv-bode" role="img"></canvas></div>
+<div><div class="lbl">Zeitverlauf bei der gewählten Frequenz</div><canvas aria-label="Sinus am Eingang und Ausgang des Filters bei der gewählten Frequenz." class="c-sq" id="cv-bt" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="bd-t">Filter</label></div><select id="bd-t"><option value="lp">Tiefpass (Abgriff C)</option><option value="hp">Hochpass (Abgriff R)</option></select></div>
+<div class="ctrl"><div class="lab"><label for="bd-r">R</label><output id="bd-r-o"></output></div><input id="bd-r" max="6" min="2" step="0.01" type="range" value="4"/></div>
+<div class="ctrl"><div class="lab"><label for="bd-c">C</label><output id="bd-c-o"></output></div><input id="bd-c" max="-6" min="-11" step="0.01" type="range" value="-8"/></div>
+<div class="ctrl"><div class="lab"><label for="bd-f">Signalfrequenz</label><output id="bd-f-o"></output></div><input id="bd-f" max="6" min="1" step="0.01" type="range" value="3.2"/></div>
+</div>
+<div class="readout" id="bd-read"></div>
+<figcaption><b>Abb. 11</b> Links das Bode-Diagramm des RC-Filters, rechts ein Sinus der gewählten Frequenz am Eingang (grau) und am Ausgang (blau). Schiebe die Signalfrequenz über die Grenzfrequenz (gestrichelt) und beobachte, wie Amplitude und Phasenverschiebung zusammenhängen.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 8: Bode ---------- */
+(() => {
+  const cb = $('#cv-bode'), ct = $('#cv-bt'), iT = $('#bd-t'), iR = $('#bd-r'), iC = $('#bd-c'), iF = $('#bd-f');
+  function H(f) { const R = Math.pow(10, +iR.value), C = Math.pow(10, +iC.value), x = 2 * Math.PI * f * R * C; const lp = iT.value === 'lp'; const mag = lp ? 1 / Math.sqrt(1 + x * x) : x / Math.sqrt(1 + x * x); const ph = lp ? -Math.atan(x) : Math.PI / 2 - Math.atan(x); return { mag, ph }; }
+  function fg() { return 1 / (2 * Math.PI * Math.pow(10, +iR.value) * Math.pow(10, +iC.value)); }
+  const mB = reg({ el: cb, draw() {
+    const { ctx, w, h } = fit(cb), f0 = Math.pow(10, +iF.value), g = fg();
+    const xt = [10, 100, 1e3, 1e4, 1e5, 1e6], xf = v => v >= 1e6 ? '1M' : v >= 1e3 ? (v / 1e3) + 'k' : String(v);
+    const f1 = frame(ctx, 0, 0, w, h * 0.55, { x0: 10, x1: 1e6, xlog: true, y0: -60, y1: 6, xt, yt: [-60, -40, -20, -3, 0], xf: () => '', yf: v => String(v), yl: '|H| (dB)', l: 46, t: 8, b: 8 });
+    const f2 = frame(ctx, 0, h * 0.55, w, h * 0.45, { x0: 10, x1: 1e6, xlog: true, y0: -95, y1: 95, xt, yt: [-90, -45, 0, 45, 90], xf, yf: v => v + '°', xl: 'Frequenz (Hz)', yl: 'Phase', l: 46, t: 6 });
+    [f1, f2].forEach((f, i) => { clipBox(ctx, f); ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let k = 0; k <= 400; k++) { const fr = Math.pow(10, 1 + 5 * k / 400), r = H(fr), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; const X = f.X(fr), Y = f.Y(y); k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke();
+      ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(g), f.by); ctx.lineTo(f.X(g), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+      const r = H(f0), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(f.X(f0), f.Y(y), 4.5, 0, 7); ctx.fill(); ctx.restore(); });
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('f_g', Math.min(f1.X(g) + 4, f1.bx + f1.bw - 24), f1.by + 12);
+  }});
+  const mT = reg({ el: ct, draw() {
+    const { ctx, w, h } = fit(ct), f0 = Math.pow(10, +iF.value), r = H(f0);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 2, y0: -1.25, y1: 1.25, xt: [0, 0.5, 1, 1.5, 2], yt: [-1, -0.5, 0, 0.5, 1], xf: v => nf(v, 1), yf: v => nf(v, 1), xl: 'Zeit (Perioden)', yl: 'Spannung (V)', l: 44 });
+    clipBox(ctx, f);
+    const cur = (amp, ph, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k <= 400; k++) { const t = 2 * k / 400, y = amp * Math.sin(2 * Math.PI * t + ph); k ? ctx.lineTo(f.X(t), f.Y(y)) : ctx.moveTo(f.X(t), f.Y(y)); } ctx.stroke(); ctx.setLineDash([]); };
+    cur(1, 0, tok('--muted'), 1.5, [4, 3]); cur(r.mag, r.ph, tok('--accent'), 2.4);
+    ctx.restore();
+    $('#bd-r-o').textContent = SI(Math.pow(10, +iR.value), 'Ω'); $('#bd-c-o').textContent = SI(Math.pow(10, +iC.value), 'F'); $('#bd-f-o').textContent = SI(f0, 'Hz');
+    $('#bd-read').innerHTML = `<span class="k">Grenzfrequenz f_g =</span> ${SI(fg(), 'Hz')}  <span class="k">·</span>  <span class="k">bei ${SI(f0, 'Hz')}:</span> |H| = ${nf(r.mag, 3)} = ${nf(20 * Math.log10(r.mag), 1)} dB  <span class="k">·</span>  <span class="k">Phase</span> ${nf(r.ph * 180 / Math.PI, 1)}°  <span class="k">·</span>  <span class="k">f / f_g =</span> ${nf(f0 / fg(), f0 / fg() < 10 ? 2 : 0)}`;
+  }});
+  [iT, iR, iC, iF].forEach(e => e.addEventListener('input', () => { mB.draw(); mT.draw(); })); mB.draw(); mT.draw();
+})();
+</script>

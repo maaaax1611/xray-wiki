@@ -1,0 +1,66 @@
+<!-- title: Elektron-Loch-Paarerzeugung
+     lib: gl -->
+<figure class="fig">
+<canvas aria-label="Animation: ein absorbiertes Photon erzeugt eine Wolke aus Elektron-Loch-Paaren. Jeder Doppelpunkt steht für 100 Paare." class="c-pair" id="cv-pair" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="pr-m">Material</label></div>
+<select id="pr-m"><option value="4.43">CdTe</option><option value="4.6">CdZnTe (CZT)</option><option value="3.62">Silizium</option><option value="2.96">Germanium</option></select></div>
+<div class="ctrl"><div class="lab"><label for="pr-e">Photonenenergie</label><output id="pr-e-o"></output></div><input id="pr-e" max="140" min="10" step="1" type="range" value="60"/></div>
+<button class="btn" id="pr-go" type="button">Neues Photon</button>
+</div>
+<div class="readout" id="pr-read"></div>
+<figcaption><b>Abb. 6</b> Ein Photon erzeugt eine Wolke aus Elektronen (blau) und Löchern (rot). Jedes gezeichnete Paar steht für 100 echte Paare. Verdopple die Energie: Die Zahl der Paare verdoppelt sich.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 6: Paarerzeugung ---------- */
+(() => {
+  const c = $('#cv-pair'), im = $('#pr-m'), ie = $('#pr-e');
+  let pairs = [], t = 1, inc = 0;
+  function burst() {
+    const E = +ie.value * 1000, W = +im.value, N = E / W, n = Math.round(N / 100);
+    pairs = []; for (let i = 0; i < n; i++) { const r = Math.sqrt(Math.random()), a = Math.random() * 2 * Math.PI; pairs.push({ r, a, j: Math.random() * 2 * Math.PI }); }
+    t = 0; inc = 0;
+    $('#pr-e-o').textContent = `${ie.value} keV`;
+    const F = W > 4 ? 0.1 : 0.115, sig = Math.sqrt(F * N);
+    $('#pr-read').innerHTML = `<span class="k">Paare N = E / W =</span> ${nf(E, 0)} eV / ${nf(W, 2)} eV ≈ <b>${nf(N, 0)}</b>  <span class="k">·</span>  <span class="k">Ladung Q = N·e ≈</span> ${nf(N * 1.602e-4, 2)} fC  <span class="k">·</span>  <span class="k">Schwankung</span> ±${nf(sig, 0)} Paare (${nf(sig / N * 100, 2)} %)`;
+  }
+  const m = reg({ el: c, anim: true, playing: true,
+    step(dt) { t = Math.min(1, t + dt / 0.9); inc += dt; },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const narrow = w < 520;
+      const cx = narrow ? w / 2 : w * 0.38, cy = narrow ? h * 0.42 : h / 2;
+      const ease = 1 - Math.pow(1 - t, 3);
+      const R = Math.min(h * 0.4, (narrow ? w * 0.4 : w * 0.3)) * Math.sqrt(pairs.length / 320) * ease + 2;
+      // einlaufendes Photon
+      const fall = Math.min(1, t * 4);
+      ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath();
+      const sx = cx - Math.min(w * 0.3, 220), sy = cy - h * 0.38;
+      for (let k = 0; k <= 40; k++) { const u = k / 40 * fall; const x = sx + (cx - sx) * u, y = sy + (cy - sy) * u; const ox = Math.sin(u * 40) * 4; k ? ctx.lineTo(x + ox * 0.6, y - ox * 0.8) : ctx.moveTo(x, y); }
+      ctx.stroke();
+      if (t > 0.2) {
+        const show = Math.min(pairs.length, Math.round(pairs.length * Math.min(1, (t - 0.2) / 0.5)));
+        for (let i = 0; i < show; i++) {
+          const p = pairs[i], r = p.r * R;
+          const x = cx + r * Math.cos(p.a) + Math.sin(inc * 1.3 + p.j) * 1.2, y = cy + r * Math.sin(p.a) + Math.cos(inc * 1.1 + p.j) * 1.2;
+          ctx.fillStyle = tok('--elec'); ctx.beginPath(); ctx.arc(x - 2.3, y, 2.1, 0, 7); ctx.fill();
+          ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(x + 2.3, y, 2.1, 0, 7); ctx.fill();
+        }
+      }
+      ctx.fillStyle = tok('--fg'); ctx.textAlign = narrow ? 'center' : 'left';
+      const N = (+ie.value * 1000) / (+im.value);
+      const tx = narrow ? w / 2 : w * 0.7, ty = narrow ? h - 34 : cy - 14;
+      ctx.font = `600 ${narrow ? 26 : 36}px ${DISP}`; ctx.fillText(nf(Math.round(N * Math.min(1, Math.max(0, (t - 0.2) / 0.5))), 0), tx, ty);
+      ctx.font = `13px ${DISP}`; ctx.fillStyle = tok('--muted'); ctx.fillText('Elektron-Loch-Paare', tx, ty + 20);
+      if (!narrow) {
+        ctx.font = `11px ${MONO}`;
+        ctx.fillStyle = tok('--elec'); ctx.beginPath(); ctx.arc(tx + 4, ty + 46, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(tx + 12, ty + 46, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = tok('--muted'); ctx.fillText('= 100 Paare', tx + 22, ty + 50);
+      }
+    }
+  });
+  ie.addEventListener('input', burst); im.addEventListener('input', burst); $('#pr-go').addEventListener('click', burst);
+  burst(); if (reduceMotion) { t = 1; m.playing = false; } m.draw();
+})();
+</script>

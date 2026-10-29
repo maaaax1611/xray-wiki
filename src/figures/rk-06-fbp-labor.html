@@ -1,0 +1,59 @@
+<!-- title: FBP-Labor
+     lib: rk -->
+<figure class="fig">
+<div class="two">
+<div><div class="lbl">Rekonstruktion</div><canvas aria-label="FBP-Rekonstruktion des Phantoms mit wählbarem Filter, Winkelzahl und Dosis. Ein Kreis markiert die Messregion für das Rauschen." class="c-sq" id="cv-lab" role="img"></canvas></div>
+<div><div class="lbl">Filter im Frequenzraum</div><canvas aria-label="Frequenzgang der Filter Ram-Lak, Shepp-Logan, Kosinus und Hann; der gewählte ist hervorgehoben." class="c-sq" id="cv-lab-f" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="lb-f">Filter</label></div>
+<select id="lb-f"><option value="ramlak">Ram-Lak</option><option selected="" value="shepp">Shepp-Logan</option><option value="cos">Kosinus</option><option value="hann">Hann</option><option value="none">keiner (nur Rückprojektion)</option></select></div>
+<div class="ctrl"><div class="lab"><label for="lb-n">Projektionswinkel</label><output id="lb-n-o"></output></div><input id="lb-n" max="360" min="4" step="1" type="range" value="180"/></div>
+<div class="ctrl"><div class="lab"><label for="lb-d">Photonen pro Strahl</label><output id="lb-d-o"></output></div><input id="lb-d" max="7" min="2.5" step="0.1" type="range" value="5"/></div>
+</div>
+<div class="readout" id="lb-read"></div>
+<figcaption><b>Abb. 6</b> Ein kleines FBP-Labor. Das Sinogramm wird aus dem Phantom berechnet, mit Poisson-Rauschen passend zur eingestellten Photonenzahl \(I_0\) versehen, gefiltert und zurückprojiziert (Fenster μ = 0 … 0,65 cm⁻¹). Der Kreis markiert eine Region im Weichteil, in der Mittelwert und Rauschen in HU gemessen werden. Vergleiche Ram-Lak und Hann bei wenig Photonen, und reduziere die Winkelzahl auf unter 30.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 6: FBP-Labor ---------- */
+(() => {
+  const ci = $('#cv-lab'), cf = $('#cv-lab-f'), iW = $('#lb-f'), iN = $('#lb-n'), iD = $('#lb-d');
+  let off = null, stats = null;
+  const ROI = []; for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) if ((XC[i] + 9) ** 2 + (YC[j] + 5) ** 2 <= 1.6 ** 2) ROI.push(j * NG + i);
+  function compute() {
+    const NA = +iN.value, I0 = Math.pow(10, +iD.value), win = iW.value;
+    $('#lb-n-o').textContent = String(NA); $('#lb-d-o').textContent = I0 >= 1e6 ? `${nf(I0 / 1e6, 1)} Mio.` : nf(I0, 0);
+    const ths = []; for (let k = 0; k < NA; k++) ths.push(k * Math.PI / NA);
+    const sino = ths.map(t => noisy(projA(t), I0));
+    const rec = fbp(sino, ths, win);
+    let lo = 0, hi = 0.65;
+    if (win === 'none') { lo = Infinity; hi = -Infinity; for (let k = 0; k < rec.length; k++) if (MASK[k]) { lo = Math.min(lo, rec[k]); hi = Math.max(hi, rec[k]); } }
+    off = grayImg(rec, NG, NG, lo, hi, { mask: MASK });
+    let s = 0, s2 = 0; for (const k of ROI) { s += rec[k]; s2 += rec[k] ** 2; } const mean = s / ROI.length, sd = Math.sqrt(Math.max(0, s2 / ROI.length - mean * mean));
+    stats = { mean, sd, win };
+    $('#lb-read').innerHTML = win === 'none' ? `<span class="k">Ohne Filter ist das Bild nicht quantitativ (Werte in willkürlicher Einheit), daher hier keine HU-Messung.</span>` :
+      `<span class="k">Messregion (Weichteil, Sollwert 0 HU):</span> Mittel ${nf(1000 * (mean - 0.2) / 0.2, 0)} HU  <span class="k">·</span>  Rauschen σ = ${nf(1000 * sd / 0.2, 0)} HU  <span class="k">·</span>  <span class="k">Faustregel Winkel:</span> π/2 · 128 ≈ 201`;
+    mI.draw(); mF.draw();
+  }
+  const mI = reg({ el: ci, draw() {
+    if (!off) return;
+    const { ctx, w, h } = drawImg(ci, off, `${iN.value} Winkel`);
+    if (stats && stats.win !== 'none') { const s = Math.min(w, h), sc = s / (2 * HW), cx = w / 2, cy = h / 2; ctx.strokeStyle = '#f5b83d'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx - 9 * sc, cy + 5 * sc, 1.6 * sc, 0, 7); ctx.stroke(); }
+  }});
+  const mF = reg({ el: cf, draw() {
+    const { ctx, w, h } = fit(cf);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 1, y0: 0, y1: 1.05, xt: [0, 0.25, 0.5, 0.75, 1], yt: [0, 0.25, 0.5, 0.75, 1], xf: v => nf(v, 2), yf: v => nf(v, 2), xl: '|ω| / ω_Nyquist', yl: 'Verstärkung', l: 44 });
+    clipBox(ctx, f);
+    const cols = { ramlak: '--hole', shepp: '--accent', cos: '--bin1', hann: '--bin2' };
+    Object.keys(WIN).forEach(k => { const sel = k === iW.value; ctx.strokeStyle = sel ? tok(cols[k]) : rgba(tok(cols[k]), 0.35); ctx.lineWidth = sel ? 2.8 : 1.4; ctx.beginPath(); for (let i = 0; i <= 100; i++) { const x = i / 100, y = x * WIN[k](x); i ? ctx.lineTo(f.X(x), f.Y(y)) : ctx.moveTo(f.X(x), f.Y(y)); } ctx.stroke(); });
+    if (iW.value === 'none') { ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 2.4; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(f.X(0), f.Y(0.5)); ctx.lineTo(f.X(1), f.Y(0.5)); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; let ly = f.by + 12;
+    [['Ram-Lak', 'ramlak'], ['Shepp-Logan', 'shepp'], ['Kosinus', 'cos'], ['Hann', 'hann']].forEach(([t, k]) => { ctx.fillStyle = tok(cols[k]); ctx.fillRect(f.bx + 8, ly - 6, 12, 3); ctx.fillStyle = k === iW.value ? tok('--fg') : tok('--muted'); ctx.fillText(t, f.bx + 25, ly - 2); ly += 15; });
+    if (iW.value === 'none') { ctx.fillStyle = tok('--fg'); ctx.fillText('- - kein Filter: konstant', f.bx + 8, ly - 2); }
+  }});
+  const go = rafDebounce(compute);
+  [iW, iN, iD].forEach(e => e.addEventListener('input', go));
+  compute();
+})();
+</script>

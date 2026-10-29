@@ -1,0 +1,83 @@
+<!-- title: SART gegen FBP
+     lib: rk -->
+<figure class="fig">
+<div class="three">
+<div><div class="lbl">FBP (Shepp-Logan)</div><canvas aria-label="FBP-Rekonstruktion mit wenigen Winkeln als Vergleich." class="c-sq" id="cv-it-fbp" role="img"></canvas></div>
+<div><div class="lbl" id="it-lbl">SART</div><canvas aria-label="SART-Rekonstruktion, die sich mit jeder Iteration verbessert." class="c-sq" id="cv-it" role="img"></canvas></div>
+<div><div class="lbl">Fehler zum echten Bild</div><canvas aria-label="Verlauf des Bildfehlers über die Iterationen für SART, mit FBP als Referenzlinie." class="c-sq" id="cv-it-c" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="it-n">Projektionswinkel</label><output id="it-n-o"></output></div><input id="it-n" max="90" min="8" step="1" type="range" value="24"/></div>
+<label class="chk"><input id="it-noise" type="checkbox"/> Rauschen (I₀ = 3·10⁴)</label>
+<label class="chk"><input checked="" id="it-pos" type="checkbox"/> μ ≥ 0 erzwingen</label>
+<button class="btn" id="it-play" type="button">Pause</button>
+<button class="btn" id="it-reset" type="button">Von vorn</button>
+</div>
+<div class="readout" id="it-read"></div>
+<figcaption><b>Abb. 10</b> Dieselben Messdaten, zwei Verfahren. Links FBP, Mitte SART nach der angegebenen Zahl von Iterationen (eine Iteration = alle Winkel einmal durchlaufen, Relaxation λ = 0,5). Rechts der mittlere Fehler zum echten Phantom in HU (Wurzel aus dem mittleren quadratischen Fehler). Bei wenigen Winkeln ohne Rauschen wird SART klar besser als FBP. Mit Rauschen sinkt der Fehler erst und steigt dann wieder: Das Verfahren beginnt, das Rauschen nachzubilden. Deshalb bricht man früh ab oder regularisiert.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 10: SART ---------- */
+(() => {
+  const cF = $('#cv-it-fbp'), cS = $('#cv-it'), cC = $('#cv-it-c'), iN = $('#it-n'), iNo = $('#it-noise'), iP = $('#it-pos');
+  const MAXIT = 60, LAM = 0.5;
+  let S = null, tAcc = 0;
+  function setup() {
+    const NA = +iN.value; $('#it-n-o').textContent = String(NA);
+    const ths = []; for (let k = 0; k < NA; k++) ths.push(k * Math.PI / NA);
+    const sino = ths.map(t => { const p = projA(t); return iNo.checked ? noisy(p, 3e4) : p; });
+    const geo = ths.map(t => {
+      const n0 = new Int16Array(NG * NG).fill(-1), fr = new Float32Array(NG * NG), R = new Float64Array(NS), ct = Math.cos(t), st = Math.sin(t);
+      for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) { const idx = j * NG + i; if (!MASK[idx]) continue; const u = (XC[i] * ct + YC[j] * st + HW) / DX - 0.5, n = Math.floor(u); if (n < 0 || n >= NS - 1) continue; const f = u - n; n0[idx] = n; fr[idx] = f; R[n] += (1 - f) * DX; R[n + 1] += f * DX; }
+      return { n0, fr, R };
+    });
+    const order = ths.map((_, k) => k).sort((a, b) => ((a * 0.6180339887) % 1) - ((b * 0.6180339887) % 1));
+    const fb = fbp(sino, ths, 'shepp');
+    S = { NA, sino, geo, order, x: new Float64Array(NG * NG), it: 0, err: [rmseHU(new Float64Array(NG * NG))], fbpErr: rmseHU(fb), fbpImg: grayImg(fb, NG, NG, 0, 0.65, { mask: MASK }), res: 1 };
+    S.img = grayImg(S.x, NG, NG, 0, 0.65, { mask: MASK });
+    tAcc = 0; read();
+  }
+  function iterate() {
+    const x = S.x, pos = iP.checked, Ax = new Float64Array(NS), r = new Float64Array(NS);
+    let rs = 0, ps = 0;
+    for (const a of S.order) {
+      const { n0, fr, R } = S.geo[a], p = S.sino[a];
+      Ax.fill(0);
+      for (let k = 0; k < NG * NG; k++) { const n = n0[k]; if (n < 0) continue; const v = x[k] * DX, f = fr[k]; Ax[n] += v * (1 - f); Ax[n + 1] += v * f; }
+      for (let n = 0; n < NS; n++) { const d = p[n] - Ax[n]; rs += d * d; ps += p[n] * p[n]; r[n] = R[n] > 1e-9 ? d / R[n] : 0; }
+      for (let k = 0; k < NG * NG; k++) { const n = n0[k]; if (n < 0) continue; const f = fr[k]; let v = x[k] + LAM * (r[n] * (1 - f) + r[n + 1] * f); if (pos && v < 0) v = 0; x[k] = v; }
+    }
+    S.it++; S.err.push(rmseHU(x)); S.res = Math.sqrt(rs / ps);
+    S.img = grayImg(x, NG, NG, 0, 0.65, { mask: MASK });
+  }
+  function read() {
+    $('#it-lbl').textContent = `SART, Iteration ${S.it}`;
+    $('#it-read').innerHTML = `<span class="k">Bildfehler:</span> SART ${nf(S.err[S.err.length - 1], 0)} HU (bestes ${nf(Math.min(...S.err), 0)} HU bei Iteration ${S.err.indexOf(Math.min(...S.err))})  <span class="k">·</span>  FBP ${nf(S.fbpErr, 0)} HU<br><span class="k">Datenabweichung ‖p − Ax‖ / ‖p‖:</span> ${nf(S.res * 100, 2)} %`;
+  }
+  const mS = reg({ el: cS, anim: true, playing: !reduceMotion,
+    step(dt) { if (S.it >= MAXIT) return; tAcc += dt; if (tAcc > 0.22) { tAcc = 0; iterate(); read(); mC.draw(); } },
+    draw() { if (S) drawImg(cS, S.img, ''); }
+  });
+  const mF = reg({ el: cF, draw() { if (S) drawImg(cF, S.fbpImg, ''); } });
+  const mC = reg({ el: cC, draw() {
+    if (!S) return;
+    const { ctx, w, h } = fit(cC);
+    const ymax = Math.max(S.fbpErr, ...S.err.slice(1)) * 1.15 || 100;
+    const step = ymax > 400 ? 200 : ymax > 200 ? 100 : 50; const yt = []; for (let v = 0; v <= ymax; v += step) yt.push(v);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: MAXIT, y0: 0, y1: ymax, xt: [0, 20, 40, 60], yt, xl: 'Iteration', yl: 'RMSE (HU)', l: 46 });
+    clipBox(ctx, f);
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.bx, f.Y(S.fbpErr)); ctx.lineTo(f.bx + f.bw, f.Y(S.fbpErr)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath(); S.err.forEach((v, i) => { if (i === 0) return; i === 1 ? ctx.moveTo(f.X(i), f.Y(v)) : ctx.lineTo(f.X(i), f.Y(v)); }); ctx.stroke();
+    const last = S.err.length - 1; if (last > 0) { ctx.fillStyle = tok('--accent'); ctx.beginPath(); ctx.arc(f.X(last), f.Y(S.err[last]), 4, 0, 7); ctx.fill(); }
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillStyle = tok('--muted'); ctx.fillText('- - FBP', f.bx + f.bw - 4, f.Y(S.fbpErr) - 5);
+    ctx.fillStyle = tok('--accent'); ctx.fillText('— SART', f.bx + f.bw - 4, f.by + 12);
+  }});
+  const reset = () => { setup(); for (let i = 0; i < 3; i++) iterate(); read(); mS.draw(); mF.draw(); mC.draw(); };
+  [iN, iNo, iP].forEach(e => e.addEventListener('input', rafDebounce(reset)));
+  $('#it-reset').addEventListener('click', reset);
+  playBtn($('#it-play'), mS);
+  reset();
+  if (reduceMotion) { for (let i = 0; i < 30; i++) iterate(); read(); mS.draw(); mC.draw(); }
+})();
+</script>

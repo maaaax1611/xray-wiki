@@ -4,123 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vom Sinogramm zum Schnittbild</title>
+<!-- Erzeugt von build.py aus src/pages/physik/rekonstruktion.md. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <script>
 window.MathJax = {
-  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
   svg: { fontCache: 'global' },
   options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
-<style>
-/* Layout: wie die Schwesterseiten. Lesespalte mit klebrigem Inhaltsverzeichnis, Abbildungen als kleine Labore. */
-:root {
-  --bg: #f2f4f6; --surface: #fbfcfd; --fg: #16202a; --muted: #5a6875; --rule: #d3dae1; --grid: #e3e8ed;
-  --accent: #2448b8; --accent-soft: #dfe6fa; --elec: #2b66d9; --hole: #c8424f;
-  --bin0: #3a6fd8; --bin1: #14937f; --bin2: #c9900e; --bin3: #c8424f;
-  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
-  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78; color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
-.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px; }
-@media (min-width: 1100px) {
-  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
-  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
-  .toc-mobile { display: none; }
-}
-@media (max-width: 1099px) { nav.toc { display: none; } }
-main { min-width: 0; max-width: 800px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
-h1 { font-size: clamp(2.4rem, 6.5vw, 4.3rem); font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
-h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
-p { margin: 0.9em 0; }
-a { color: var(--accent); }
-strong { font-weight: 600; }
-.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-.lede { font-size: 1.2rem; line-height: 1.5; max-width: 34em; margin-top: 18px; }
-.muted { color: var(--muted); }
-nav.toc { font-family: var(--font-display); font-size: 15px; }
-nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
-nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
-nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
-nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
-nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
-.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
-.toc-mobile summary { cursor: pointer; color: var(--muted); }
-.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
-section { padding-top: 64px; scroll-margin-top: 20px; }
-.step { display: flex; align-items: center; gap: 10px; }
-.step b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--surface); background: var(--accent); border-radius: 3px; padding: 1px 7px; }
-figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
-figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
-figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
-canvas { display: block; width: 100%; max-width: 100%; }
-.c-fs { aspect-ratio: 2.4 / 1; } .c-radon { aspect-ratio: 2 / 1; touch-action: none; } .c-bp { aspect-ratio: 2 / 1; }
-.c-sq { aspect-ratio: 1 / 1; } .c-chart { aspect-ratio: 2.8 / 1; } .c-polar { aspect-ratio: 2.2 / 1; } .c-kz { aspect-ratio: 1.7 / 1; }
-@media (max-width: 560px) { .c-fs { aspect-ratio: 1.1 / 1; } .c-radon { aspect-ratio: 0.62 / 1; } .c-bp { aspect-ratio: 0.85 / 1; } .c-polar { aspect-ratio: 0.95 / 1; } .c-chart { aspect-ratio: 1.6 / 1; } .c-kz { aspect-ratio: 1.15 / 1; } }
-.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
-.lbl { font-family: var(--font-display); font-size: 14px; color: var(--muted); margin-bottom: 6px; }
-@media (max-width: 640px) { .three, .two { grid-template-columns: minmax(0, 1fr); } }
-.svgbox { overflow-x: auto; }
-.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
-.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
-.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
-.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
-.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
-input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
-select { font-family: var(--font-display); font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 8px; }
-.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
-.btn:hover { border-color: var(--muted); }
-.btn:focus-visible, input:focus-visible, select:focus-visible, nav a:focus-visible, summary:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; flex: 0 0 auto; }
-.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
-.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 10px; line-height: 1.7; }
-.readout .k { color: var(--muted); }
-.tbl { overflow-x: auto; margin: 20px 0; }
-table { border-collapse: collapse; width: 100%; font-size: 15px; }
-th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
-th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
-.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
-mjx-container[display="true"] { margin: 0.6em 0 !important; }
-.sym { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 15px; margin: -4px 0 18px; padding-left: 4px; }
-.sym dt { font-family: var(--font-mono); font-size: 14px; }
-.sym dd { margin: 0; color: var(--muted); }
-.merke { background: var(--accent-soft); border-radius: 6px; padding: 12px 16px; margin: 26px 0; }
-.merke .eyebrow { color: var(--accent); }
-.merke ul { margin: 0.35em 0; padding-left: 1.2em; }
-ol.steps { padding-left: 1.3em; } ol.steps li { margin: 0.45em 0; }
-ul.tight { padding-left: 1.2em; } ul.tight li { margin: 0.35em 0; }
-footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
-.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); } .d-surf { fill: var(--surface); } .d-soft { fill: var(--accent-soft); }
-.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; } .d-stb2 { stroke: var(--bin2); fill: none; }
-.d-b2 { fill: var(--bin2); }
-svg text { font-family: var(--font-display); }
-svg text.m { font-family: var(--font-mono); }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14px; margin: 0 0 18px; } .backlink a { text-decoration: none; }
-</style>
-
-<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/rk.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -135,591 +33,504 @@ body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14p
       <li><a href="#fbp"><span class="n">5</span><span>Gefilterte Rückprojektion</span></a></li>
       <li><a href="#praxis"><span class="n">6</span><span>Praxis: Winkel, Rauschen, Geometrie</span></a></li>
       <li><a href="#iterativ"><span class="n">7</span><span>Iterative Rekonstruktion</span></a></li>
+      <li class="lv">Anhang</li>
       <li><a href="#formeln"><span class="n">A</span><span>Formeln auf einen Blick</span></a></li>
     </ol>
   </nav>
-
   <main>
-    <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#physik">Physik</a></p>
     <header id="ueberblick">
-      <div class="eyebrow">CT-Rekonstruktion · Vertiefung zu Baustein 7</div>
+      <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#physik">Physik</a></p>
+      <div class="topbar"><div class="eyebrow">CT-Rekonstruktion · Vertiefung zu Baustein 7</div>
+        <div class="theme" role="group" aria-label="Darstellung"><button type="button" data-t="light">Hell</button><button type="button" data-t="dark">Dunkel</button><button type="button" data-t="system">System</button></div></div>
       <h1>Vom Sinogramm zum Schnittbild</h1>
       <p class="lede">Wie ein CT aus vielen Projektionen ein Schnittbild berechnet: Radon-Transformation, Fourier-Slice-Theorem, gefilterte Rückprojektion und iterative Verfahren, Schritt für Schritt hergeleitet und zum Ausprobieren.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 760 200" role="img" aria-label="Ablauf: Objekt f(x,y) wird durch die Radon-Transformation zum Sinogramm p(θ,s). Für die Rekonstruktion wird jede Projektion mit dem Rampenfilter gefiltert und dann zurückprojiziert.">
-          <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-mut"/></marker></defs>
-          <g font-size="13">
-            <rect x="8" y="50" width="120" height="74" rx="5" class="d-soft"/>
-            <text x="68" y="80" text-anchor="middle" class="d-fg" font-weight="600">Objekt</text>
-            <text x="68" y="100" text-anchor="middle" class="d-fg m" font-size="12">f(x, y)</text>
-            <line x1="128" y1="87" x2="208" y2="87" class="d-stm" stroke-width="1.5" marker-end="url(#ar)"/>
-            <text x="168" y="77" text-anchor="middle" class="d-mut" font-size="12">Radon</text>
-            <text x="168" y="108" text-anchor="middle" class="d-mut" font-size="11">Messung</text>
-            <rect x="210" y="50" width="130" height="74" rx="5" class="d-soft"/>
-            <text x="275" y="80" text-anchor="middle" class="d-fg" font-weight="600">Sinogramm</text>
-            <text x="275" y="100" text-anchor="middle" class="d-fg m" font-size="12">p(θ, s)</text>
-            <line x1="340" y1="87" x2="420" y2="87" class="d-stm" stroke-width="1.5" marker-end="url(#ar)"/>
-            <text x="380" y="77" text-anchor="middle" class="d-mut" font-size="12">Filter |ω|</text>
-            <rect x="422" y="50" width="130" height="74" rx="5" class="d-soft"/>
-            <text x="487" y="80" text-anchor="middle" class="d-fg" font-weight="600">gefiltert</text>
-            <text x="487" y="100" text-anchor="middle" class="d-fg m" font-size="12">q(θ, s)</text>
-            <line x1="552" y1="87" x2="632" y2="87" class="d-stm" stroke-width="1.5" marker-end="url(#ar)"/>
-            <text x="592" y="77" text-anchor="middle" class="d-mut" font-size="12">Rückprojektion</text>
-            <rect x="634" y="50" width="118" height="74" rx="5" class="d-acc"/>
-            <text x="693" y="80" text-anchor="middle" font-weight="600" style="fill:var(--surface)">Bild</text>
-            <text x="693" y="100" text-anchor="middle" class="m" font-size="12" style="fill:var(--surface)">f̂(x, y)</text>
-          </g>
-          <g class="d-mut m" font-size="11" text-anchor="middle">
-            <text x="168" y="150">Abschnitt 2</text><text x="380" y="150">Abschnitte 4, 5</text><text x="592" y="150">Abschnitt 3</text>
-          </g>
-          <path d="M693 130 L693 176 L68 176 L68 130" class="d-stm" stroke-dasharray="4 4"/>
-          <text x="380" y="192" text-anchor="middle" class="d-mut" font-size="12">Iterative Verfahren (Abschnitt 7): Bild schätzen, vorwärts projizieren, mit Messung vergleichen, korrigieren</text>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 0</b> Der Weg der gefilterten Rückprojektion. Messen ist die Radon-Transformation. Rekonstruieren heißt, sie umzukehren. Die Seite erklärt, warum dafür ein Filter nötig ist und wie er aussieht.</figcaption>
-      </figure>
-      <p class="muted" style="font-size:15px">Voraussetzung ist Baustein 7 der Seite <a href="roentgen.html">„Vom Photon zum Bild“</a>: Ein Detektorpixel misst das Linienintegral \(p = -\ln(I/I_0) = \int \mu\,\mathrm dl\).</p>
-
-      <details class="toc-mobile">
-        <summary>Inhalt</summary>
-        <ol>
-          <li><a href="#fourier">Auffrischung: Fourier &amp; Faltung</a></li>
-          <li><a href="#radon">Die Radon-Transformation</a></li>
-          <li><a href="#rueck">Warum Rückprojektion verschmiert</a></li>
-          <li><a href="#slice">Das Fourier-Slice-Theorem</a></li>
-          <li><a href="#fbp">Gefilterte Rückprojektion</a></li>
-          <li><a href="#praxis">Praxis</a></li>
-          <li><a href="#iterativ">Iterative Rekonstruktion</a></li>
-          <li><a href="#formeln">Formeln auf einen Blick</a></li>
-        </ol>
-      </details>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Ablauf: Objekt f(x,y) wird durch die Radon-Transformation zum Sinogramm p(θ,s). Für die Rekonstruktion wird jede Projektion mit dem Rampenfilter gefiltert und dann zurückprojiziert." role="img" viewbox="0 0 760 200">
+<defs><marker id="ar" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-mut" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<g font-size="13">
+<rect class="d-soft" height="74" rx="5" width="120" x="8" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="68" y="80">Objekt</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="68" y="100">f(x, y)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="128" x2="208" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="168" y="77">Radon</text>
+<text class="d-mut" font-size="11" text-anchor="middle" x="168" y="108">Messung</text>
+<rect class="d-soft" height="74" rx="5" width="130" x="210" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="275" y="80">Sinogramm</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="275" y="100">p(θ, s)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="340" x2="420" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="77">Filter |ω|</text>
+<rect class="d-soft" height="74" rx="5" width="130" x="422" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="487" y="80">gefiltert</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="487" y="100">q(θ, s)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="552" x2="632" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="592" y="77">Rückprojektion</text>
+<rect class="d-acc" height="74" rx="5" width="118" x="634" y="50"></rect>
+<text font-weight="600" style="fill:var(--surface)" text-anchor="middle" x="693" y="80">Bild</text>
+<text class="m" font-size="12" style="fill:var(--surface)" text-anchor="middle" x="693" y="100">f̂(x, y)</text>
+</g>
+<g class="d-mut m" font-size="11" text-anchor="middle">
+<text x="168" y="150">Abschnitt 2</text><text x="380" y="150">Abschnitte 4, 5</text><text x="592" y="150">Abschnitt 3</text>
+</g>
+<path class="d-stm" d="M693 130 L693 176 L68 176 L68 130" stroke-dasharray="4 4"></path>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="192">Iterative Verfahren (Abschnitt 7): Bild schätzen, vorwärts projizieren, mit Messung vergleichen, korrigieren</text>
+</svg>
+</div>
+<figcaption><b>Abb. 0</b> Der Weg der gefilterten Rückprojektion. Messen ist die Radon-Transformation. Rekonstruieren heißt, sie umzukehren. Die Seite erklärt, warum dafür ein Filter nötig ist und wie er aussieht.</figcaption>
+</figure>
+<p class="muted" style="font-size:15px">Voraussetzung ist Baustein 7 der Seite <a href="roentgen.html">„Vom Photon zum Bild“</a>: Ein Detektorpixel misst das Linienintegral \(p = -\ln(I/I_0) = \int \mu\,\mathrm dl\).</p>
+      <details class="toc-mobile"><summary>Inhalt</summary><ol><li><a href="#ueberblick">Überblick</a></li><li><a href="#fourier">Auffrischung: Fourier &amp; Faltung</a></li><li><a href="#radon">Die Radon-Transformation</a></li><li><a href="#rueck">Warum Rückprojektion verschmiert</a></li><li><a href="#slice">Das Fourier-Slice-Theorem</a></li><li><a href="#fbp">Gefilterte Rückprojektion</a></li><li><a href="#praxis">Praxis: Winkel, Rauschen, Geometrie</a></li><li><a href="#iterativ">Iterative Rekonstruktion</a></li><li><a href="#formeln">Formeln auf einen Blick</a></li></ol></details>
     </header>
-
-    <!-- 1 -->
-    <section id="fourier">
-      <div class="step"><b>1</b><span class="eyebrow">Auffrischung</span></div>
-      <h2>Fourier-Transformation und Faltung</h2>
-      <p>Für die Rekonstruktion braucht man zwei Werkzeuge aus der Signalverarbeitung. Wer sie sicher kennt, kann diesen Abschnitt überspringen.</p>
-
-      <h3>Jedes Signal ist eine Summe von Wellen</h3>
-      <p>Die Grundidee von Fourier: Jedes (vernünftige) Signal lässt sich als Summe von Sinus- und Kosinuswellen verschiedener Frequenz schreiben. Die <strong>Fourier-Transformation</strong> sagt, wie viel von jeder Frequenz im Signal steckt:</p>
-      <div class="eq">$$F(u) = \int_{-\infty}^{\infty} f(x)\,e^{-2\pi i u x}\,\mathrm dx \qquad\qquad f(x) = \int_{-\infty}^{\infty} F(u)\,e^{2\pi i u x}\,\mathrm du$$</div>
-      <dl class="sym">
-        <dt>f(x)</dt><dd>das Signal, z. B. ein Projektionsprofil über der Detektorposition</dd>
-        <dt>u</dt><dd>Frequenz (Schwingungen pro Längeneinheit, z. B. pro cm)</dd>
-        <dt>F(u)</dt><dd>komplexe Amplitude dieser Frequenz: Betrag = Stärke, Phase = Verschiebung</dd>
-      </dl>
-      <p>Die rechte Formel ist die Rücktransformation: Aus dem Spektrum bekommt man das Signal exakt zurück. Grobe Strukturen stecken in den niedrigen Frequenzen, scharfe Kanten und feine Details in den hohen.</p>
-
-      <figure class="fig">
-        <canvas id="cv-fs" class="c-fs" role="img" aria-label="Eine Rechteckwelle wird aus einer wachsenden Zahl von Sinuswellen zusammengesetzt; daneben die Amplituden der einzelnen Frequenzen."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="fs-k">Anzahl Sinuswellen</label><output id="fs-k-o"></output></div><input id="fs-k" type="range" min="1" max="30" step="1" value="4"></div>
-        </div>
-        <figcaption><b>Abb. 1</b> Links: Eine Rechteckwelle (gestrichelt) wird aus Sinuswellen mit den Frequenzen 1, 3, 5, … aufgebaut, die zuletzt hinzugefügte ist hell eingezeichnet. Rechts: das Spektrum, also die Amplitude jeder Frequenz (\(4/\pi k\)). Für die steilen Kanten braucht man die hohen Frequenzen.</figcaption>
-      </figure>
-
-      <p>In zwei Dimensionen funktioniert es genauso. Ein Bild wird zur Summe ebener Wellen, jede mit einer Frequenz \(u\) in x-Richtung und \(v\) in y-Richtung:</p>
-      <div class="eq">$$F(u,v) = \iint f(x,y)\,e^{-2\pi i (u x + v y)}\,\mathrm dx\,\mathrm dy$$</div>
-
-      <h3>Faltung</h3>
-      <p>Eine <strong>Faltung</strong> ersetzt jeden Punkt eines Signals durch eine verschobene, gewichtete Kopie eines Kerns \(g\) und summiert alles auf:</p>
-      <div class="eq">$$(f * g)(x) = \int f(x')\,g(x - x')\,\mathrm dx'$$</div>
-      <p>Beispiel: Ist \(g\) eine schmale Glockenkurve, wird \(f\) weichgezeichnet. Jedes unscharfe Abbildungssystem lässt sich so beschreiben, \(g\) ist dann die Punktbildfunktion.</p>
-      <p>Der wichtigste Satz dazu ist der <strong>Faltungssatz</strong>: Im Frequenzraum wird aus der Faltung eine einfache Multiplikation.</p>
-      <div class="eq">$$\mathcal F\{f * g\} = F \cdot G$$</div>
-      <p>Für die Rekonstruktion heißt das: Einen Filter kann man entweder als Faltung im Ortsraum anwenden oder als Multiplikation im Frequenzraum. Das Ergebnis ist dasselbe. Und eine Unschärfe, die eine bekannte Faltung ist, lässt sich im Frequenzraum durch Teilen rückgängig machen.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Die Fourier-Transformation zerlegt ein Signal in Frequenzen. Kanten und Details liegen bei hohen Frequenzen.</li>
-        <li>Faltung im Ortsraum = Multiplikation im Frequenzraum.</li>
-      </ul></div>
-    </section>
-
-    <!-- 2 -->
-    <section id="radon">
-      <div class="step"><b>2</b><span class="eyebrow">Messung</span></div>
-      <h2>Die Radon-Transformation</h2>
-      <p>Das Objekt ist ein Schnittbild \(f(x,y)\), die Verteilung des Schwächungskoeffizienten μ in einer Ebene. Ein Strahl ist eine Gerade durch dieses Bild. Man beschreibt sie durch zwei Zahlen:</p>
-      <ul class="tight">
-        <li>den <strong>Winkel θ</strong> der Senkrechten auf der Geraden (die Richtung, in der die Projektion „aufgereiht“ wird),</li>
-        <li>den <strong>Abstand s</strong> der Geraden vom Mittelpunkt (die Position auf dem Detektor).</li>
-      </ul>
-      <p>Alle Punkte auf der Geraden erfüllen \(x\cos\theta + y\sin\theta = s\). Das Linienintegral entlang dieser Geraden ist die <strong>Radon-Transformation</strong>:</p>
-      <div class="eq">$$p(\theta, s) = \iint f(x,y)\;\delta(x\cos\theta + y\sin\theta - s)\;\mathrm dx\,\mathrm dy$$</div>
-      <p>Die Delta-Funktion δ wirkt wie ein Sieb: Sie lässt vom Doppelintegral nur die Punkte auf der Geraden übrig. Für feste θ ist \(p(\theta, \cdot)\) ein Projektionsprofil. Alle Profile für \(\theta \in [0°, 180°)\) zusammen bilden das <strong>Sinogramm</strong>. 180° reichen, weil ein Strahl aus der Gegenrichtung dasselbe misst: \(p(\theta + \pi, s) = p(\theta, -s)\).</p>
-
-      <h3>Warum es „Sinogramm“ heißt</h3>
-      <p>Ein einzelner Punkt bei \((x_0, y_0)\) liegt bei jedem Winkel auf genau einem Strahl. Für dessen Position gilt</p>
-      <div class="eq">$$s(\theta) = x_0\cos\theta + y_0\sin\theta = r_0 \cos(\theta - \varphi_0)$$</div>
-      <p>mit dem Abstand \(r_0\) und dem Polarwinkel \(\varphi_0\) des Punktes. Im Sinogramm zeichnet er also eine Sinuskurve. Ihre Amplitude verrät, wie weit der Punkt vom Drehzentrum entfernt ist, ihre Phase, in welcher Richtung er liegt. Ein Punkt im Zentrum ergibt eine gerade Linie bei \(s = 0\).</p>
-
-      <figure class="fig">
-        <canvas id="cv-radon" class="c-radon" tabindex="0" role="img" aria-label="Links ein Objektfeld mit zwei verschiebbaren Punkten und rotierender Strahlrichtung. Rechts das Sinogramm, in dem jeder Punkt eine Sinuskurve beschreibt."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="rd-th">Winkel θ</label><output id="rd-th-o"></output></div><input id="rd-th" type="range" min="0" max="179" step="1" value="30"></div>
-          <button class="btn" type="button" id="rd-play">Pause</button>
-        </div>
-        <div class="readout" id="rd-read"></div>
-        <figcaption><b>Abb. 2</b> Die beiden Punkte links lassen sich mit Maus oder Finger verschieben. Die Strahlen laufen senkrecht zur Detektorlinie, am Detektor entsteht für jeden Punkt eine Spitze bei \(s = x_0\cos\theta + y_0\sin\theta\). Rechts das Sinogramm: horizontal der Winkel, vertikal die Detektorposition. Zieh einen Punkt in die Mitte und beobachte, wie seine Kurve flach wird.</figcaption>
-      </figure>
-      <p>Weil die Radon-Transformation <strong>linear</strong> ist, ist das Sinogramm eines beliebigen Bildes einfach die Überlagerung der Sinuskurven aller seiner Punkte, gewichtet mit ihrem μ. Das ist das Muster, das man im Sinogramm aus Baustein 7 gesehen hat.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Ein Strahl ist durch (θ, s) festgelegt. Die Radon-Transformation liefert für jeden Strahl das Linienintegral.</li>
-        <li>Ein Punkt erzeugt im Sinogramm eine Sinuskurve. Ein Bild erzeugt die Summe vieler solcher Kurven.</li>
-        <li>Rekonstruktion ist die Frage: Welches \(f(x,y)\) hat dieses Sinogramm erzeugt?</li>
-      </ul></div>
-    </section>
-
-    <!-- 3 -->
-    <section id="rueck">
-      <div class="step"><b>3</b><span class="eyebrow">Erster Versuch</span></div>
-      <h2>Warum reine Rückprojektion verschmiert</h2>
-      <p>Die naheliegende Idee: Jeder Messwert \(p(\theta, s)\) wird gleichmäßig zurück auf alle Punkte seines Strahls verteilt, und das für alle Winkel. Ein Punkt \((x,y)\) sammelt dabei von jedem Winkel genau den Wert des Strahls, auf dem er liegt:</p>
-      <div class="eq">$$b(x,y) = \int_0^{\pi} p(\theta,\; x\cos\theta + y\sin\theta)\;\mathrm d\theta$$</div>
-      <p>Das ist die <strong>Rückprojektion</strong>. Sie ist nicht die Umkehrung der Radon-Transformation, sondern nur ihr „Spiegelbild“ (mathematisch die adjungierte Operation). Was dabei herauskommt, sieht man am besten an einem einzelnen Punkt.</p>
-
-      <figure class="fig">
-        <canvas id="cv-bp" class="c-bp" role="img" aria-label="Rückprojektion eines einzelnen Punktes: links das Bild, rechts das Profil durch die Bildmitte mit einer 1/r-Referenzkurve."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="bp-n">Anzahl Winkel</label><output id="bp-n-o"></output></div><input id="bp-n" type="range" min="1" max="180" step="1" value="6"></div>
-          <label class="chk"><input id="bp-f" type="checkbox"> Rampenfilter vorher anwenden</label>
-        </div>
-        <figcaption><b>Abb. 3</b> Rekonstruktion eines einzelnen Punktes in der Bildmitte. Links das Bild (Graustufen so gestreckt, dass die Ausläufer sichtbar sind, negative Werte dunkelblau). Rechts das Profil vom Zentrum nach rechts, normiert auf den Wert im Zentrum. Mit wenigen Winkeln sieht man die einzelnen Strahlen als Stern. Mit vielen Winkeln entsteht eine Glocke, die wie \(1/r\) abfällt (gestrichelt). Schalte dann den Filter ein.</figcaption>
-      </figure>
-
-      <h3>Die 1/r-Unschärfe</h3>
-      <p>Mit vielen Winkeln überlagern sich die Strahlen zu einem Stern mit sehr vielen Zacken. Dicht am Punkt kreuzen sich alle Strahlen, weiter außen verteilen sie sich auf einen größeren Umfang. Ein Kreis mit Radius \(r\) hat den Umfang \(2\pi r\), die Strahldichte und damit der Grauwert fallen also wie \(1/r\).</p>
-      <p>Weil Rückprojektion und Radon-Transformation linear sind und das für jeden Punkt gleich passiert, gilt für jedes Bild:</p>
-      <div class="eq">$$b(x,y) = f(x,y) \;*\; \frac{1}{r}, \qquad r = \sqrt{x^2+y^2}$$</div>
-      <p>Das rückprojizierte Bild ist das echte Bild, gefaltet mit \(1/r\). Das erklärt das verwaschene Ergebnis in Baustein 7. Die gute Nachricht: Eine bekannte Faltung lässt sich rückgängig machen. Die 2D-Fourier-Transformierte von \(1/r\) ist \(1/\rho\), wobei \(\rho = \sqrt{u^2+v^2}\) der Betrag der Frequenz ist. Nach dem Faltungssatz gilt also</p>
-      <div class="eq">$$B(u,v) = \frac{F(u,v)}{\rho} \qquad\Rightarrow\qquad F(u,v) = \rho \cdot B(u,v)$$</div>
-      <p>Man muss das Bild im Frequenzraum mit \(\rho\) multiplizieren, also hohe Frequenzen verstärken. Das ist der Kern des Rampenfilters. Statt das fertige verschmierte Bild zu korrigieren, filtert man in der Praxis vorher jede einzelne Projektion. Warum das gleichwertig ist, zeigt der nächste Abschnitt.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Rückprojektion verteilt jeden Messwert gleichmäßig auf seinen Strahl zurück.</li>
-        <li>Das Ergebnis ist das echte Bild, gefaltet mit \(1/r\): verschmiert.</li>
-        <li>Die Korrektur ist ein Filter, der hohe Frequenzen proportional zur Frequenz verstärkt.</li>
-      </ul></div>
-    </section>
-
-    <!-- 4 -->
-    <section id="slice">
-      <div class="step"><b>4</b><span class="eyebrow">Der Schlüssel</span></div>
-      <h2>Das Fourier-Slice-Theorem</h2>
-      <p>Das Fourier-Slice-Theorem (auch Zentralschnitt-Theorem) verbindet die Messung mit dem Bild auf überraschend einfache Weise:</p>
-      <div class="merke" style="background:var(--surface);border:1px solid var(--rule)">
-        <p style="margin:0.2em 0">Die 1D-Fourier-Transformierte einer Projektion unter dem Winkel θ ist gleich der 2D-Fourier-Transformierten des Bildes entlang einer Linie durch den Ursprung unter demselben Winkel θ.</p>
-      </div>
-      <div class="eq">$$P_\theta(\omega) = \int p(\theta, s)\,e^{-2\pi i \omega s}\,\mathrm ds \;=\; F(\omega\cos\theta,\; \omega\sin\theta)$$</div>
-
-      <h3>Warum das stimmt</h3>
-      <p>Man prüft es am einfachsten für θ = 0. Dann laufen die Strahlen in y-Richtung, und die Projektion ist \(p(0, s) = \int f(s, y)\,\mathrm dy\). Ihre Fourier-Transformierte ist</p>
-      <div class="eq">$$P_0(\omega) = \int\!\!\int f(s,y)\,\mathrm dy\; e^{-2\pi i \omega s}\,\mathrm ds = \iint f(x,y)\, e^{-2\pi i (\omega x + 0\cdot y)}\,\mathrm dx\,\mathrm dy = F(\omega, 0)$$</div>
-      <p>Das ist genau die 2D-Transformierte entlang der u-Achse. Für jeden anderen Winkel dreht man das Koordinatensystem mit. Da eine Drehung des Bildes das Spektrum um denselben Winkel dreht, gilt die Aussage für alle θ.</p>
-
-      <figure class="fig">
-        <div class="three">
-          <div><div class="lbl">Bild und Projektion</div><canvas id="cv-sl-a" class="c-sq" role="img" aria-label="Thorax-Phantom mit Projektionsrichtung und Profil."></canvas></div>
-          <div><div class="lbl">2D-Spektrum |F(u, v)|</div><canvas id="cv-sl-b" class="c-sq" role="img" aria-label="Betrag der 2D-Fourier-Transformierten des Phantoms, logarithmisch, mit einer Linie unter dem Projektionswinkel."></canvas></div>
-          <div><div class="lbl">Vergleich entlang der Linie</div><canvas id="cv-sl-c" class="c-sq" role="img" aria-label="Vergleich: Betrag des 1D-Spektrums der Projektion und Werte des 2D-Spektrums entlang der Linie."></canvas></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="sl-th">Winkel θ</label><output id="sl-th-o"></output></div><input id="sl-th" type="range" min="0" max="179" step="1" value="20"></div>
-          <button class="btn" type="button" id="sl-play">Pause</button>
-        </div>
-        <figcaption><b>Abb. 4</b> Links: Phantom aus Baustein 7 mit Projektionsprofil unter dem Winkel θ. Mitte: Betrag des 2D-Spektrums des Bildes (logarithmisch, Ursprung in der Mitte) mit der Linie unter demselben Winkel. Rechts: Betrag des 1D-Spektrums der Projektion (Linie) und die Werte aus dem 2D-Spektrum entlang der Linie (Punkte), beide logarithmisch. Sie liegen übereinander. Kleine Abweichungen bei hohen Frequenzen kommen daher, dass das Bild gerastert, die Projektion aber exakt berechnet ist.</figcaption>
-      </figure>
-
-      <h3>Was daraus folgt</h3>
-      <p>Jede Projektion liefert eine Linie durch das 2D-Spektrum des Bildes. Misst man Projektionen unter allen Winkeln von 0° bis 180°, hat man das komplette Spektrum, nur eben in Polarkoordinaten statt auf einem rechtwinkligen Gitter. Ein inverse 2D-Fourier-Transformation liefert dann das Bild. Das ist der Beweis, dass Rekonstruktion grundsätzlich möglich ist. Der nächste Abschnitt macht daraus ein praktisches Verfahren.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Projektion unter θ → 1D-Fourier → Linie unter θ im 2D-Spektrum des Bildes.</li>
-        <li>Alle Winkel zusammen füllen das 2D-Spektrum vollständig, in Polarkoordinaten.</li>
-      </ul></div>
-    </section>
-
-    <!-- 5 -->
-    <section id="fbp">
-      <div class="step"><b>5</b><span class="eyebrow">Das Standardverfahren</span></div>
-      <h2>Gefilterte Rückprojektion</h2>
-
-      <h3>Herleitung in drei Schritten</h3>
-      <ol class="steps">
-        <li><strong>Inverse 2D-Fourier-Transformation:</strong> Das Bild ergibt sich aus seinem Spektrum durch
+<section id="fourier">
+<div class="step"><b>1</b><span class="eyebrow">Auffrischung</span></div>
+<h2>Fourier-Transformation und Faltung</h2>
+<p>Für die Rekonstruktion braucht man zwei Werkzeuge aus der Signalverarbeitung. Wer sie sicher kennt, kann diesen Abschnitt überspringen.</p>
+<h3>Jedes Signal ist eine Summe von Wellen</h3>
+<p>Die Grundidee von Fourier: Jedes (vernünftige) Signal lässt sich als Summe von Sinus- und Kosinuswellen verschiedener Frequenz schreiben. Die <strong>Fourier-Transformation</strong> sagt, wie viel von jeder Frequenz im Signal steckt:</p>
+<div class="eq">\[
+F(u) = \int_{-\infty}^{\infty} f(x)\,e^{-2\pi i u x}\,\mathrm dx \qquad\qquad f(x) = \int_{-\infty}^{\infty} F(u)\,e^{2\pi i u x}\,\mathrm du
+\]</div>
+<dl class="sym">
+<dt>f(x)</dt><dd>das Signal, z. B. ein Projektionsprofil über der Detektorposition</dd>
+<dt>u</dt><dd>Frequenz (Schwingungen pro Längeneinheit, z. B. pro cm)</dd>
+<dt>F(u)</dt><dd>komplexe Amplitude dieser Frequenz: Betrag = Stärke, Phase = Verschiebung</dd>
+</dl>
+<p>Die rechte Formel ist die Rücktransformation: Aus dem Spektrum bekommt man das Signal exakt zurück. Grobe Strukturen stecken in den niedrigen Frequenzen, scharfe Kanten und feine Details in den hohen.</p>
+<figure class="fig">
+<canvas aria-label="Eine Rechteckwelle wird aus einer wachsenden Zahl von Sinuswellen zusammengesetzt; daneben die Amplituden der einzelnen Frequenzen." class="c-fs" id="cv-fs" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="fs-k">Anzahl Sinuswellen</label><output id="fs-k-o"></output></div><input id="fs-k" max="30" min="1" step="1" type="range" value="4"/></div>
+</div>
+<figcaption><b>Abb. 1</b> Links: Eine Rechteckwelle (gestrichelt) wird aus Sinuswellen mit den Frequenzen 1, 3, 5, … aufgebaut, die zuletzt hinzugefügte ist hell eingezeichnet. Rechts: das Spektrum, also die Amplitude jeder Frequenz (\(4/\pi k\)). Für die steilen Kanten braucht man die hohen Frequenzen.</figcaption>
+</figure>
+<p>In zwei Dimensionen funktioniert es genauso. Ein Bild wird zur Summe ebener Wellen, jede mit einer Frequenz <span class="arithmatex">\(u\)</span> in x-Richtung und <span class="arithmatex">\(v\)</span> in y-Richtung:</p>
+<div class="eq">\[
+F(u,v) = \iint f(x,y)\,e^{-2\pi i (u x + v y)}\,\mathrm dx\,\mathrm dy
+\]</div>
+<h3>Faltung</h3>
+<p>Eine <strong>Faltung</strong> ersetzt jeden Punkt eines Signals durch eine verschobene, gewichtete Kopie eines Kerns <span class="arithmatex">\(g\)</span> und summiert alles auf:</p>
+<div class="eq">\[
+(f * g)(x) = \int f(x')\,g(x - x')\,\mathrm dx'
+\]</div>
+<p>Beispiel: Ist <span class="arithmatex">\(g\)</span> eine schmale Glockenkurve, wird <span class="arithmatex">\(f\)</span> weichgezeichnet. Jedes unscharfe Abbildungssystem lässt sich so beschreiben, <span class="arithmatex">\(g\)</span> ist dann die Punktbildfunktion.</p>
+<p>Der wichtigste Satz dazu ist der <strong>Faltungssatz</strong>: Im Frequenzraum wird aus der Faltung eine einfache Multiplikation.</p>
+<div class="eq">\[
+\mathcal F\{f * g\} = F \cdot G
+\]</div>
+<p>Für die Rekonstruktion heißt das: Einen Filter kann man entweder als Faltung im Ortsraum anwenden oder als Multiplikation im Frequenzraum. Das Ergebnis ist dasselbe. Und eine Unschärfe, die eine bekannte Faltung ist, lässt sich im Frequenzraum durch Teilen rückgängig machen.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Die Fourier-Transformation zerlegt ein Signal in Frequenzen. Kanten und Details liegen bei hohen Frequenzen.</li>
+<li>Faltung im Ortsraum = Multiplikation im Frequenzraum.</li>
+</ul>
+</div>
+</section>
+<section id="radon">
+<div class="step"><b>2</b><span class="eyebrow">Messung</span></div>
+<h2>Die Radon-Transformation</h2>
+<p>Das Objekt ist ein Schnittbild <span class="arithmatex">\(f(x,y)\)</span>, die Verteilung des Schwächungskoeffizienten μ in einer Ebene. Ein Strahl ist eine Gerade durch dieses Bild. Man beschreibt sie durch zwei Zahlen:</p>
+<ul class="tight">
+<li>den <strong>Winkel θ</strong> der Senkrechten auf der Geraden (die Richtung, in der die Projektion „aufgereiht“ wird),</li>
+<li>den <strong>Abstand s</strong> der Geraden vom Mittelpunkt (die Position auf dem Detektor).</li>
+</ul>
+<p>Alle Punkte auf der Geraden erfüllen <span class="arithmatex">\(x\cos\theta + y\sin\theta = s\)</span>. Das Linienintegral entlang dieser Geraden ist die <strong>Radon-Transformation</strong>:</p>
+<div class="eq">\[
+p(\theta, s) = \iint f(x,y)\;\delta(x\cos\theta + y\sin\theta - s)\;\mathrm dx\,\mathrm dy
+\]</div>
+<p>Die Delta-Funktion δ wirkt wie ein Sieb: Sie lässt vom Doppelintegral nur die Punkte auf der Geraden übrig. Für feste θ ist <span class="arithmatex">\(p(\theta, \cdot)\)</span> ein Projektionsprofil. Alle Profile für <span class="arithmatex">\(\theta \in [0°, 180°)\)</span> zusammen bilden das <strong>Sinogramm</strong>. 180° reichen, weil ein Strahl aus der Gegenrichtung dasselbe misst: <span class="arithmatex">\(p(\theta + \pi, s) = p(\theta, -s)\)</span>.</p>
+<h3>Warum es „Sinogramm“ heißt</h3>
+<p>Ein einzelner Punkt bei <span class="arithmatex">\((x_0, y_0)\)</span> liegt bei jedem Winkel auf genau einem Strahl. Für dessen Position gilt</p>
+<div class="eq">\[
+s(\theta) = x_0\cos\theta + y_0\sin\theta = r_0 \cos(\theta - \varphi_0)
+\]</div>
+<p>mit dem Abstand <span class="arithmatex">\(r_0\)</span> und dem Polarwinkel <span class="arithmatex">\(\varphi_0\)</span> des Punktes. Im Sinogramm zeichnet er also eine Sinuskurve. Ihre Amplitude verrät, wie weit der Punkt vom Drehzentrum entfernt ist, ihre Phase, in welcher Richtung er liegt. Ein Punkt im Zentrum ergibt eine gerade Linie bei <span class="arithmatex">\(s = 0\)</span>.</p>
+<figure class="fig">
+<canvas aria-label="Links ein Objektfeld mit zwei verschiebbaren Punkten und rotierender Strahlrichtung. Rechts das Sinogramm, in dem jeder Punkt eine Sinuskurve beschreibt." class="c-radon" id="cv-radon" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="rd-th">Winkel θ</label><output id="rd-th-o"></output></div><input id="rd-th" max="179" min="0" step="1" type="range" value="30"/></div>
+<button class="btn" id="rd-play" type="button">Pause</button>
+</div>
+<div class="readout" id="rd-read"></div>
+<figcaption><b>Abb. 2</b> Die beiden Punkte links lassen sich mit Maus oder Finger verschieben. Die Strahlen laufen senkrecht zur Detektorlinie, am Detektor entsteht für jeden Punkt eine Spitze bei \(s = x_0\cos\theta + y_0\sin\theta\). Rechts das Sinogramm: horizontal der Winkel, vertikal die Detektorposition. Zieh einen Punkt in die Mitte und beobachte, wie seine Kurve flach wird.</figcaption>
+</figure>
+<p>Weil die Radon-Transformation <strong>linear</strong> ist, ist das Sinogramm eines beliebigen Bildes einfach die Überlagerung der Sinuskurven aller seiner Punkte, gewichtet mit ihrem μ. Das ist das Muster, das man im Sinogramm aus Baustein 7 gesehen hat.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Ein Strahl ist durch (θ, s) festgelegt. Die Radon-Transformation liefert für jeden Strahl das Linienintegral.</li>
+<li>Ein Punkt erzeugt im Sinogramm eine Sinuskurve. Ein Bild erzeugt die Summe vieler solcher Kurven.</li>
+<li>Rekonstruktion ist die Frage: Welches <span class="arithmatex">\(f(x,y)\)</span> hat dieses Sinogramm erzeugt?</li>
+</ul>
+</div>
+</section>
+<section id="rueck">
+<div class="step"><b>3</b><span class="eyebrow">Erster Versuch</span></div>
+<h2>Warum reine Rückprojektion verschmiert</h2>
+<p>Die naheliegende Idee: Jeder Messwert <span class="arithmatex">\(p(\theta, s)\)</span> wird gleichmäßig zurück auf alle Punkte seines Strahls verteilt, und das für alle Winkel. Ein Punkt <span class="arithmatex">\((x,y)\)</span> sammelt dabei von jedem Winkel genau den Wert des Strahls, auf dem er liegt:</p>
+<div class="eq">\[
+b(x,y) = \int_0^{\pi} p(\theta,\; x\cos\theta + y\sin\theta)\;\mathrm d\theta
+\]</div>
+<p>Das ist die <strong>Rückprojektion</strong>. Sie ist nicht die Umkehrung der Radon-Transformation, sondern nur ihr „Spiegelbild“ (mathematisch die adjungierte Operation). Was dabei herauskommt, sieht man am besten an einem einzelnen Punkt.</p>
+<figure class="fig">
+<canvas aria-label="Rückprojektion eines einzelnen Punktes: links das Bild, rechts das Profil durch die Bildmitte mit einer 1/r-Referenzkurve." class="c-bp" id="cv-bp" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="bp-n">Anzahl Winkel</label><output id="bp-n-o"></output></div><input id="bp-n" max="180" min="1" step="1" type="range" value="6"/></div>
+<label class="chk"><input id="bp-f" type="checkbox"/> Rampenfilter vorher anwenden</label>
+</div>
+<figcaption><b>Abb. 3</b> Rekonstruktion eines einzelnen Punktes in der Bildmitte. Links das Bild (Graustufen so gestreckt, dass die Ausläufer sichtbar sind, negative Werte dunkelblau). Rechts das Profil vom Zentrum nach rechts, normiert auf den Wert im Zentrum. Mit wenigen Winkeln sieht man die einzelnen Strahlen als Stern. Mit vielen Winkeln entsteht eine Glocke, die wie \(1/r\) abfällt (gestrichelt). Schalte dann den Filter ein.</figcaption>
+</figure>
+<h3>Die 1/r-Unschärfe</h3>
+<p>Mit vielen Winkeln überlagern sich die Strahlen zu einem Stern mit sehr vielen Zacken. Dicht am Punkt kreuzen sich alle Strahlen, weiter außen verteilen sie sich auf einen größeren Umfang. Ein Kreis mit Radius <span class="arithmatex">\(r\)</span> hat den Umfang <span class="arithmatex">\(2\pi r\)</span>, die Strahldichte und damit der Grauwert fallen also wie <span class="arithmatex">\(1/r\)</span>.</p>
+<p>Weil Rückprojektion und Radon-Transformation linear sind und das für jeden Punkt gleich passiert, gilt für jedes Bild:</p>
+<div class="eq">\[
+b(x,y) = f(x,y) \;*\; \frac{1}{r}, \qquad r = \sqrt{x^2+y^2}
+\]</div>
+<p>Das rückprojizierte Bild ist das echte Bild, gefaltet mit <span class="arithmatex">\(1/r\)</span>. Das erklärt das verwaschene Ergebnis in Baustein 7. Die gute Nachricht: Eine bekannte Faltung lässt sich rückgängig machen. Die 2D-Fourier-Transformierte von <span class="arithmatex">\(1/r\)</span> ist <span class="arithmatex">\(1/\rho\)</span>, wobei <span class="arithmatex">\(\rho = \sqrt{u^2+v^2}\)</span> der Betrag der Frequenz ist. Nach dem Faltungssatz gilt also</p>
+<div class="eq">\[
+B(u,v) = \frac{F(u,v)}{\rho} \qquad\Rightarrow\qquad F(u,v) = \rho \cdot B(u,v)
+\]</div>
+<p>Man muss das Bild im Frequenzraum mit <span class="arithmatex">\(\rho\)</span> multiplizieren, also hohe Frequenzen verstärken. Das ist der Kern des Rampenfilters. Statt das fertige verschmierte Bild zu korrigieren, filtert man in der Praxis vorher jede einzelne Projektion. Warum das gleichwertig ist, zeigt der nächste Abschnitt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Rückprojektion verteilt jeden Messwert gleichmäßig auf seinen Strahl zurück.</li>
+<li>Das Ergebnis ist das echte Bild, gefaltet mit <span class="arithmatex">\(1/r\)</span>: verschmiert.</li>
+<li>Die Korrektur ist ein Filter, der hohe Frequenzen proportional zur Frequenz verstärkt.</li>
+</ul>
+</div>
+</section>
+<section id="slice">
+<div class="step"><b>4</b><span class="eyebrow">Der Schlüssel</span></div>
+<h2>Das Fourier-Slice-Theorem</h2>
+<p>Das Fourier-Slice-Theorem (auch Zentralschnitt-Theorem) verbindet die Messung mit dem Bild auf überraschend einfache Weise:</p>
+<div class="merke" style="background:var(--surface);border:1px solid var(--rule)">
+<p style="margin:0.2em 0">Die 1D-Fourier-Transformierte einer Projektion unter dem Winkel θ ist gleich der 2D-Fourier-Transformierten des Bildes entlang einer Linie durch den Ursprung unter demselben Winkel θ.</p>
+</div>
+<div class="eq">\[
+P_\theta(\omega) = \int p(\theta, s)\,e^{-2\pi i \omega s}\,\mathrm ds \;=\; F(\omega\cos\theta,\; \omega\sin\theta)
+\]</div>
+<h3>Warum das stimmt</h3>
+<p>Man prüft es am einfachsten für θ = 0. Dann laufen die Strahlen in y-Richtung, und die Projektion ist <span class="arithmatex">\(p(0, s) = \int f(s, y)\,\mathrm dy\)</span>. Ihre Fourier-Transformierte ist</p>
+<div class="eq">\[
+P_0(\omega) = \int\!\!\int f(s,y)\,\mathrm dy\; e^{-2\pi i \omega s}\,\mathrm ds = \iint f(x,y)\, e^{-2\pi i (\omega x + 0\cdot y)}\,\mathrm dx\,\mathrm dy = F(\omega, 0)
+\]</div>
+<p>Das ist genau die 2D-Transformierte entlang der u-Achse. Für jeden anderen Winkel dreht man das Koordinatensystem mit. Da eine Drehung des Bildes das Spektrum um denselben Winkel dreht, gilt die Aussage für alle θ.</p>
+<figure class="fig">
+<div class="three">
+<div><div class="lbl">Bild und Projektion</div><canvas aria-label="Thorax-Phantom mit Projektionsrichtung und Profil." class="c-sq" id="cv-sl-a" role="img"></canvas></div>
+<div><div class="lbl">2D-Spektrum |F(u, v)|</div><canvas aria-label="Betrag der 2D-Fourier-Transformierten des Phantoms, logarithmisch, mit einer Linie unter dem Projektionswinkel." class="c-sq" id="cv-sl-b" role="img"></canvas></div>
+<div><div class="lbl">Vergleich entlang der Linie</div><canvas aria-label="Vergleich: Betrag des 1D-Spektrums der Projektion und Werte des 2D-Spektrums entlang der Linie." class="c-sq" id="cv-sl-c" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="sl-th">Winkel θ</label><output id="sl-th-o"></output></div><input id="sl-th" max="179" min="0" step="1" type="range" value="20"/></div>
+<button class="btn" id="sl-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 4</b> Links: Phantom aus Baustein 7 mit Projektionsprofil unter dem Winkel θ. Mitte: Betrag des 2D-Spektrums des Bildes (logarithmisch, Ursprung in der Mitte) mit der Linie unter demselben Winkel. Rechts: Betrag des 1D-Spektrums der Projektion (Linie) und die Werte aus dem 2D-Spektrum entlang der Linie (Punkte), beide logarithmisch. Sie liegen übereinander. Kleine Abweichungen bei hohen Frequenzen kommen daher, dass das Bild gerastert, die Projektion aber exakt berechnet ist.</figcaption>
+</figure>
+<h3>Was daraus folgt</h3>
+<p>Jede Projektion liefert eine Linie durch das 2D-Spektrum des Bildes. Misst man Projektionen unter allen Winkeln von 0° bis 180°, hat man das komplette Spektrum, nur eben in Polarkoordinaten statt auf einem rechtwinkligen Gitter. Ein inverse 2D-Fourier-Transformation liefert dann das Bild. Das ist der Beweis, dass Rekonstruktion grundsätzlich möglich ist. Der nächste Abschnitt macht daraus ein praktisches Verfahren.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Projektion unter θ → 1D-Fourier → Linie unter θ im 2D-Spektrum des Bildes.</li>
+<li>Alle Winkel zusammen füllen das 2D-Spektrum vollständig, in Polarkoordinaten.</li>
+</ul>
+</div>
+</section>
+<section id="fbp">
+<div class="step"><b>5</b><span class="eyebrow">Das Standardverfahren</span></div>
+<h2>Gefilterte Rückprojektion</h2>
+<h3>Herleitung in drei Schritten</h3>
+<ol class="steps">
+<li><strong>Inverse 2D-Fourier-Transformation:</strong> Das Bild ergibt sich aus seinem Spektrum durch
           <div class="eq">$$f(x,y) = \iint F(u,v)\,e^{2\pi i (u x + v y)}\,\mathrm du\,\mathrm dv$$</div></li>
-        <li><strong>Polarkoordinaten:</strong> Mit \(u = \omega\cos\theta\), \(v = \omega\sin\theta\) und \(\omega \in (-\infty, \infty)\), \(\theta \in [0, \pi)\) wird das Flächenelement zu \(\mathrm du\,\mathrm dv = |\omega|\,\mathrm d\omega\,\mathrm d\theta\). Mit \(s = x\cos\theta + y\sin\theta\) gilt \(ux + vy = \omega s\):
+<li><strong>Polarkoordinaten:</strong> Mit \(u = \omega\cos\theta\), \(v = \omega\sin\theta\) und \(\omega \in (-\infty, \infty)\), \(\theta \in [0, \pi)\) wird das Flächenelement zu \(\mathrm du\,\mathrm dv = |\omega|\,\mathrm d\omega\,\mathrm d\theta\). Mit \(s = x\cos\theta + y\sin\theta\) gilt \(ux + vy = \omega s\):
           <div class="eq">$$f(x,y) = \int_0^\pi \int_{-\infty}^{\infty} F(\omega\cos\theta, \omega\sin\theta)\;|\omega|\;e^{2\pi i \omega s}\,\mathrm d\omega\,\mathrm d\theta$$</div></li>
-        <li><strong>Fourier-Slice einsetzen:</strong> \(F(\omega\cos\theta, \omega\sin\theta) = P_\theta(\omega)\). Das innere Integral hängt dann nur noch von einer einzigen Projektion ab:
+<li><strong>Fourier-Slice einsetzen:</strong> \(F(\omega\cos\theta, \omega\sin\theta) = P_\theta(\omega)\). Das innere Integral hängt dann nur noch von einer einzigen Projektion ab:
           <div class="eq">$$f(x,y) = \int_0^\pi q(\theta,\; x\cos\theta + y\sin\theta)\;\mathrm d\theta, \qquad q(\theta, s) = \int P_\theta(\omega)\,|\omega|\,e^{2\pi i \omega s}\,\mathrm d\omega$$</div></li>
-      </ol>
-      <p>Das ist die <strong>gefilterte Rückprojektion</strong> (FBP, filtered back projection). Man liest sie von innen nach außen:</p>
-      <ol class="steps">
-        <li>Jede Projektion \(p(\theta, s)\) Fourier-transformieren.</li>
-        <li>Mit dem <strong>Rampenfilter</strong> \(|\omega|\) multiplizieren.</li>
-        <li>Zurücktransformieren. Ergebnis: die gefilterte Projektion \(q(\theta, s)\).</li>
-        <li>\(q\) wie in Abschnitt 3 zurückprojizieren.</li>
-      </ol>
-      <p>Schritte 1–3 sind nach dem Faltungssatz nichts anderes als eine Faltung der Projektion mit einem Kern \(h(s)\), der Fourier-Rücktransformierten von \(|\omega|\). Das ist der Weg, den die Gleichung zum Rampenfilter in Abschnitt 3 schon angedeutet hat, nur jetzt pro Projektion statt am fertigen Bild.</p>
-
-      <h3>Woher das |ω| anschaulich kommt</h3>
-      <p>Der Faktor \(|\omega|\) ist das Flächenelement der Polarkoordinaten. Anschaulich: Die radialen Linien, auf denen jede Projektion das Spektrum abtastet, liegen im Zentrum dicht beieinander und laufen nach außen auseinander. Niedrige Frequenzen werden dadurch von allen Projektionen mehrfach erfasst und sind überrepräsentiert, hohe nur dünn. Das Gewicht \(|\omega|\) gleicht die Dichte aus. Ohne dieses Gewicht sind tiefe Frequenzen um den Faktor \(1/|\omega|\) zu stark, und genau das ist die \(1/r\)-Unschärfe aus Abschnitt 3.</p>
-
-      <figure class="fig">
-        <canvas id="cv-polar" class="c-polar" role="img" aria-label="Links: radiale Abtastung des Frequenzraums durch Projektionen, dicht im Zentrum und dünn außen. Rechts: Abtastdichte proportional zu 1 durch Betrag omega und der Rampenfilter, der sie ausgleicht."></canvas>
-        <figcaption><b>Abb. 5</b> Links: Wo die Projektionen von 16 Winkeln das Spektrum abtasten. Der Kreis innen enthält genauso viele Punkte wie der Ring außen, obwohl seine Fläche viel kleiner ist. Rechts: Die Abtastdichte fällt wie \(1/|\omega|\) (gestrichelt), der Rampenfilter \(|\omega|\) gleicht das aus. Ihr Produkt ist konstant.</figcaption>
-      </figure>
-
-      <h3>Der diskrete Filter und Fensterfunktionen</h3>
-      <p>Im Rechner ist die Projektion mit Abstand \(\Delta s\) abgetastet. Die höchste darstellbare Frequenz ist dann die Nyquist-Frequenz \(\omega_N = 1/(2\Delta s)\). Ein auf diesen Bereich begrenzter Rampenfilter hat im Ortsraum den bekannten <strong>Ram-Lak-Kern</strong>:</p>
-      <div class="eq">$$h[n] = \begin{cases} \dfrac{1}{4\Delta s^2} & n = 0 \\[4pt] 0 & n \text{ gerade} \\[4pt] -\dfrac{1}{\pi^2 n^2 \Delta s^2} & n \text{ ungerade} \end{cases}$$</div>
-      <p>Die Spitze in der Mitte und die negativen Nachbarwerte schärfen. In Abb. 3 sieht man ihre Wirkung: Die negativen Ausläufer jedes gefilterten Strahls heben die Überlagerung außerhalb des Punktes gerade auf.</p>
-      <p>Das Problem des reinen Rampenfilters: Er verstärkt die höchsten Frequenzen am stärksten, und dort steckt vor allem <strong>Rauschen</strong>. Deshalb multipliziert man ihn in der Praxis mit einer <strong>Fensterfunktion</strong>, die zum Rand hin abfällt. Das ist ein Kompromiss zwischen Schärfe und Rauschen, den Radiologen über die Wahl des „Rekonstruktionskerns“ steuern (weich für Weichteile, scharf für Knochen und Lunge).</p>
-      <div class="tbl"><table>
-        <thead><tr><th>Filter</th><th>Fenster \(W(\omega)\), mit \(x = \omega / \omega_N\)</th><th>Charakter</th></tr></thead>
-        <tbody>
-          <tr><td>Ram-Lak</td><td>\(1\)</td><td>maximal scharf, maximal verrauscht</td></tr>
-          <tr><td>Shepp-Logan</td><td>\(\mathrm{sinc}(x/2) = \dfrac{\sin(\pi x/2)}{\pi x/2}\)</td><td>leicht gedämpft, häufiger Standard</td></tr>
-          <tr><td>Kosinus</td><td>\(\cos(\pi x/2)\)</td><td>mittel</td></tr>
-          <tr><td>Hann</td><td>\(\tfrac12\,(1 + \cos\pi x)\)</td><td>weich, rauscharm, weniger Details</td></tr>
-        </tbody>
-      </table></div>
-
-      <figure class="fig">
-        <div class="two">
-          <div><div class="lbl">Rekonstruktion</div><canvas id="cv-lab" class="c-sq" role="img" aria-label="FBP-Rekonstruktion des Phantoms mit wählbarem Filter, Winkelzahl und Dosis. Ein Kreis markiert die Messregion für das Rauschen."></canvas></div>
-          <div><div class="lbl">Filter im Frequenzraum</div><canvas id="cv-lab-f" class="c-sq" role="img" aria-label="Frequenzgang der Filter Ram-Lak, Shepp-Logan, Kosinus und Hann; der gewählte ist hervorgehoben."></canvas></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="lb-f">Filter</label></div>
-            <select id="lb-f"><option value="ramlak">Ram-Lak</option><option value="shepp" selected>Shepp-Logan</option><option value="cos">Kosinus</option><option value="hann">Hann</option><option value="none">keiner (nur Rückprojektion)</option></select></div>
-          <div class="ctrl"><div class="lab"><label for="lb-n">Projektionswinkel</label><output id="lb-n-o"></output></div><input id="lb-n" type="range" min="4" max="360" step="1" value="180"></div>
-          <div class="ctrl"><div class="lab"><label for="lb-d">Photonen pro Strahl</label><output id="lb-d-o"></output></div><input id="lb-d" type="range" min="2.5" max="7" step="0.1" value="5"></div>
-        </div>
-        <div class="readout" id="lb-read"></div>
-        <figcaption><b>Abb. 6</b> Ein kleines FBP-Labor. Das Sinogramm wird aus dem Phantom berechnet, mit Poisson-Rauschen passend zur eingestellten Photonenzahl \(I_0\) versehen, gefiltert und zurückprojiziert (Fenster μ = 0 … 0,65 cm⁻¹). Der Kreis markiert eine Region im Weichteil, in der Mittelwert und Rauschen in HU gemessen werden. Vergleiche Ram-Lak und Hann bei wenig Photonen, und reduziere die Winkelzahl auf unter 30.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>FBP: jede Projektion mit \(|\omega|\) filtern, dann zurückprojizieren.</li>
-        <li>\(|\omega|\) gleicht aus, dass die Projektionen das Spektrum innen dicht und außen dünn abtasten.</li>
-        <li>Fensterfunktionen dämpfen hohe Frequenzen: weniger Rauschen, weniger Schärfe.</li>
-      </ul></div>
-    </section>
-
-    <!-- 6 -->
-    <section id="praxis">
-      <div class="step"><b>6</b><span class="eyebrow">Praxis</span></div>
-      <h2>Winkel, Rauschen, Geometrie</h2>
-
-      <h3>Wie viele Winkel braucht man?</h3>
-      <p>Hat der Detektor \(N_s\) Kanäle, tastet jede Projektion das Spektrum radial mit \(N_s\) Punkten ab. Damit auch am Rand des Spektrums der Abstand zwischen benachbarten radialen Linien nicht größer ist als der Abstand der Punkte auf einer Linie, braucht man etwa</p>
-      <div class="eq">$$N_\theta \approx \frac{\pi}{2}\,N_s$$</div>
-      <p>Projektionen über 180°. Bei 128 Kanälen sind das rund 200. Zu wenige Winkel erzeugen <strong>Streifenartefakte</strong>: Die einzelnen Rückprojektionsstrahlen löschen sich außerhalb von Objekten nicht mehr vollständig aus. In Abb. 6 sieht man sie unterhalb von etwa 60 Winkeln deutlich, zuerst am Rand des Bildes. Klinische Scanner nehmen 1000 bis über 2000 Projektionen pro Umdrehung auf.</p>
-
-      <h3>Rauschen</h3>
-      <p>Die Zahl der Photonen pro Detektorpixel ist Poisson-verteilt. Nach dem Logarithmieren ist die Varianz eines Messwerts ungefähr</p>
-      <div class="eq">$$\sigma_p^2 \approx \frac{1}{N} = \frac{1}{I_0\,e^{-p}}$$</div>
-      <p>Strahlen durch dicke oder dichte Bereiche (großes \(p\)) sind also viel stärker verrauscht. Bei der FBP wird jeder Messwert gleich behandelt, das starke Rauschen einzelner Strahlen läuft ungebremst ins Bild und erzeugt Streifen zwischen dichten Strukturen. Das Bildrauschen sinkt ungefähr wie \(1/\sqrt{\text{Dosis}}\): Für halbes Rauschen braucht man die vierfache Dosis. Genau hier setzen iterative Verfahren an (Abschnitt 7).</p>
-
-      <h3>Interpolation</h3>
-      <p>Bei der Rückprojektion trifft die Gerade durch ein Bildpixel den Detektor fast nie genau in einer Kanalmitte. Man interpoliert, meist linear zwischen zwei Kanälen. Das wirkt wie ein leichter zusätzlicher Tiefpass. Ähnlich wird bei der Rekonstruktion im Frequenzraum (direkte Fourier-Methode) von Polar- auf kartesisches Gitter interpoliert. Das ist fehleranfälliger, weshalb sich FBP durchgesetzt hat.</p>
-
-      <h3>Vom Parallelstrahl zum Fächer und Kegel</h3>
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 760 250" role="img" aria-label="Drei Geometrien: Parallelstrahl mit parallelen Strahlen, Fächerstrahl aus einer Punktquelle auf eine Detektorzeile, Kegelstrahl aus einer Punktquelle auf einen flächigen Detektor.">
-          <g font-size="14">
-            <text x="120" y="24" text-anchor="middle" class="d-fg" font-weight="600">Parallelstrahl</text>
-            <g class="d-stb2" stroke-width="1.3"><line x1="50" y1="50" x2="50" y2="190"/><line x1="78" y1="50" x2="78" y2="190"/><line x1="106" y1="50" x2="106" y2="190"/><line x1="134" y1="50" x2="134" y2="190"/><line x1="162" y1="50" x2="162" y2="190"/><line x1="190" y1="50" x2="190" y2="190"/></g>
-            <circle cx="120" cy="120" r="42" class="d-soft" style="stroke:var(--muted)"/>
-            <rect x="40" y="192" width="160" height="8" class="d-fg"/>
-            <text x="120" y="226" text-anchor="middle" class="d-mut" font-size="12">Theorie, frühe Scanner</text>
-
-            <text x="380" y="24" text-anchor="middle" class="d-fg" font-weight="600">Fächerstrahl</text>
-            <circle cx="380" cy="46" r="5" class="d-b2"/>
-            <g class="d-stb2" stroke-width="1.3"><line x1="380" y1="46" x2="300" y2="190"/><line x1="380" y1="46" x2="332" y2="196"/><line x1="380" y1="46" x2="364" y2="199"/><line x1="380" y1="46" x2="396" y2="199"/><line x1="380" y1="46" x2="428" y2="196"/><line x1="380" y1="46" x2="460" y2="190"/></g>
-            <circle cx="380" cy="128" r="42" class="d-soft" style="stroke:var(--muted)"/>
-            <path d="M296 186 Q380 212 464 186" class="d-st" stroke-width="7"/>
-            <text x="380" y="226" text-anchor="middle" class="d-mut" font-size="12">eine Detektorzeile, 2D</text>
-
-            <text x="640" y="24" text-anchor="middle" class="d-fg" font-weight="600">Kegelstrahl</text>
-            <circle cx="640" cy="46" r="5" class="d-b2"/>
-            <path d="M560 170 L700 150 L720 200 L580 220 Z" class="d-soft" style="stroke:var(--fg)" stroke-width="1.5"/>
-            <g class="d-stb2" stroke-width="1.2"><line x1="640" y1="46" x2="560" y2="170"/><line x1="640" y1="46" x2="700" y2="150"/><line x1="640" y1="46" x2="720" y2="200"/><line x1="640" y1="46" x2="580" y2="220"/><line x1="640" y1="46" x2="640" y2="185"/></g>
-            <ellipse cx="640" cy="122" rx="36" ry="22" class="d-soft" style="stroke:var(--muted)" opacity="0.85"/>
-            <text x="640" y="242" text-anchor="middle" class="d-mut" font-size="12">Flächendetektor, 3D</text>
-          </g>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 7</b> Messgeometrien. Diese Seite rechnet mit Parallelstrahlen, weil die Mathematik dort am klarsten ist. Reale CTs haben eine Punktquelle.</figcaption>
-      </figure>
-      <ul class="tight">
-        <li><strong>Fächerstrahl:</strong> Man kann die Messwerte umsortieren, sodass Strahlen mit gleicher Richtung aus verschiedenen Projektionen zusammenkommen (<em>Rebinning</em> auf parallele Strahlen), oder eine angepasste FBP mit zusätzlichen Gewichten verwenden. Für eine vollständige Messung braucht man 180° plus den Öffnungswinkel des Fächers (<em>Short Scan</em>), Doppelmessungen werden dann gewichtet (z. B. Parker-Gewichtung).</li>
-        <li><strong>Kegelstrahl:</strong> Mit mehreren Detektorzeilen oder einem Flachdetektor laufen die Strahlen auch schräg zur Schnittebene. Der Standard ist der näherungsweise <strong>FDK-Algorithmus</strong> (Feldkamp, Davis, Kress, 1984): FBP mit Gewichtung nach Kegelwinkel und dreidimensionaler Rückprojektion. Bei großen Kegelwinkeln entstehen Artefakte, weil eine Kreisbahn die Daten nicht vollständig erfasst.</li>
-        <li><strong>Spirale (Helix):</strong> Der Patient wird während der Drehung durch die Gantry gefahren. Klinische Mehrzeilen-CTs rekonstruieren dafür mit speziellen gewichteten FBP-Varianten oder iterativ.</li>
-      </ul>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Zu wenige Winkel → Streifen. Faustregel \(N_\theta \approx \tfrac{\pi}{2} N_s\).</li>
-        <li>Rauschen eines Strahls wächst mit seiner Schwächung, FBP behandelt alle Strahlen gleich.</li>
-        <li>Reale Geometrien (Fächer, Kegel, Spirale) brauchen angepasste Gewichte, das FBP-Prinzip bleibt.</li>
-      </ul></div>
-    </section>
-
-    <!-- 7 -->
-    <section id="iterativ">
-      <div class="step"><b>7</b><span class="eyebrow">Moderne Verfahren</span></div>
-      <h2>Iterative Rekonstruktion</h2>
-      <p>FBP ist schnell und exakt, wenn die Daten ideal sind: viele Winkel, wenig Rauschen, perfekte Geometrie. Iterative Verfahren betrachten die Rekonstruktion stattdessen als großes Gleichungssystem und lösen es schrittweise. Dadurch kann man Physik, Statistik und Vorwissen über das Bild direkt einbauen.</p>
-
-      <h3>Rekonstruktion als Gleichungssystem</h3>
-      <p>Das Bild wird in Pixel zerlegt, die unbekannten μ-Werte bilden einen Vektor \(\mathbf x\). Jeder Messwert \(p_i\) ist eine gewichtete Summe der Pixel, die der Strahl \(i\) durchquert:</p>
-      <div class="eq">$$p_i = \sum_j a_{ij}\,x_j \qquad\Longleftrightarrow\qquad \mathbf p = A\,\mathbf x$$</div>
-      <p>Das Gewicht \(a_{ij}\) ist die Weglänge von Strahl \(i\) in Pixel \(j\). Die <strong>Systemmatrix</strong> \(A\) ist riesig (für ein 512 × 512-Bild 262 144 Unbekannte und Millionen von Messwerten), aber dünn besetzt: Jeder Strahl trifft nur wenige hundert Pixel.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 760 210" role="img" aria-label="Ein Bild aus 2 mal 2 Pixeln mit den Werten 1, 2, 3, 4. Zeilen-, Spalten- und Diagonalsummen werden als Messungen angegeben.">
-          <g font-size="14">
-            <rect x="80" y="40" width="70" height="70" class="d-soft" style="stroke:var(--fg)"/><rect x="150" y="40" width="70" height="70" class="d-soft" style="stroke:var(--fg)"/>
-            <rect x="80" y="110" width="70" height="70" class="d-soft" style="stroke:var(--fg)"/><rect x="150" y="110" width="70" height="70" class="d-soft" style="stroke:var(--fg)"/>
-            <g class="d-fg m" text-anchor="middle" font-size="16"><text x="115" y="80">x₁</text><text x="185" y="80">x₂</text><text x="115" y="150">x₃</text><text x="185" y="150">x₄</text></g>
-            <g class="d-stb2" stroke-width="1.5" stroke-dasharray="5 4"><line x1="40" y1="75" x2="250" y2="75"/><line x1="40" y1="145" x2="250" y2="145"/><line x1="115" y1="12" x2="115" y2="200"/><line x1="185" y1="12" x2="185" y2="200"/><line x1="60" y1="20" x2="240" y2="200"/></g>
-            <g class="d-fg m" font-size="13"><text x="256" y="79">= 3</text><text x="256" y="149">= 7</text><text x="104" y="210" font-size="12">4</text><text x="176" y="210" font-size="12">6</text><text x="244" y="200" font-size="12">5</text></g>
-            <text x="320" y="56" class="d-fg">Zeilen:</text><text x="440" y="56" class="d-fg m" font-size="13">x₁ + x₂ = 3,   x₃ + x₄ = 7</text>
-            <text x="320" y="84" class="d-fg">Spalten:</text><text x="440" y="84" class="d-fg m" font-size="13">x₁ + x₃ = 4,   x₂ + x₄ = 6</text>
-            <text x="320" y="112" class="d-fg">Diagonale:</text><text x="440" y="112" class="d-fg m" font-size="13">x₁ + x₄ = 5</text>
-            <text x="320" y="148" class="d-mut" font-size="13">Zeilen und Spalten allein: nur 3 unabhängige Gleichungen</text>
-            <text x="320" y="166" class="d-mut" font-size="13">für 4 Unbekannte. Erst eine weitere Richtung macht die</text>
-            <text x="320" y="184" class="d-mut" font-size="13">Lösung eindeutig: x = (1, 2, 3, 4).</text>
-          </g>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 8</b> Das kleinste CT der Welt: vier Pixel, Strahlen in drei Richtungen. Es zeigt das Prinzip: Jede zusätzliche Projektionsrichtung liefert Gleichungen, die die anderen nicht enthalten.</figcaption>
-      </figure>
-
-      <h3>Kaczmarz und ART</h3>
-      <p>Das Gleichungssystem ist zu groß für eine direkte Lösung. Die älteste iterative Methode, die <strong>algebraische Rekonstruktionstechnik (ART)</strong>, geht auf Kaczmarz (1937) zurück und war tatsächlich das Verfahren im ersten CT von Hounsfield. Sie nimmt sich eine Gleichung nach der anderen vor und korrigiert die aktuelle Schätzung gerade so weit, dass diese eine Gleichung erfüllt ist:</p>
-      <div class="eq">$$\mathbf x \;\leftarrow\; \mathbf x + \lambda\,\frac{p_i - \mathbf a_i \cdot \mathbf x}{\lVert \mathbf a_i \rVert^2}\;\mathbf a_i$$</div>
-      <p>In Worten: Projektion der aktuellen Schätzung berechnen, mit der Messung vergleichen, den Fehler gleichmäßig entlang des Strahls zurückverteilen. Geometrisch ist jede Gleichung eine Hyperebene, und jeder Schritt ist eine senkrechte Projektion auf die nächste Ebene. In zwei Dimensionen kann man das zeichnen:</p>
-
-      <figure class="fig">
-        <canvas id="cv-kz" class="c-kz" role="img" aria-label="Kaczmarz-Verfahren in zwei Dimensionen: ein Punkt springt abwechselnd senkrecht auf zwei Geraden und nähert sich ihrem Schnittpunkt."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="kz-a">Winkel zwischen den Geraden</label><output id="kz-a-o"></output></div><input id="kz-a" type="range" min="5" max="90" step="1" value="35"></div>
-          <button class="btn" type="button" id="kz-go">Neuer Startpunkt</button>
-        </div>
-        <div class="readout" id="kz-read"></div>
-        <figcaption><b>Abb. 9</b> Zwei Gleichungen mit zwei Unbekannten sind zwei Geraden, die Lösung ist ihr Schnittpunkt. Kaczmarz projiziert die Schätzung abwechselnd senkrecht auf die Geraden. Stehen sie fast parallel (ähnliche Strahlen), wird der Zickzack lang, und die Konvergenz ist langsam. Daher werden Projektionen in der Praxis in einer Reihenfolge abgearbeitet, in der aufeinanderfolgende Winkel möglichst verschieden sind.</figcaption>
-      </figure>
-
-      <h3>SART und das Verhalten bei Rauschen</h3>
-      <p><strong>SART</strong> (simultaneous ART) korrigiert nicht Strahl für Strahl, sondern eine ganze Projektion auf einmal: alle Strahlen eines Winkels vorwärtsprojizieren, die relativen Fehler bilden, gemeinsam zurückprojizieren und normiert auf das Bild addieren. Das ist robuster gegenüber Rauschen und gut parallelisierbar. Man kann zudem jederzeit Nebenbedingungen erzwingen, zum Beispiel, dass μ nicht negativ werden darf.</p>
-
-      <figure class="fig">
-        <div class="three">
-          <div><div class="lbl">FBP (Shepp-Logan)</div><canvas id="cv-it-fbp" class="c-sq" role="img" aria-label="FBP-Rekonstruktion mit wenigen Winkeln als Vergleich."></canvas></div>
-          <div><div class="lbl" id="it-lbl">SART</div><canvas id="cv-it" class="c-sq" role="img" aria-label="SART-Rekonstruktion, die sich mit jeder Iteration verbessert."></canvas></div>
-          <div><div class="lbl">Fehler zum echten Bild</div><canvas id="cv-it-c" class="c-sq" role="img" aria-label="Verlauf des Bildfehlers über die Iterationen für SART, mit FBP als Referenzlinie."></canvas></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="it-n">Projektionswinkel</label><output id="it-n-o"></output></div><input id="it-n" type="range" min="8" max="90" step="1" value="24"></div>
-          <label class="chk"><input id="it-noise" type="checkbox"> Rauschen (I₀ = 3·10⁴)</label>
-          <label class="chk"><input id="it-pos" type="checkbox" checked> μ ≥ 0 erzwingen</label>
-          <button class="btn" type="button" id="it-play">Pause</button>
-          <button class="btn" type="button" id="it-reset">Von vorn</button>
-        </div>
-        <div class="readout" id="it-read"></div>
-        <figcaption><b>Abb. 10</b> Dieselben Messdaten, zwei Verfahren. Links FBP, Mitte SART nach der angegebenen Zahl von Iterationen (eine Iteration = alle Winkel einmal durchlaufen, Relaxation λ = 0,5). Rechts der mittlere Fehler zum echten Phantom in HU (Wurzel aus dem mittleren quadratischen Fehler). Bei wenigen Winkeln ohne Rauschen wird SART klar besser als FBP. Mit Rauschen sinkt der Fehler erst und steigt dann wieder: Das Verfahren beginnt, das Rauschen nachzubilden. Deshalb bricht man früh ab oder regularisiert.</figcaption>
-      </figure>
-
-      <h3>Statistische und modellbasierte Verfahren</h3>
-      <p>Moderne Verfahren formulieren die Rekonstruktion als Optimierungsproblem. Ein typisches Ziel ist</p>
-      <div class="eq">$$\hat{\mathbf x} = \arg\min_{\mathbf x}\;\; \sum_i w_i\,\big(p_i - \mathbf a_i\cdot\mathbf x\big)^2 \;+\; \beta\,R(\mathbf x)$$</div>
-      <dl class="sym">
-        <dt>w_i</dt><dd>Gewicht jedes Messwerts, proportional zu seiner Photonenzahl. Verrauschte Strahlen (wenige Photonen) zählen weniger. Das löst das Problem aus Abschnitt 6.</dd>
-        <dt>R(x)</dt><dd>Regularisierung, also Vorwissen über Bilder, z. B. „benachbarte Pixel sind meist ähnlich, außer an Kanten“ (Total Variation, kantenerhaltende Glättung).</dd>
-        <dt>β</dt><dd>regelt, wie stark das Vorwissen gegenüber den Daten gewichtet wird.</dd>
-      </dl>
-      <p>Statt der gewichteten Quadratsumme kann man auch direkt die Poisson-Likelihood der Photonenzählung maximieren. <strong>Modellbasierte</strong> Verfahren (MBIR) gehen weiter und bilden zusätzlich Brennfleckgröße, Detektorantwort, Streustrahlung und das polychromatische Spektrum in \(A\) ab. Der Preis ist Rechenzeit: Jede Iteration braucht eine Vorwärts- und eine Rückprojektion des gesamten Volumens.</p>
-      <p>In klinischen Scannern sind iterative Verfahren heute Standard und ermöglichen deutliche Dosisreduktion bei gleicher Bildqualität. Hinzu kommen Verfahren mit neuronalen Netzen: als Nachverarbeitung, die das FBP-Bild entrauscht, als Netz, das Schritte eines iterativen Verfahrens lernt („unrolled“), oder als gelernter Regularisierer. Bei allen bleibt die Datenkonsistenz, also \(A\mathbf x \approx \mathbf p\), der Anker, der verhindert, dass das Netz Strukturen erfindet.</p>
-
-      <div class="tbl"><table>
-        <thead><tr><th></th><th>FBP</th><th>Iterativ</th></tr></thead>
-        <tbody>
-          <tr><td>Rechenaufwand</td><td>gering, eine Rückprojektion</td><td>hoch, viele Vor- und Rückprojektionen</td></tr>
-          <tr><td>Rauschmodell</td><td>alle Strahlen gleich</td><td>Gewichtung nach Photonenstatistik</td></tr>
-          <tr><td>Wenige Winkel, fehlende Daten</td><td>Streifenartefakte</td><td>deutlich robuster, besonders mit Regularisierung</td></tr>
-          <tr><td>Physikmodell</td><td>ideale Linienintegrale</td><td>beliebig erweiterbar (Spektrum, Streuung, Detektor)</td></tr>
-          <tr><td>Vorhersagbarkeit</td><td>linear, Bildeigenschaften gut bekannt</td><td>nichtlinear, Auflösung und Rauschtextur können vom Kontrast abhängen</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Iterativ: Bild schätzen, vorwärts projizieren, mit Messung vergleichen, Fehler zurückprojizieren, wiederholen.</li>
-        <li>ART/SART korrigieren Strahl für Strahl bzw. Projektion für Projektion.</li>
-        <li>Statistische Verfahren gewichten Messwerte nach ihrer Zuverlässigkeit und bringen Vorwissen über Regularisierung ein.</li>
-        <li>Ohne Regularisierung bilden Iterationen irgendwann das Rauschen nach: früh stoppen oder regularisieren.</li>
-      </ul></div>
-    </section>
-
-    <!-- Anhang -->
-    <section id="formeln">
-      <div class="eyebrow">Anhang</div>
-      <h2>Formeln auf einen Blick</h2>
-      <div class="tbl"><table>
-        <tbody>
-          <tr><td>Messung</td><td>\(p = -\ln(I/I_0) = \int \mu\,\mathrm dl\)</td></tr>
-          <tr><td>Radon-Transformation</td><td>\(p(\theta,s) = \iint f(x,y)\,\delta(x\cos\theta + y\sin\theta - s)\,\mathrm dx\,\mathrm dy\)</td></tr>
-          <tr><td>Sinuskurve eines Punktes</td><td>\(s(\theta) = x_0\cos\theta + y_0\sin\theta\)</td></tr>
-          <tr><td>Rückprojektion</td><td>\(b(x,y) = \int_0^\pi p(\theta, x\cos\theta + y\sin\theta)\,\mathrm d\theta = f * \tfrac{1}{r}\)</td></tr>
-          <tr><td>Fourier-Slice-Theorem</td><td>\(P_\theta(\omega) = F(\omega\cos\theta, \omega\sin\theta)\)</td></tr>
-          <tr><td>Gefilterte Rückprojektion</td><td>\(f(x,y) = \int_0^\pi q(\theta, x\cos\theta + y\sin\theta)\,\mathrm d\theta\), \(\;q = \mathcal F^{-1}\{|\omega|\,P_\theta\}\)</td></tr>
-          <tr><td>Ram-Lak-Kern</td><td>\(h[0] = \tfrac{1}{4\Delta s^2}\), \(h[n_{\text{ungerade}}] = -\tfrac{1}{\pi^2 n^2 \Delta s^2}\), sonst 0</td></tr>
-          <tr><td>Winkelzahl</td><td>\(N_\theta \approx \tfrac{\pi}{2} N_s\)</td></tr>
-          <tr><td>Rauschen eines Messwerts</td><td>\(\sigma_p^2 \approx 1/(I_0 e^{-p})\)</td></tr>
-          <tr><td>ART (Kaczmarz)</td><td>\(\mathbf x \leftarrow \mathbf x + \lambda\,\frac{p_i - \mathbf a_i\cdot\mathbf x}{\lVert\mathbf a_i\rVert^2}\,\mathbf a_i\)</td></tr>
-          <tr><td>Penalisierte WLS</td><td>\(\hat{\mathbf x} = \arg\min \sum_i w_i (p_i - \mathbf a_i\cdot\mathbf x)^2 + \beta R(\mathbf x)\)</td></tr>
-        </tbody>
-      </table></div>
-      <p>Weiterlesen: Kak &amp; Slaney, <em>Principles of Computerized Tomographic Imaging</em> (frei verfügbar, Kapitel 3 und 7), sowie Buzug, <em>Computed Tomography</em>.</p>
-      <p>Zurück zu <a href="roentgen.html">„Vom Photon zum Bild“</a> · <a href="photon-counting.html">„Photonen zählen“</a></p>
-    </section>
-
+</ol>
+<p>Das ist die <strong>gefilterte Rückprojektion</strong> (FBP, filtered back projection). Man liest sie von innen nach außen:</p>
+<ol class="steps">
+<li>Jede Projektion <span class="arithmatex">\(p(\theta, s)\)</span> Fourier-transformieren.</li>
+<li>Mit dem <strong>Rampenfilter</strong> <span class="arithmatex">\(|\omega|\)</span> multiplizieren.</li>
+<li>Zurücktransformieren. Ergebnis: die gefilterte Projektion <span class="arithmatex">\(q(\theta, s)\)</span>.</li>
+<li><span class="arithmatex">\(q\)</span> wie in Abschnitt 3 zurückprojizieren.</li>
+</ol>
+<p>Schritte 1–3 sind nach dem Faltungssatz nichts anderes als eine Faltung der Projektion mit einem Kern <span class="arithmatex">\(h(s)\)</span>, der Fourier-Rücktransformierten von <span class="arithmatex">\(|\omega|\)</span>. Das ist der Weg, den die Gleichung zum Rampenfilter in Abschnitt 3 schon angedeutet hat, nur jetzt pro Projektion statt am fertigen Bild.</p>
+<h3>Woher das |ω| anschaulich kommt</h3>
+<p>Der Faktor <span class="arithmatex">\(|\omega|\)</span> ist das Flächenelement der Polarkoordinaten. Anschaulich: Die radialen Linien, auf denen jede Projektion das Spektrum abtastet, liegen im Zentrum dicht beieinander und laufen nach außen auseinander. Niedrige Frequenzen werden dadurch von allen Projektionen mehrfach erfasst und sind überrepräsentiert, hohe nur dünn. Das Gewicht <span class="arithmatex">\(|\omega|\)</span> gleicht die Dichte aus. Ohne dieses Gewicht sind tiefe Frequenzen um den Faktor <span class="arithmatex">\(1/|\omega|\)</span> zu stark, und genau das ist die <span class="arithmatex">\(1/r\)</span>-Unschärfe aus Abschnitt 3.</p>
+<figure class="fig">
+<canvas aria-label="Links: radiale Abtastung des Frequenzraums durch Projektionen, dicht im Zentrum und dünn außen. Rechts: Abtastdichte proportional zu 1 durch Betrag omega und der Rampenfilter, der sie ausgleicht." class="c-polar" id="cv-polar" role="img"></canvas>
+<figcaption><b>Abb. 5</b> Links: Wo die Projektionen von 16 Winkeln das Spektrum abtasten. Der Kreis innen enthält genauso viele Punkte wie der Ring außen, obwohl seine Fläche viel kleiner ist. Rechts: Die Abtastdichte fällt wie \(1/|\omega|\) (gestrichelt), der Rampenfilter \(|\omega|\) gleicht das aus. Ihr Produkt ist konstant.</figcaption>
+</figure>
+<h3>Der diskrete Filter und Fensterfunktionen</h3>
+<p>Im Rechner ist die Projektion mit Abstand <span class="arithmatex">\(\Delta s\)</span> abgetastet. Die höchste darstellbare Frequenz ist dann die Nyquist-Frequenz <span class="arithmatex">\(\omega_N = 1/(2\Delta s)\)</span>. Ein auf diesen Bereich begrenzter Rampenfilter hat im Ortsraum den bekannten <strong>Ram-Lak-Kern</strong>:</p>
+<div class="eq">\[
+h[n] = \begin{cases} \dfrac{1}{4\Delta s^2} &amp; n = 0 \\[4pt] 0 &amp; n \text{ gerade} \\[4pt] -\dfrac{1}{\pi^2 n^2 \Delta s^2} &amp; n \text{ ungerade} \end{cases}
+\]</div>
+<p>Die Spitze in der Mitte und die negativen Nachbarwerte schärfen. In Abb. 3 sieht man ihre Wirkung: Die negativen Ausläufer jedes gefilterten Strahls heben die Überlagerung außerhalb des Punktes gerade auf.</p>
+<p>Das Problem des reinen Rampenfilters: Er verstärkt die höchsten Frequenzen am stärksten, und dort steckt vor allem <strong>Rauschen</strong>. Deshalb multipliziert man ihn in der Praxis mit einer <strong>Fensterfunktion</strong>, die zum Rand hin abfällt. Das ist ein Kompromiss zwischen Schärfe und Rauschen, den Radiologen über die Wahl des „Rekonstruktionskerns“ steuern (weich für Weichteile, scharf für Knochen und Lunge).</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>Fenster <span class="arithmatex">\(W(\omega)\)</span>, mit <span class="arithmatex">\(x = \omega / \omega_N\)</span></th>
+<th>Charakter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ram-Lak</td>
+<td><span class="arithmatex">\(1\)</span></td>
+<td>maximal scharf, maximal verrauscht</td>
+</tr>
+<tr>
+<td>Shepp-Logan</td>
+<td><span class="arithmatex">\(\mathrm{sinc}(x/2) = \dfrac{\sin(\pi x/2)}{\pi x/2}\)</span></td>
+<td>leicht gedämpft, häufiger Standard</td>
+</tr>
+<tr>
+<td>Kosinus</td>
+<td><span class="arithmatex">\(\cos(\pi x/2)\)</span></td>
+<td>mittel</td>
+</tr>
+<tr>
+<td>Hann</td>
+<td><span class="arithmatex">\(\tfrac12\,(1 + \cos\pi x)\)</span></td>
+<td>weich, rauscharm, weniger Details</td>
+</tr>
+</tbody>
+</table></div>
+<figure class="fig">
+<div class="two">
+<div><div class="lbl">Rekonstruktion</div><canvas aria-label="FBP-Rekonstruktion des Phantoms mit wählbarem Filter, Winkelzahl und Dosis. Ein Kreis markiert die Messregion für das Rauschen." class="c-sq" id="cv-lab" role="img"></canvas></div>
+<div><div class="lbl">Filter im Frequenzraum</div><canvas aria-label="Frequenzgang der Filter Ram-Lak, Shepp-Logan, Kosinus und Hann; der gewählte ist hervorgehoben." class="c-sq" id="cv-lab-f" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="lb-f">Filter</label></div>
+<select id="lb-f"><option value="ramlak">Ram-Lak</option><option selected="" value="shepp">Shepp-Logan</option><option value="cos">Kosinus</option><option value="hann">Hann</option><option value="none">keiner (nur Rückprojektion)</option></select></div>
+<div class="ctrl"><div class="lab"><label for="lb-n">Projektionswinkel</label><output id="lb-n-o"></output></div><input id="lb-n" max="360" min="4" step="1" type="range" value="180"/></div>
+<div class="ctrl"><div class="lab"><label for="lb-d">Photonen pro Strahl</label><output id="lb-d-o"></output></div><input id="lb-d" max="7" min="2.5" step="0.1" type="range" value="5"/></div>
+</div>
+<div class="readout" id="lb-read"></div>
+<figcaption><b>Abb. 6</b> Ein kleines FBP-Labor. Das Sinogramm wird aus dem Phantom berechnet, mit Poisson-Rauschen passend zur eingestellten Photonenzahl \(I_0\) versehen, gefiltert und zurückprojiziert (Fenster μ = 0 … 0,65 cm⁻¹). Der Kreis markiert eine Region im Weichteil, in der Mittelwert und Rauschen in HU gemessen werden. Vergleiche Ram-Lak und Hann bei wenig Photonen, und reduziere die Winkelzahl auf unter 30.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>FBP: jede Projektion mit <span class="arithmatex">\(|\omega|\)</span> filtern, dann zurückprojizieren.</li>
+<li><span class="arithmatex">\(|\omega|\)</span> gleicht aus, dass die Projektionen das Spektrum innen dicht und außen dünn abtasten.</li>
+<li>Fensterfunktionen dämpfen hohe Frequenzen: weniger Rauschen, weniger Schärfe.</li>
+</ul>
+</div>
+</section>
+<section id="praxis">
+<div class="step"><b>6</b><span class="eyebrow">Praxis</span></div>
+<h2>Winkel, Rauschen, Geometrie</h2>
+<h3>Wie viele Winkel braucht man?</h3>
+<p>Hat der Detektor <span class="arithmatex">\(N_s\)</span> Kanäle, tastet jede Projektion das Spektrum radial mit <span class="arithmatex">\(N_s\)</span> Punkten ab. Damit auch am Rand des Spektrums der Abstand zwischen benachbarten radialen Linien nicht größer ist als der Abstand der Punkte auf einer Linie, braucht man etwa</p>
+<div class="eq">\[
+N_\theta \approx \frac{\pi}{2}\,N_s
+\]</div>
+<p>Projektionen über 180°. Bei 128 Kanälen sind das rund 200. Zu wenige Winkel erzeugen <strong>Streifenartefakte</strong>: Die einzelnen Rückprojektionsstrahlen löschen sich außerhalb von Objekten nicht mehr vollständig aus. In Abb. 6 sieht man sie unterhalb von etwa 60 Winkeln deutlich, zuerst am Rand des Bildes. Klinische Scanner nehmen 1000 bis über 2000 Projektionen pro Umdrehung auf.</p>
+<h3>Rauschen</h3>
+<p>Die Zahl der Photonen pro Detektorpixel ist Poisson-verteilt. Nach dem Logarithmieren ist die Varianz eines Messwerts ungefähr</p>
+<div class="eq">\[
+\sigma_p^2 \approx \frac{1}{N} = \frac{1}{I_0\,e^{-p}}
+\]</div>
+<p>Strahlen durch dicke oder dichte Bereiche (großes <span class="arithmatex">\(p\)</span>) sind also viel stärker verrauscht. Bei der FBP wird jeder Messwert gleich behandelt, das starke Rauschen einzelner Strahlen läuft ungebremst ins Bild und erzeugt Streifen zwischen dichten Strukturen. Das Bildrauschen sinkt ungefähr wie <span class="arithmatex">\(1/\sqrt{\text{Dosis}}\)</span>: Für halbes Rauschen braucht man die vierfache Dosis. Genau hier setzen iterative Verfahren an (Abschnitt 7).</p>
+<h3>Interpolation</h3>
+<p>Bei der Rückprojektion trifft die Gerade durch ein Bildpixel den Detektor fast nie genau in einer Kanalmitte. Man interpoliert, meist linear zwischen zwei Kanälen. Das wirkt wie ein leichter zusätzlicher Tiefpass. Ähnlich wird bei der Rekonstruktion im Frequenzraum (direkte Fourier-Methode) von Polar- auf kartesisches Gitter interpoliert. Das ist fehleranfälliger, weshalb sich FBP durchgesetzt hat.</p>
+<h3>Vom Parallelstrahl zum Fächer und Kegel</h3>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Drei Geometrien: Parallelstrahl mit parallelen Strahlen, Fächerstrahl aus einer Punktquelle auf eine Detektorzeile, Kegelstrahl aus einer Punktquelle auf einen flächigen Detektor." role="img" viewbox="0 0 760 250">
+<g font-size="14">
+<text class="d-fg" font-weight="600" text-anchor="middle" x="120" y="24">Parallelstrahl</text>
+<g class="d-stb2" stroke-width="1.3"><line x1="50" x2="50" y1="50" y2="190"></line><line x1="78" x2="78" y1="50" y2="190"></line><line x1="106" x2="106" y1="50" y2="190"></line><line x1="134" x2="134" y1="50" y2="190"></line><line x1="162" x2="162" y1="50" y2="190"></line><line x1="190" x2="190" y1="50" y2="190"></line></g>
+<circle class="d-soft" cx="120" cy="120" r="42" style="stroke:var(--muted)"></circle>
+<rect class="d-fg" height="8" width="160" x="40" y="192"></rect>
+<text class="d-mut" font-size="12" text-anchor="middle" x="120" y="226">Theorie, frühe Scanner</text>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="380" y="24">Fächerstrahl</text>
+<circle class="d-b2" cx="380" cy="46" r="5"></circle>
+<g class="d-stb2" stroke-width="1.3"><line x1="380" x2="300" y1="46" y2="190"></line><line x1="380" x2="332" y1="46" y2="196"></line><line x1="380" x2="364" y1="46" y2="199"></line><line x1="380" x2="396" y1="46" y2="199"></line><line x1="380" x2="428" y1="46" y2="196"></line><line x1="380" x2="460" y1="46" y2="190"></line></g>
+<circle class="d-soft" cx="380" cy="128" r="42" style="stroke:var(--muted)"></circle>
+<path class="d-st" d="M296 186 Q380 212 464 186" stroke-width="7"></path>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="226">eine Detektorzeile, 2D</text>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="640" y="24">Kegelstrahl</text>
+<circle class="d-b2" cx="640" cy="46" r="5"></circle>
+<path class="d-soft" d="M560 170 L700 150 L720 200 L580 220 Z" stroke-width="1.5" style="stroke:var(--fg)"></path>
+<g class="d-stb2" stroke-width="1.2"><line x1="640" x2="560" y1="46" y2="170"></line><line x1="640" x2="700" y1="46" y2="150"></line><line x1="640" x2="720" y1="46" y2="200"></line><line x1="640" x2="580" y1="46" y2="220"></line><line x1="640" x2="640" y1="46" y2="185"></line></g>
+<ellipse class="d-soft" cx="640" cy="122" opacity="0.85" rx="36" ry="22" style="stroke:var(--muted)"></ellipse>
+<text class="d-mut" font-size="12" text-anchor="middle" x="640" y="242">Flächendetektor, 3D</text>
+</g>
+</svg>
+</div>
+<figcaption><b>Abb. 7</b> Messgeometrien. Diese Seite rechnet mit Parallelstrahlen, weil die Mathematik dort am klarsten ist. Reale CTs haben eine Punktquelle.</figcaption>
+</figure>
+<ul class="tight">
+<li><strong>Fächerstrahl:</strong> Man kann die Messwerte umsortieren, sodass Strahlen mit gleicher Richtung aus verschiedenen Projektionen zusammenkommen (<em>Rebinning</em> auf parallele Strahlen), oder eine angepasste FBP mit zusätzlichen Gewichten verwenden. Für eine vollständige Messung braucht man 180° plus den Öffnungswinkel des Fächers (<em>Short Scan</em>), Doppelmessungen werden dann gewichtet (z. B. Parker-Gewichtung).</li>
+<li><strong>Kegelstrahl:</strong> Mit mehreren Detektorzeilen oder einem Flachdetektor laufen die Strahlen auch schräg zur Schnittebene. Der Standard ist der näherungsweise <strong>FDK-Algorithmus</strong> (Feldkamp, Davis, Kress, 1984): FBP mit Gewichtung nach Kegelwinkel und dreidimensionaler Rückprojektion. Bei großen Kegelwinkeln entstehen Artefakte, weil eine Kreisbahn die Daten nicht vollständig erfasst.</li>
+<li><strong>Spirale (Helix):</strong> Der Patient wird während der Drehung durch die Gantry gefahren. Klinische Mehrzeilen-CTs rekonstruieren dafür mit speziellen gewichteten FBP-Varianten oder iterativ.</li>
+</ul>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Zu wenige Winkel → Streifen. Faustregel <span class="arithmatex">\(N_\theta \approx \tfrac{\pi}{2} N_s\)</span>.</li>
+<li>Rauschen eines Strahls wächst mit seiner Schwächung, FBP behandelt alle Strahlen gleich.</li>
+<li>Reale Geometrien (Fächer, Kegel, Spirale) brauchen angepasste Gewichte, das FBP-Prinzip bleibt.</li>
+</ul>
+</div>
+</section>
+<section id="iterativ">
+<div class="step"><b>7</b><span class="eyebrow">Moderne Verfahren</span></div>
+<h2>Iterative Rekonstruktion</h2>
+<p>FBP ist schnell und exakt, wenn die Daten ideal sind: viele Winkel, wenig Rauschen, perfekte Geometrie. Iterative Verfahren betrachten die Rekonstruktion stattdessen als großes Gleichungssystem und lösen es schrittweise. Dadurch kann man Physik, Statistik und Vorwissen über das Bild direkt einbauen.</p>
+<h3>Rekonstruktion als Gleichungssystem</h3>
+<p>Das Bild wird in Pixel zerlegt, die unbekannten μ-Werte bilden einen Vektor <span class="arithmatex">\(\mathbf x\)</span>. Jeder Messwert <span class="arithmatex">\(p_i\)</span> ist eine gewichtete Summe der Pixel, die der Strahl <span class="arithmatex">\(i\)</span> durchquert:</p>
+<div class="eq">\[
+p_i = \sum_j a_{ij}\,x_j \qquad\Longleftrightarrow\qquad \mathbf p = A\,\mathbf x
+\]</div>
+<p>Das Gewicht <span class="arithmatex">\(a_{ij}\)</span> ist die Weglänge von Strahl <span class="arithmatex">\(i\)</span> in Pixel <span class="arithmatex">\(j\)</span>. Die <strong>Systemmatrix</strong> <span class="arithmatex">\(A\)</span> ist riesig (für ein 512 × 512-Bild 262 144 Unbekannte und Millionen von Messwerten), aber dünn besetzt: Jeder Strahl trifft nur wenige hundert Pixel.</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Ein Bild aus 2 mal 2 Pixeln mit den Werten 1, 2, 3, 4. Zeilen-, Spalten- und Diagonalsummen werden als Messungen angegeben." role="img" viewbox="0 0 760 210">
+<g font-size="14">
+<rect class="d-soft" height="70" style="stroke:var(--fg)" width="70" x="80" y="40"></rect><rect class="d-soft" height="70" style="stroke:var(--fg)" width="70" x="150" y="40"></rect>
+<rect class="d-soft" height="70" style="stroke:var(--fg)" width="70" x="80" y="110"></rect><rect class="d-soft" height="70" style="stroke:var(--fg)" width="70" x="150" y="110"></rect>
+<g class="d-fg m" font-size="16" text-anchor="middle"><text x="115" y="80">x₁</text><text x="185" y="80">x₂</text><text x="115" y="150">x₃</text><text x="185" y="150">x₄</text></g>
+<g class="d-stb2" stroke-dasharray="5 4" stroke-width="1.5"><line x1="40" x2="250" y1="75" y2="75"></line><line x1="40" x2="250" y1="145" y2="145"></line><line x1="115" x2="115" y1="12" y2="200"></line><line x1="185" x2="185" y1="12" y2="200"></line><line x1="60" x2="240" y1="20" y2="200"></line></g>
+<g class="d-fg m" font-size="13"><text x="256" y="79">= 3</text><text x="256" y="149">= 7</text><text font-size="12" x="104" y="210">4</text><text font-size="12" x="176" y="210">6</text><text font-size="12" x="244" y="200">5</text></g>
+<text class="d-fg" x="320" y="56">Zeilen:</text><text class="d-fg m" font-size="13" x="440" y="56">x₁ + x₂ = 3,   x₃ + x₄ = 7</text>
+<text class="d-fg" x="320" y="84">Spalten:</text><text class="d-fg m" font-size="13" x="440" y="84">x₁ + x₃ = 4,   x₂ + x₄ = 6</text>
+<text class="d-fg" x="320" y="112">Diagonale:</text><text class="d-fg m" font-size="13" x="440" y="112">x₁ + x₄ = 5</text>
+<text class="d-mut" font-size="13" x="320" y="148">Zeilen und Spalten allein: nur 3 unabhängige Gleichungen</text>
+<text class="d-mut" font-size="13" x="320" y="166">für 4 Unbekannte. Erst eine weitere Richtung macht die</text>
+<text class="d-mut" font-size="13" x="320" y="184">Lösung eindeutig: x = (1, 2, 3, 4).</text>
+</g>
+</svg>
+</div>
+<figcaption><b>Abb. 8</b> Das kleinste CT der Welt: vier Pixel, Strahlen in drei Richtungen. Es zeigt das Prinzip: Jede zusätzliche Projektionsrichtung liefert Gleichungen, die die anderen nicht enthalten.</figcaption>
+</figure>
+<h3>Kaczmarz und ART</h3>
+<p>Das Gleichungssystem ist zu groß für eine direkte Lösung. Die älteste iterative Methode, die <strong>algebraische Rekonstruktionstechnik (ART)</strong>, geht auf Kaczmarz (1937) zurück und war tatsächlich das Verfahren im ersten CT von Hounsfield. Sie nimmt sich eine Gleichung nach der anderen vor und korrigiert die aktuelle Schätzung gerade so weit, dass diese eine Gleichung erfüllt ist:</p>
+<div class="eq">\[
+\mathbf x \;\leftarrow\; \mathbf x + \lambda\,\frac{p_i - \mathbf a_i \cdot \mathbf x}{\lVert \mathbf a_i \rVert^2}\;\mathbf a_i
+\]</div>
+<p>In Worten: Projektion der aktuellen Schätzung berechnen, mit der Messung vergleichen, den Fehler gleichmäßig entlang des Strahls zurückverteilen. Geometrisch ist jede Gleichung eine Hyperebene, und jeder Schritt ist eine senkrechte Projektion auf die nächste Ebene. In zwei Dimensionen kann man das zeichnen:</p>
+<figure class="fig">
+<canvas aria-label="Kaczmarz-Verfahren in zwei Dimensionen: ein Punkt springt abwechselnd senkrecht auf zwei Geraden und nähert sich ihrem Schnittpunkt." class="c-kz" id="cv-kz" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="kz-a">Winkel zwischen den Geraden</label><output id="kz-a-o"></output></div><input id="kz-a" max="90" min="5" step="1" type="range" value="35"/></div>
+<button class="btn" id="kz-go" type="button">Neuer Startpunkt</button>
+</div>
+<div class="readout" id="kz-read"></div>
+<figcaption><b>Abb. 9</b> Zwei Gleichungen mit zwei Unbekannten sind zwei Geraden, die Lösung ist ihr Schnittpunkt. Kaczmarz projiziert die Schätzung abwechselnd senkrecht auf die Geraden. Stehen sie fast parallel (ähnliche Strahlen), wird der Zickzack lang, und die Konvergenz ist langsam. Daher werden Projektionen in der Praxis in einer Reihenfolge abgearbeitet, in der aufeinanderfolgende Winkel möglichst verschieden sind.</figcaption>
+</figure>
+<h3>SART und das Verhalten bei Rauschen</h3>
+<p><strong>SART</strong> (simultaneous ART) korrigiert nicht Strahl für Strahl, sondern eine ganze Projektion auf einmal: alle Strahlen eines Winkels vorwärtsprojizieren, die relativen Fehler bilden, gemeinsam zurückprojizieren und normiert auf das Bild addieren. Das ist robuster gegenüber Rauschen und gut parallelisierbar. Man kann zudem jederzeit Nebenbedingungen erzwingen, zum Beispiel, dass μ nicht negativ werden darf.</p>
+<figure class="fig">
+<div class="three">
+<div><div class="lbl">FBP (Shepp-Logan)</div><canvas aria-label="FBP-Rekonstruktion mit wenigen Winkeln als Vergleich." class="c-sq" id="cv-it-fbp" role="img"></canvas></div>
+<div><div class="lbl" id="it-lbl">SART</div><canvas aria-label="SART-Rekonstruktion, die sich mit jeder Iteration verbessert." class="c-sq" id="cv-it" role="img"></canvas></div>
+<div><div class="lbl">Fehler zum echten Bild</div><canvas aria-label="Verlauf des Bildfehlers über die Iterationen für SART, mit FBP als Referenzlinie." class="c-sq" id="cv-it-c" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="it-n">Projektionswinkel</label><output id="it-n-o"></output></div><input id="it-n" max="90" min="8" step="1" type="range" value="24"/></div>
+<label class="chk"><input id="it-noise" type="checkbox"/> Rauschen (I₀ = 3·10⁴)</label>
+<label class="chk"><input checked="" id="it-pos" type="checkbox"/> μ ≥ 0 erzwingen</label>
+<button class="btn" id="it-play" type="button">Pause</button>
+<button class="btn" id="it-reset" type="button">Von vorn</button>
+</div>
+<div class="readout" id="it-read"></div>
+<figcaption><b>Abb. 10</b> Dieselben Messdaten, zwei Verfahren. Links FBP, Mitte SART nach der angegebenen Zahl von Iterationen (eine Iteration = alle Winkel einmal durchlaufen, Relaxation λ = 0,5). Rechts der mittlere Fehler zum echten Phantom in HU (Wurzel aus dem mittleren quadratischen Fehler). Bei wenigen Winkeln ohne Rauschen wird SART klar besser als FBP. Mit Rauschen sinkt der Fehler erst und steigt dann wieder: Das Verfahren beginnt, das Rauschen nachzubilden. Deshalb bricht man früh ab oder regularisiert.</figcaption>
+</figure>
+<h3>Statistische und modellbasierte Verfahren</h3>
+<p>Moderne Verfahren formulieren die Rekonstruktion als Optimierungsproblem. Ein typisches Ziel ist</p>
+<div class="eq">\[
+\hat{\mathbf x} = \arg\min_{\mathbf x}\;\; \sum_i w_i\,\big(p_i - \mathbf a_i\cdot\mathbf x\big)^2 \;+\; \beta\,R(\mathbf x)
+\]</div>
+<dl class="sym">
+<dt>w_i</dt><dd>Gewicht jedes Messwerts, proportional zu seiner Photonenzahl. Verrauschte Strahlen (wenige Photonen) zählen weniger. Das löst das Problem aus Abschnitt 6.</dd>
+<dt>R(x)</dt><dd>Regularisierung, also Vorwissen über Bilder, z. B. „benachbarte Pixel sind meist ähnlich, außer an Kanten“ (Total Variation, kantenerhaltende Glättung).</dd>
+<dt>β</dt><dd>regelt, wie stark das Vorwissen gegenüber den Daten gewichtet wird.</dd>
+</dl>
+<p>Statt der gewichteten Quadratsumme kann man auch direkt die Poisson-Likelihood der Photonenzählung maximieren. <strong>Modellbasierte</strong> Verfahren (MBIR) gehen weiter und bilden zusätzlich Brennfleckgröße, Detektorantwort, Streustrahlung und das polychromatische Spektrum in <span class="arithmatex">\(A\)</span> ab. Der Preis ist Rechenzeit: Jede Iteration braucht eine Vorwärts- und eine Rückprojektion des gesamten Volumens.</p>
+<p>In klinischen Scannern sind iterative Verfahren heute Standard und ermöglichen deutliche Dosisreduktion bei gleicher Bildqualität. Hinzu kommen Verfahren mit neuronalen Netzen: als Nachverarbeitung, die das FBP-Bild entrauscht, als Netz, das Schritte eines iterativen Verfahrens lernt („unrolled“), oder als gelernter Regularisierer. Bei allen bleibt die Datenkonsistenz, also <span class="arithmatex">\(A\mathbf x \approx \mathbf p\)</span>, der Anker, der verhindert, dass das Netz Strukturen erfindet.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>FBP</th>
+<th>Iterativ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rechenaufwand</td>
+<td>gering, eine Rückprojektion</td>
+<td>hoch, viele Vor- und Rückprojektionen</td>
+</tr>
+<tr>
+<td>Rauschmodell</td>
+<td>alle Strahlen gleich</td>
+<td>Gewichtung nach Photonenstatistik</td>
+</tr>
+<tr>
+<td>Wenige Winkel, fehlende Daten</td>
+<td>Streifenartefakte</td>
+<td>deutlich robuster, besonders mit Regularisierung</td>
+</tr>
+<tr>
+<td>Physikmodell</td>
+<td>ideale Linienintegrale</td>
+<td>beliebig erweiterbar (Spektrum, Streuung, Detektor)</td>
+</tr>
+<tr>
+<td>Vorhersagbarkeit</td>
+<td>linear, Bildeigenschaften gut bekannt</td>
+<td>nichtlinear, Auflösung und Rauschtextur können vom Kontrast abhängen</td>
+</tr>
+</tbody>
+</table></div>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Iterativ: Bild schätzen, vorwärts projizieren, mit Messung vergleichen, Fehler zurückprojizieren, wiederholen.</li>
+<li>ART/SART korrigieren Strahl für Strahl bzw. Projektion für Projektion.</li>
+<li>Statistische Verfahren gewichten Messwerte nach ihrer Zuverlässigkeit und bringen Vorwissen über Regularisierung ein.</li>
+<li>Ohne Regularisierung bilden Iterationen irgendwann das Rauschen nach: früh stoppen oder regularisieren.</li>
+</ul>
+</div>
+</section>
+<section id="formeln">
+<div class="eyebrow">Anhang</div>
+<h2>Formeln auf einen Blick</h2>
+<div class="tbl"><table>
+<tbody>
+<tr><td>Messung</td><td>\(p = -\ln(I/I_0) = \int \mu\,\mathrm dl\)</td></tr>
+<tr><td>Radon-Transformation</td><td>\(p(\theta,s) = \iint f(x,y)\,\delta(x\cos\theta + y\sin\theta - s)\,\mathrm dx\,\mathrm dy\)</td></tr>
+<tr><td>Sinuskurve eines Punktes</td><td>\(s(\theta) = x_0\cos\theta + y_0\sin\theta\)</td></tr>
+<tr><td>Rückprojektion</td><td>\(b(x,y) = \int_0^\pi p(\theta, x\cos\theta + y\sin\theta)\,\mathrm d\theta = f * \tfrac{1}{r}\)</td></tr>
+<tr><td>Fourier-Slice-Theorem</td><td>\(P_\theta(\omega) = F(\omega\cos\theta, \omega\sin\theta)\)</td></tr>
+<tr><td>Gefilterte Rückprojektion</td><td>\(f(x,y) = \int_0^\pi q(\theta, x\cos\theta + y\sin\theta)\,\mathrm d\theta\), \(\;q = \mathcal F^{-1}\{|\omega|\,P_\theta\}\)</td></tr>
+<tr><td>Ram-Lak-Kern</td><td>\(h[0] = \tfrac{1}{4\Delta s^2}\), \(h[n_{\text{ungerade}}] = -\tfrac{1}{\pi^2 n^2 \Delta s^2}\), sonst 0</td></tr>
+<tr><td>Winkelzahl</td><td>\(N_\theta \approx \tfrac{\pi}{2} N_s\)</td></tr>
+<tr><td>Rauschen eines Messwerts</td><td>\(\sigma_p^2 \approx 1/(I_0 e^{-p})\)</td></tr>
+<tr><td>ART (Kaczmarz)</td><td>\(\mathbf x \leftarrow \mathbf x + \lambda\,\frac{p_i - \mathbf a_i\cdot\mathbf x}{\lVert\mathbf a_i\rVert^2}\,\mathbf a_i\)</td></tr>
+<tr><td>Penalisierte WLS</td><td>\(\hat{\mathbf x} = \arg\min \sum_i w_i (p_i - \mathbf a_i\cdot\mathbf x)^2 + \beta R(\mathbf x)\)</td></tr>
+</tbody>
+</table></div>
+<p>Weiterlesen: Kak &amp; Slaney, <em>Principles of Computerized Tomographic Imaging</em> (frei verfügbar, Kapitel 3 und 7), sowie Buzug, <em>Computed Tomography</em>.</p>
+<p>Zurück zu <a href="roentgen.html">„Vom Photon zum Bild“</a> · <a href="photon-counting.html">„Photonen zählen“</a></p>
+</section>
     <footer>Alle Abbildungen rechnen live im Browser mit einem vereinfachten Phantom und Parallelstrahlgeometrie (128 × 128 Pixel, 128 Detektorkanäle). Sie zeigen Prinzipien, nicht die Bildqualität realer Scanner.</footer>
   </main>
 </div>
-
+<script src="../assets/ui.js"></script>
+<script src="../assets/rk.js"></script>
 <script>
-(() => {
-'use strict';
-const $ = s => document.querySelector(s);
-const root = document.documentElement;
-const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
-const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
-const nf = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
-function rgb(c) { c = c.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join(''); const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255]; }
-function rgba(c, a) { const [r, g, b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
-function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); }
-function fit(c) {
-  const r = c.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
-  const w = Math.max(1, r.width), h = Math.max(1, r.height), W = Math.round(w * dpr), H = Math.round(h * dpr);
-  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
-  const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-  return { ctx, w, h };
-}
-function frame(ctx, x0px, y0px, w, h, o) {
-  const L = o.l ?? 48, R = o.r ?? 12, T = o.t ?? 12, B = o.b ?? 36;
-  const bx = x0px + L, by = y0px + T, bw = Math.max(10, w - L - R), bh = Math.max(10, h - T - B);
-  const X = v => bx + (v - o.x0) / (o.x1 - o.x0) * bw, Y = v => by + bh - (v - o.y0) / (o.y1 - o.y0) * bh;
-  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
-  const grid = tok('--grid'), muted = tok('--muted');
-  for (const v of (o.xt || [])) { const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by + bh); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by + bh + 15); }
-  for (const v of (o.yt || [])) { const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx + bw, y); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx - 6, y + 4); }
-  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.stroke();
-  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
-  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx + bw / 2, by + bh + 31); }
-  if (o.yl) { ctx.save(); ctx.translate(x0px + 12, by + bh / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
-  return { X, Y, bx, by, bw, bh };
-}
-function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
-const mods = [];
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
-function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
-const redrawAll = () => mods.forEach(m => m.draw());
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
-new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-let last = performance.now();
-function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); } requestAnimationFrame(loop); }
-requestAnimationFrame(loop);
-function playBtn(btn, m) { btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; }); if (!m.playing) btn.textContent = 'Abspielen'; }
-function rafDebounce(fn) { let p = false; return () => { if (p) return; p = true; requestAnimationFrame(() => { p = false; fn(); }); }; }
-
-/* ---------- FFT ---------- */
-function fft(re, im, inv) {
-  const n = re.length;
-  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
-  for (let len = 2; len <= n; len <<= 1) {
-    const ang = 2 * Math.PI / len * (inv ? 1 : -1), wr = Math.cos(ang), wi = Math.sin(ang), half = len >> 1;
-    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0; for (let k = 0; k < half; k++) { const a = i + k, b = a + half; const tr = re[b] * cr - im[b] * ci, ti = re[b] * ci + im[b] * cr; re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti; const nc = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nc; } }
-  }
-  if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
-}
-
-/* ---------- Phantom ---------- */
-const PH = [[0, 0, 14, 10, 0, 0.2], [-6, 1.5, 3.6, 5.2, 10, -0.15], [6, 1.5, 3.6, 5.2, -10, -0.15], [0.3, 0.6, 3.0, 2.4, 30, 0.02], [0, -6.8, 1.8, 1.6, 0, 0.4], [2.7, -4.0, 1.0, 1.0, 0, 0.15]];
-const HW = 16, NG = 128, DX = 2 * HW / NG, NS = 128;
-const XC = new Float64Array(NG), YC = new Float64Array(NG);
-for (let i = 0; i < NG; i++) { XC[i] = -HW + (i + 0.5) * DX; YC[i] = HW - (i + 0.5) * DX; }
-const MASK = new Uint8Array(NG * NG), TRUTH = new Float64Array(NG * NG);
-for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) {
-  const x = XC[i], y = YC[j]; MASK[j * NG + i] = (x * x + y * y <= (HW - 0.5) ** 2) ? 1 : 0;
-  let v = 0; for (const [x0, y0, A, B, ad, m] of PH) { const a = ad * Math.PI / 180, dx = x - x0, dy = y - y0; const xr = dx * Math.cos(a) + dy * Math.sin(a), yr = -dx * Math.sin(a) + dy * Math.cos(a); if ((xr / A) ** 2 + (yr / B) ** 2 <= 1) v += m; }
-  TRUTH[j * NG + i] = v;
-}
-function projA(th) {
-  const out = new Float64Array(NS), ct = Math.cos(th), st = Math.sin(th);
-  for (let n = 0; n < NS; n++) {
-    const s = -HW + (n + 0.5) * DX; let p = 0;
-    for (const [x0, y0, A, B, ad, m] of PH) { const a = ad * Math.PI / 180, sp = s - (x0 * ct + y0 * st); const a2 = A * A * Math.cos(th - a) ** 2 + B * B * Math.sin(th - a) ** 2; if (sp * sp < a2) p += m * 2 * A * B * Math.sqrt(a2 - sp * sp) / a2; }
-    out[n] = p;
-  }
-  return out;
-}
-function poisson(l) { if (l < 30) { const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; } return Math.max(0, Math.round(l + Math.sqrt(l) * gauss())); }
-function noisy(p, I0) { return p.map(v => -Math.log(Math.max(poisson(I0 * Math.exp(-v)), 0.5) / I0)); }
-const NP = 256;
-const WIN = { ramlak: () => 1, shepp: f => f === 0 ? 1 : Math.sin(Math.PI * f / 2) / (Math.PI * f / 2), cos: f => Math.cos(Math.PI * f / 2), hann: f => 0.5 * (1 + Math.cos(Math.PI * f)) };
-const Hc = {};
-function getH(w) {
-  if (Hc[w]) return Hc[w];
-  const re = new Float64Array(NP), im = new Float64Array(NP);
-  for (let n = 0; n < NP; n++) { const m = n <= NP / 2 ? n : n - NP; re[n] = m === 0 ? 1 / (4 * DX * DX) : (m % 2 ? -1 / (Math.PI * Math.PI * m * m * DX * DX) : 0); }
-  fft(re, im, false);
-  const H = new Float64Array(NP);
-  for (let k = 0; k < NP; k++) { const f = Math.min(k, NP - k) / (NP / 2); H[k] = re[k] * DX * WIN[w](f); }
-  return Hc[w] = H;
-}
-function filt(p, H) {
-  const re = new Float64Array(NP), im = new Float64Array(NP); re.set(p);
-  fft(re, im, false); for (let k = 0; k < NP; k++) { re[k] *= H[k]; im[k] *= H[k]; } fft(re, im, true);
-  return re.slice(0, NS);
-}
-function backproject(qs, ths, out) {
-  const w = Math.PI / ths.length;
-  for (let k = 0; k < ths.length; k++) {
-    const q = qs[k], ct = Math.cos(ths[k]), st = Math.sin(ths[k]);
-    for (let j = 0; j < NG; j++) { const ys = YC[j] * st; for (let i = 0; i < NG; i++) { const idx = j * NG + i; if (!MASK[idx]) continue; const u = (XC[i] * ct + ys + HW) / DX - 0.5, n0 = Math.floor(u); if (n0 < 0 || n0 >= NS - 1) continue; const fr = u - n0; out[idx] += w * (q[n0] * (1 - fr) + q[n0 + 1] * fr); } }
-  }
-  return out;
-}
-function fbp(sino, ths, win) { const H = win === 'none' ? null : getH(win); return backproject(sino.map(p => H ? filt(p, H) : p), ths, new Float64Array(NG * NG)); }
-function grayImg(arr, nx, ny, lo, hi, opt = {}) {
-  const id = new ImageData(nx, ny);
-  for (let k = 0; k < nx * ny; k++) {
-    const o = k * 4; let v = arr[k];
-    if (opt.mask && !opt.mask[k]) { id.data[o] = 0; id.data[o + 1] = 0; id.data[o + 2] = 0; id.data[o + 3] = 255; continue; }
-    if (opt.neg && v < 0) { const a = Math.min(1, -v / (opt.neg)); id.data[o] = 20 * (1 - a); id.data[o + 1] = 40 * a; id.data[o + 2] = Math.round(180 * a); id.data[o + 3] = 255; continue; }
-    const g = Math.round(255 * Math.max(0, Math.min(1, (v - lo) / (hi - lo))));
-    id.data[o] = g; id.data[o + 1] = g; id.data[o + 2] = g; id.data[o + 3] = 255;
-  }
-  const off = document.createElement('canvas'); off.width = nx; off.height = ny; off.getContext('2d').putImageData(id, 0, 0); return off;
-}
-function drawImg(c, off, label) {
-  const { ctx, w, h } = fit(c); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
-  ctx.imageSmoothingEnabled = true; const s = Math.min(w, h); ctx.drawImage(off, (w - s) / 2, (h - s) / 2, s, s);
-  if (label) { ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(label, 8, 16); }
-  return { ctx, w, h };
-}
-const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (MASK[k]) { s += (x[k] - TRUTH[k]) ** 2; n++; } return 1000 * Math.sqrt(s / n) / 0.2; };
-
 /* ---------- Abb. 1: Fourier-Reihe ---------- */
 (() => {
   const c = $('#cv-fs'), ik = $('#fs-k');
@@ -747,7 +558,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   }});
   ik.addEventListener('input', () => m.draw()); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 2: Radon-Punkte ---------- */
 (() => {
   const c = $('#cv-radon'), ith = $('#rd-th');
@@ -806,7 +618,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   ith.addEventListener('input', () => { th = +ith.value * Math.PI / 180; if (m.playing) { m.playing = false; $('#rd-play').textContent = 'Abspielen'; } read(); m.draw(); });
   playBtn($('#rd-play'), m); read(); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 3: Rückprojektion eines Punktes ---------- */
 (() => {
   const c = $('#cv-bp'), inN = $('#bp-n'), iF = $('#bp-f');
@@ -848,7 +661,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   inN.addEventListener('input', rafDebounce(compute)); iF.addEventListener('input', compute);
   compute();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 4: Fourier-Slice ---------- */
 (() => {
   const ca = $('#cv-sl-a'), cb = $('#cv-sl-b'), cc = $('#cv-sl-c'), ith = $('#sl-th');
@@ -917,7 +731,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   ith.addEventListener('input', () => { th = +ith.value * Math.PI / 180; if (mA.playing) { mA.playing = false; $('#sl-play').textContent = 'Abspielen'; } compute(); mA.draw(); mB.draw(); mC.draw(); });
   playBtn($('#sl-play'), mA); compute(); mA.draw(); mB.draw(); mC.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 5: Polare Abtastung ---------- */
 (() => {
   const c = $('#cv-polar');
@@ -945,7 +760,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
     ctx.fillStyle = tok('--fg'); ctx.fillText('— Produkt: konstant', f.bx + 30, f.by + 42);
   }}).draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 6: FBP-Labor ---------- */
 (() => {
   const ci = $('#cv-lab'), cf = $('#cv-lab-f'), iW = $('#lb-f'), iN = $('#lb-n'), iD = $('#lb-d');
@@ -987,7 +803,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   [iW, iN, iD].forEach(e => e.addEventListener('input', go));
   compute();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 9: Kaczmarz ---------- */
 (() => {
   const c = $('#cv-kz'), ia = $('#kz-a');
@@ -1024,7 +841,8 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   ia.addEventListener('input', () => { start(); m.draw(); }); $('#kz-go').addEventListener('click', () => { start(); m.draw(); });
   start(); for (let i = 0; i < 6; i++) stepK(); if (reduceMotion) for (let i = 0; i < 20; i++) stepK(); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 10: SART ---------- */
 (() => {
   const cF = $('#cv-it-fbp'), cS = $('#cv-it'), cC = $('#cv-it-c'), iN = $('#it-n'), iNo = $('#it-noise'), iP = $('#it-pos');
@@ -1088,16 +906,6 @@ const rmseHU = x => { let s = 0, n = 0; for (let k = 0; k < x.length; k++) if (M
   reset();
   if (reduceMotion) { for (let i = 0; i < 30; i++) iterate(); read(); mS.draw(); mC.draw(); }
 })();
-
-/* TOC */
-(() => {
-  const links = [...document.querySelectorAll('nav.toc a')];
-  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
-  const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); const a = map.get(e.target.id); if (a) a.classList.add('on'); } }), { rootMargin: '-30% 0px -60% 0px' });
-  document.querySelectorAll('main section, main header').forEach(s => so.observe(s));
-})();
-})();
 </script>
-
 </body>
 </html>

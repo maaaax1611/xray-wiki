@@ -1,0 +1,98 @@
+<!-- title: Pulse, Schwellen und Pile-up
+     lib: pc -->
+<figure class="fig">
+<canvas aria-label="Simuliertes Signal am Ausgang des Pulsformers mit vier Schwellen. Bei hoher Rate überlappen sich Pulse." class="c-pulse" id="cv-pulse" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="pl-rate">Rate pro Pixel</label><output id="pl-rate-o"></output></div><input id="pl-rate" max="2.3" min="-0.3" step="0.01" type="range" value="0.7"/></div>
+<div class="ctrl"><div class="lab"><label for="pl-tp">Peaking-Zeit τ_p</label><output id="pl-tp-o"></output></div><input id="pl-tp" max="40" min="4" step="1" type="range" value="10"/></div>
+<button class="btn" id="pl-play" type="button">Pause</button>
+</div>
+<div class="tbl" style="margin:12px 0 0"><table class="small" id="pl-table"></table></div>
+<figcaption><b>Abb. 5</b> Simulierter Ausgang des Pulsformers (CR-RC-Pulsform, 0,7 keV Rauschen), Photonenenergien aus einem 120-kV-Spektrum hinter 10 cm Wasser. Die Striche am unteren Rand markieren die wahren Ankunftszeiten, eingefärbt nach wahrer Energie. Die Tabelle stammt aus einer schnelleren Hintergrundsimulation mit denselben Parametern. Erhöhe die Rate: Pulse verschmelzen (Pile-up), Zählungen gehen verloren, und gleichzeitig wandern Ereignisse in höhere Bins.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 5: Pulse ---------- */
+(() => {
+  const c = $('#cv-pulse'), ir = $('#pl-rate'), it = $('#pl-tp');
+  const TH = [20,35,50,65];
+  const samp = sampler(transmit(tube(120), 10, 0));
+  class Sim {
+    constructor(rate, tp, keep) { this.rate = rate; this.tp = tp; this.t = 0; this.next = this.arr(); this.pul = []; this.noise = 0; this.prev = 0; this.keep = keep;
+      this.cnt = [0,0,0,0]; this.tru = [0,0,0,0]; this.nTrue = 0; this.buf = keep ? new Float32Array(keep) : null; this.bi = 0; this.marks = []; }
+    arr() { return -Math.log(1 - Math.random()) / this.rate; }
+    h(t) { const x = t/this.tp; return x * Math.exp(1 - x); }
+    advance(ns) {
+      const a = Math.exp(-1/Math.max(2, this.tp*0.5)), sq = Math.sqrt(1 - a*a);
+      for (let k = 0; k < ns; k++) {
+        while (this.next <= this.t) {
+          const E = samp(); this.pul.push([this.next, E]); this.nTrue++;
+          for (let j = 0; j < 4; j++) if (E >= TH[j]) this.tru[j]++;
+          if (this.keep) this.marks.push([this.next, E]);
+          this.next += this.arr();
+        }
+        let s = 0;
+        for (const [t0, E] of this.pul) { const dt = this.t - t0; if (dt >= 0) s += E*this.h(dt); }
+        this.noise = a*this.noise + sq*0.7*gauss();
+        s += this.noise;
+        for (let j = 0; j < 4; j++) if (this.prev < TH[j] && s >= TH[j]) this.cnt[j]++;
+        this.prev = s;
+        if (this.buf) { this.buf[this.bi % this.keep] = s; this.bi++; }
+        this.t += 1;
+        if (this.pul.length && this.t - this.pul[0][0] > 9*this.tp) this.pul = this.pul.filter(p => this.t - p[0] <= 9*this.tp);
+      }
+      if (this.keep) this.marks = this.marks.filter(mk => this.t - mk[0] <= this.keep);
+    }
+  }
+  const WIN = 700;
+  let vis, stat, acc = 0;
+  const rate = () => Math.pow(10, +ir.value) * 1e-3; // Ereignisse pro ns
+  function reset() {
+    $('#pl-rate-o').textContent = `${nf(Math.pow(10, +ir.value), Math.pow(10, +ir.value) < 10 ? 1 : 0)} Mcps`;
+    $('#pl-tp-o').textContent = `${it.value} ns`;
+    vis = new Sim(rate(), +it.value, WIN); vis.advance(WIN);
+    stat = new Sim(rate(), +it.value, 0);
+    table();
+  }
+  function table() {
+    const n = stat.nTrue;
+    const rows = TH.map((T, j) => {
+      const tr = stat.tru[j], cn = stat.cnt[j];
+      const d = tr ? (cn/tr - 1)*100 : 0;
+      return `<tr><td><span class="sw" style="background:var(${BINC[j]})"></span>≥ ${T} keV</td><td class="num">${nf(tr)}</td><td class="num">${nf(cn)}</td><td class="num">${tr ? (d >= 0 ? '+' : '') + nf(d,1) + ' %' : '–'}</td></tr>`;
+    }).join('');
+    $('#pl-table').innerHTML = `<thead><tr><th>Schwelle</th><th class="num">wahre Photonen</th><th class="num">gezählt</th><th class="num">Abweichung</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="4" class="muted" style="font-size:12px;border:0">Simulierte Zeit: ${nf(stat.t/1000,0)} µs · ${nf(n)} Photonen</td></tr></tfoot>`;
+  }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      vis.advance(Math.max(1, Math.round(dt*160)));
+      if (stat.t < 4e6) { stat.advance(Math.round(dt*60000)); }
+      acc += dt; if (acc > 0.3) { acc = 0; table(); }
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const f = frame(ctx, w, h, { x0: 0, x1: WIN, y0: -5, y1: 140, xt: [0, 100, 200, 300, 400, 500, 600, 700], yt: [0, 20, 35, 50, 65, 100, 140].filter(v => !TH.includes(v)), xf: v => v, xl: 'Zeit (ns), Fenster scrollt', yl: 'Pulshöhe (keV)', b: 40 });
+      clipBox(ctx, f);
+      TH.forEach((T, j) => {
+        ctx.strokeStyle = tok(BINC[j]); ctx.lineWidth = 1.2; ctx.setLineDash([6,4]);
+        ctx.beginPath(); ctx.moveTo(f.bx, f.Y(T)); ctx.lineTo(f.bx+f.bw, f.Y(T)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = tok(BINC[j]); ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText(`T${j+1} ${T}`, f.bx+f.bw-4, f.Y(T)-3);
+      });
+      const n = Math.min(vis.bi, WIN), start = vis.bi - n;
+      ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let k = 0; k < n; k++) { const v = vis.buf[(start + k) % WIN]; const x = f.X(WIN - n + k), y = f.Y(v); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke();
+      const t0 = vis.t - WIN;
+      for (const [ta, E] of vis.marks) {
+        let b = -1; for (let j = 0; j < 4; j++) if (E >= TH[j]) b = j;
+        ctx.fillStyle = b < 0 ? tok('--muted') : tok(BINC[b]);
+        ctx.fillRect(f.X(ta - t0) - 1, f.by + f.bh - 10, 2.5, 10);
+      }
+      ctx.restore();
+    }
+  });
+  ir.addEventListener('input', reset); it.addEventListener('input', reset);
+  reset();
+  playBtn($('#pl-play'), m);
+  m.draw();
+})();
+</script>

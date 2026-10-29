@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RC-Glied</title>
+<!-- Erzeugt von build.py aus src/figures/et-10-rc-glied.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="RC-Glied: Rechteckquelle, Widerstand R in Serie, Kondensator C nach Masse. Abgriff am Kondensator ergibt den Tiefpass, am Widerstand den Hochpass." role="img" viewbox="0 0 640 150">
+<g class="d-st" stroke-width="1.8">
+<circle cx="70" cy="80" r="22"></circle><path d="M58 88 L58 72 L70 72 L70 88 L82 88 L82 72" stroke-width="1.6"></path>
+<line x1="70" x2="70" y1="58" y2="30"></line><line x1="70" x2="200" y1="30" y2="30"></line><rect height="16" rx="1" width="60" x="200" y="22"></rect><line x1="260" x2="360" y1="30" y2="30"></line>
+<line x1="360" x2="360" y1="30" y2="72"></line><line stroke-width="2.6" x1="340" x2="380" y1="72" y2="72"></line><line stroke-width="2.6" x1="340" x2="380" y1="82" y2="82"></line><line x1="360" x2="360" y1="82" y2="130"></line>
+<line x1="70" x2="70" y1="102" y2="130"></line><line x1="70" x2="520" y1="130" y2="130"></line><line x1="360" x2="520" y1="30" y2="30"></line>
+<circle class="d-surf" cx="520" cy="30" r="4"></circle><circle class="d-surf" cx="520" cy="130" r="4"></circle>
+</g>
+<g class="d-fg" font-size="14"><text class="d-mut" font-size="12" text-anchor="middle" x="70" y="125">U_e</text><text text-anchor="middle" x="230" y="58">R</text><text x="392" y="82">C</text><text x="534" y="84">U_C</text></g>
+<g class="d-stm" stroke-dasharray="3 3"><line x1="560" x2="560" y1="36" y2="124"></line><line x1="200" x2="260" y1="10" y2="10"></line></g>
+<text class="d-mut" font-size="11" text-anchor="middle" x="230" y="8">U_R</text>
+</svg>
+</div>
+<canvas aria-label="Simulation: Rechteckspannung am RC-Glied, Spannung am Kondensator und am Widerstand über der Zeit." class="c-rc" id="cv-rc" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="rc-r">R</label><output id="rc-r-o"></output></div><input id="rc-r" max="2" min="0" step="0.01" type="range" value="1"/></div>
+<div class="ctrl"><div class="lab"><label for="rc-c">C</label><output id="rc-c-o"></output></div><input id="rc-c" max="1" min="-2" step="0.01" type="range" value="-1"/></div>
+<div class="ctrl"><div class="lab"><label for="rc-t">Periode der Rechteckspannung</label><output id="rc-t-o"></output></div><input id="rc-t" max="2" min="-1" step="0.01" type="range" value="1"/></div>
+</div>
+<div class="readout" id="rc-read"></div>
+<figcaption><b>Abb. 10</b> Eine Rechteckspannung zwischen 0 und 5 V am RC-Glied. Oben die Spannung am Kondensator: Sie folgt der Eingangsspannung mit Verzögerung, die Kanten werden rund (<strong>Tiefpass</strong>). Unten die Spannung am Widerstand, \(U_R = R\cdot I\): Sie zeigt nur die Sprünge und klingt danach ab (<strong>Hochpass</strong>). Die Markierung zeigt, wo eine Zeitkonstante nach dem Sprung liegt. Ist die Periode viel länger als τ, lädt der Kondensator jedes Mal voll, ist sie viel kürzer, mittelt er nur noch.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
+<script>
+/* ---------- Abb. 7: RC-Glied ---------- */
+(() => {
+  const c = $('#cv-rc'), ir = $('#rc-r'), ic = $('#rc-c'), it = $('#rc-t');
+  const m = reg({ el: c, draw() {
+    const R = Math.pow(10, +ir.value) * 1e3, C = Math.pow(10, +ic.value) * 1e-6, T = Math.pow(10, +it.value) * 1e-3, tau = R * C, U0 = 5;
+    $('#rc-r-o').textContent = SI(R, 'Ω'); $('#rc-c-o').textContent = SI(C, 'F'); $('#rc-t-o').textContent = SI(T, 's');
+    const N = 1500, tw = 3 * T, dt = tw / N, ue = new Float64Array(N), uc = new Float64Array(N);
+    let v = 0; const a = Math.exp(-dt / tau);
+    // eingeschwungen starten: 20 Perioden vorlaufen
+    for (let k = 0; k < 20 * N / 3; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; }
+    for (let k = 0; k < N; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; ue[k] = u; uc[k] = v; }
+    const { ctx, w, h } = fit(c), hh = h / 2;
+    const xt = [0, 1, 2, 3].map(i => i * T);
+    const f1 = frame(ctx, 0, 0, w, hh, { x0: 0, x1: tw, y0: -0.4, y1: 5.8, xt: [], yt: [0, 2.5, 5], yf: v => nf(v, 1), yl: 'U_C (V)', l: 52, t: 16, b: 6 });
+    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Kondensator (Tiefpass)', f1.bx + 6, 12);
+    clipBox(ctx, f1);
+    const line = (f, arr, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k < N; k++) { const x = f.X(k * dt), y = f.Y(arr[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
+    line(f1, ue, tok('--muted'), 1.4, [4, 3]); line(f1, uc, tok('--accent'), 2.2);
+    if (tau < T / 2) { const x = f1.X(tau); ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, f1.by); ctx.lineTo(x, f1.by + f1.bh); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = tok('--hole'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('1τ', x + 3, f1.by + 12); }
+    ctx.restore();
+    const ur = Float64Array.from(ue, (u, k) => u - uc[k]);
+    const f2 = frame(ctx, 0, hh, w, hh, { x0: 0, x1: tw, y0: -5.8, y1: 5.8, xt, yt: [-5, 0, 5], xf: v => v === 0 ? '0' : SI(v, 's', 1), yf: v => nf(v, 0), xl: 'Zeit', yl: 'U_R (V)', l: 52, t: 18 });
+    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Widerstand = R·I (Hochpass)', f2.bx + 6, hh + 13);
+    clipBox(ctx, f2); line(f2, ur, tok('--elec'), 2.2); ctx.restore();
+    $('#rc-read').innerHTML = `<span class="k">τ = RC =</span> ${SI(tau, 's')}  <span class="k">·</span>  <span class="k">Halbe Periode / τ =</span> ${nf(T / 2 / tau, T / 2 / tau < 10 ? 2 : 0)}  <span class="k">·</span>  <span class="k">Grenzfrequenz 1/(2πτ) =</span> ${SI(1 / (2 * Math.PI * tau), 'Hz')}`;
+  }});
+  [ir, ic, it].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
+})();
+</script>
+</body>
+</html>

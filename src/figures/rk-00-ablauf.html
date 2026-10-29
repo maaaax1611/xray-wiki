@@ -1,0 +1,36 @@
+<!-- title: Ablauf der gefilterten Rückprojektion
+     lib: rk -->
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Ablauf: Objekt f(x,y) wird durch die Radon-Transformation zum Sinogramm p(θ,s). Für die Rekonstruktion wird jede Projektion mit dem Rampenfilter gefiltert und dann zurückprojiziert." role="img" viewbox="0 0 760 200">
+<defs><marker id="ar" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-mut" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<g font-size="13">
+<rect class="d-soft" height="74" rx="5" width="120" x="8" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="68" y="80">Objekt</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="68" y="100">f(x, y)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="128" x2="208" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="168" y="77">Radon</text>
+<text class="d-mut" font-size="11" text-anchor="middle" x="168" y="108">Messung</text>
+<rect class="d-soft" height="74" rx="5" width="130" x="210" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="275" y="80">Sinogramm</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="275" y="100">p(θ, s)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="340" x2="420" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="77">Filter |ω|</text>
+<rect class="d-soft" height="74" rx="5" width="130" x="422" y="50"></rect>
+<text class="d-fg" font-weight="600" text-anchor="middle" x="487" y="80">gefiltert</text>
+<text class="d-fg m" font-size="12" text-anchor="middle" x="487" y="100">q(θ, s)</text>
+<line class="d-stm" marker-end="url(#ar)" stroke-width="1.5" x1="552" x2="632" y1="87" y2="87"></line>
+<text class="d-mut" font-size="12" text-anchor="middle" x="592" y="77">Rückprojektion</text>
+<rect class="d-acc" height="74" rx="5" width="118" x="634" y="50"></rect>
+<text font-weight="600" style="fill:var(--surface)" text-anchor="middle" x="693" y="80">Bild</text>
+<text class="m" font-size="12" style="fill:var(--surface)" text-anchor="middle" x="693" y="100">f̂(x, y)</text>
+</g>
+<g class="d-mut m" font-size="11" text-anchor="middle">
+<text x="168" y="150">Abschnitt 2</text><text x="380" y="150">Abschnitte 4, 5</text><text x="592" y="150">Abschnitt 3</text>
+</g>
+<path class="d-stm" d="M693 130 L693 176 L68 176 L68 130" stroke-dasharray="4 4"></path>
+<text class="d-mut" font-size="12" text-anchor="middle" x="380" y="192">Iterative Verfahren (Abschnitt 7): Bild schätzen, vorwärts projizieren, mit Messung vergleichen, korrigieren</text>
+</svg>
+</div>
+<figcaption><b>Abb. 0</b> Der Weg der gefilterten Rückprojektion. Messen ist die Radon-Transformation. Rekonstruieren heißt, sie umzukehren. Die Seite erklärt, warum dafür ein Filter nötig ist und wie er aussieht.</figcaption>
+</figure>

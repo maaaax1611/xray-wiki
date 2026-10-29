@@ -1,0 +1,93 @@
+<!-- title: Operationsverstärker
+     lib: et -->
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Schaltbild der gewählten Operationsverstärker-Grundschaltung." id="op-svg" role="img" viewbox="0 0 560 200">
+<g class="d-st" stroke-width="1.8">
+<path d="M300 60 L300 160 L380 110 Z"></path><line x1="380" x2="470" y1="110" y2="110"></line><circle class="d-surf" cx="470" cy="110" r="4"></circle>
+</g>
+<g class="d-fg" font-size="15"><text x="308" y="91">−</text><text x="308" y="141">+</text><text font-size="14" x="482" y="115">U_a</text></g>
+<!-- invertierend -->
+<g class="op-g" id="op-inv">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="85" r="4"></circle><line x1="64" x2="120" y1="85" y2="85"></line><rect height="14" rx="1" width="56" x="120" y="78"></rect><line x1="176" x2="300" y1="85" y2="85"></line>
+<line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="280" y1="30" y2="30"></line><rect height="14" rx="1" width="56" x="280" y="23"></rect><line x1="336" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="300" x2="270" y1="135" y2="135"></line><line x1="270" x2="270" y1="135" y2="168"></line><line x1="258" x2="282" y1="168" y2="168"></line><line x1="262" x2="278" y1="173" y2="173"></line><line x1="266" x2="274" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text text-anchor="middle" x="148" y="70">R₁</text><text text-anchor="middle" x="308" y="16">R₂</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- nichtinvertierend -->
+<g class="op-g" id="op-non">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="135" r="4"></circle><line x1="64" x2="300" y1="135" y2="135"></line>
+<line x1="300" x2="230" y1="85" y2="85"></line><line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="280" y1="30" y2="30"></line><rect height="14" rx="1" width="56" x="280" y="23"></rect><line x1="336" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="230" x2="230" y1="85" y2="100"></line><rect height="44" rx="1" width="14" x="223" y="100"></rect><line x1="230" x2="230" y1="144" y2="168"></line><line x1="218" x2="242" y1="168" y2="168"></line><line x1="222" x2="238" y1="173" y2="173"></line><line x1="226" x2="234" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="128">U_e</text><text text-anchor="end" x="210" y="126">R₁</text><text text-anchor="middle" x="308" y="16">R₂</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- Folger -->
+<g class="op-g" id="op-fol">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="135" r="4"></circle><line x1="64" x2="300" y1="135" y2="135"></line>
+<line x1="300" x2="230" y1="85" y2="85"></line><line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="128">U_e</text></g>
+<circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- Integrator -->
+<g class="op-g" id="op-int">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="85" r="4"></circle><line x1="64" x2="120" y1="85" y2="85"></line><rect height="14" rx="1" width="56" x="120" y="78"></rect><line x1="176" x2="300" y1="85" y2="85"></line>
+<line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="304" y1="30" y2="30"></line><line stroke-width="2.6" x1="304" x2="304" y1="16" y2="44"></line><line stroke-width="2.6" x1="314" x2="314" y1="16" y2="44"></line><line x1="314" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="300" x2="270" y1="135" y2="135"></line><line x1="270" x2="270" y1="135" y2="168"></line><line x1="258" x2="282" y1="168" y2="168"></line><line x1="262" x2="278" y1="173" y2="173"></line><line x1="266" x2="274" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text text-anchor="middle" x="148" y="70">R</text><text x="330" y="14">C</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<text class="d-mut" font-size="12" id="op-vm" x="210" y="196">virtuelle Masse am − Eingang</text>
+</svg>
+</div>
+<canvas aria-label="Eingangs- und Ausgangsspannung der gewählten Operationsverstärker-Schaltung über der Zeit, mit Begrenzung an der Versorgungsspannung." class="c-op" id="cv-op" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="op-c">Schaltung</label></div><select id="op-c"><option value="inv">Invertierender Verstärker</option><option value="non">Nichtinvertierender Verstärker</option><option value="fol">Spannungsfolger</option><option value="int">Integrator</option></select></div>
+<div class="ctrl" style="flex:0 1 130px"><div class="lab"><label for="op-w">Eingang</label></div><select id="op-w"><option value="sin">Sinus</option><option value="sq">Rechteck</option></select></div>
+<div class="ctrl"><div class="lab"><label for="op-a">Amplitude U_e</label><output id="op-a-o"></output></div><input id="op-a" max="5" min="0.1" step="0.05" type="range" value="1"/></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" id="op-r1-w"><div class="lab"><label for="op-r1">R₁ / R</label><output id="op-r1-o"></output></div><input id="op-r1" max="2" min="0" step="0.01" type="range" value="1"/></div>
+<div class="ctrl" id="op-r2-w"><div class="lab"><label for="op-r2">R₂</label><output id="op-r2-o"></output></div><input id="op-r2" max="2.3" min="0" step="0.01" type="range" value="1.5"/></div>
+<div class="ctrl" hidden="" id="op-cc-w"><div class="lab"><label for="op-cc">C</label><output id="op-cc-o"></output></div><input id="op-cc" max="3" min="0" step="0.01" type="range" value="2"/></div>
+<div class="ctrl" id="op-f-w"><div class="lab"><label for="op-f">Frequenz</label><output id="op-f-o"></output></div><input id="op-f" max="4" min="1" step="0.01" type="range" value="3"/></div>
+</div>
+<div class="readout" id="op-read"></div>
+<figcaption><b>Abb. 12</b> Die vier Grundschaltungen mit idealem OPV an ±12 V Versorgung. Grau der Eingang, blau der Ausgang, gestrichelt die Versorgungsgrenzen. Dreh die Verstärkung hoch, bis der Ausgang an ±12 V abgeschnitten wird. Beim Integrator wird aus einem Rechteck ein Dreieck, aus einem Sinus ein um 90° verschobener Sinus mit Amplitude \(\hat U_e/(2\pi f RC)\). Der Gleichanteil des Integrators ist hier herausgerechnet, ein realer Integrator braucht dafür einen Widerstand parallel zu C, wie beim CSA.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 10: Operationsverstärker ---------- */
+(() => {
+  const c = $('#cv-op'), iC = $('#op-c'), iW = $('#op-w'), iA = $('#op-a'), i1 = $('#op-r1'), i2 = $('#op-r2'), iCc = $('#op-cc'), iF = $('#op-f');
+  const VS = 12;
+  const m = reg({ el: c, draw() {
+    const kind = iC.value, wave = iW.value, A = +iA.value, R1 = Math.pow(10, +i1.value) * 1e3, R2 = Math.pow(10, +i2.value) * 1e3, C = Math.pow(10, +iCc.value) * 1e-9, f = Math.pow(10, +iF.value);
+    ['inv', 'non', 'fol', 'int'].forEach(k => $('#op-' + k).style.display = k === kind ? '' : 'none');
+    $('#op-vm').style.display = (kind === 'inv' || kind === 'int') ? '' : 'none';
+    $('#op-r1-w').hidden = kind === 'fol'; $('#op-r2-w').hidden = kind === 'fol' || kind === 'int'; $('#op-cc-w').hidden = kind !== 'int';
+    $('#op-a-o').textContent = `${nf(A, 2)} V`; $('#op-r1-o').textContent = SI(R1, 'Ω'); $('#op-r2-o').textContent = SI(R2, 'Ω'); $('#op-cc-o').textContent = SI(C, 'F'); $('#op-f-o').textContent = SI(f, 'Hz');
+    const N = 1200, T = 1 / f, tw = 3 * T, dt = tw / N, ue = new Float64Array(N), ua = new Float64Array(N);
+    for (let k = 0; k < N; k++) { const ph = (k * dt) / T; ue[k] = wave === 'sin' ? A * Math.sin(2 * Math.PI * ph) : (ph % 1 < 0.5 ? A : -A); }
+    let gain = 1, desc = '';
+    if (kind === 'inv') { gain = -R2 / R1; for (let k = 0; k < N; k++) ua[k] = gain * ue[k]; desc = `U_a = −R₂/R₁ · U_e, Verstärkung ${nf(gain, 2)}`; }
+    else if (kind === 'non') { gain = 1 + R2 / R1; for (let k = 0; k < N; k++) ua[k] = gain * ue[k]; desc = `U_a = (1 + R₂/R₁) · U_e, Verstärkung ${nf(gain, 2)}`; }
+    else if (kind === 'fol') { for (let k = 0; k < N; k++) ua[k] = ue[k]; desc = 'U_a = U_e, Verstärkung 1'; }
+    else { let s = 0; for (let k = 0; k < N; k++) { s += -ue[k] * dt / (R1 * C); ua[k] = s; } let mean = 0; const n0 = Math.floor(N / 3); for (let k = n0; k < N; k++) mean += ua[k]; mean /= (N - n0); for (let k = 0; k < N; k++) ua[k] -= mean;
+      const g = 1 / (2 * Math.PI * f * R1 * C); desc = `U_a = −1/(RC) ∫U_e dt, für Sinus Verstärkung 1/(2πfRC) = ${nf(g, 2)}, τ = RC = ${SI(R1 * C, 's')}`; }
+    let clip = false; for (let k = 0; k < N; k++) { if (Math.abs(ua[k]) > VS) { clip = true; ua[k] = Math.sign(ua[k]) * VS; } }
+    let mx = 1; for (let k = 0; k < N; k++) mx = Math.max(mx, Math.abs(ue[k]), Math.abs(ua[k]));
+    const ym = Math.min(14, mx * 1.2), tk = ticks(-ym, ym);
+    const { ctx, w, h } = fit(c);
+    const fr = frame(ctx, 0, 0, w, h, { x0: 0, x1: tw, y0: -ym, y1: ym, xt: [0, T, 2 * T, 3 * T], yt: tk.a, xf: v => v === 0 ? '0' : SI(v, 's', 1), yf: v => nf(v, tk.d), xl: 'Zeit', yl: 'Spannung (V)', l: 48 });
+    clipBox(ctx, fr);
+    if (ym >= VS) { ctx.strokeStyle = tok('--hole'); ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(fr.bx, fr.Y(VS)); ctx.lineTo(fr.bx + fr.bw, fr.Y(VS)); ctx.moveTo(fr.bx, fr.Y(-VS)); ctx.lineTo(fr.bx + fr.bw, fr.Y(-VS)); ctx.stroke(); ctx.setLineDash([]); }
+    const line = (a, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k < N; k++) { const x = fr.X(k * dt), y = fr.Y(a[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
+    line(ue, tok('--muted'), 1.6, [4, 3]); line(ua, tok('--accent'), 2.4);
+    ctx.restore();
+    ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillStyle = tok('--muted'); ctx.fillText('- - U_e   — U_a', fr.bx + fr.bw - 4, fr.by + 12);
+    $('#op-read').innerHTML = `<span class="k">${desc}</span>` + (clip ? `<br><span style="color:var(--hole)">Ausgang begrenzt: Der OPV kann nicht über seine Versorgung von ±${VS} V hinaus.</span>` : '');
+  }});
+  [iC, iW, iA, i1, i2, iCc, iF].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
+})();
+</script>

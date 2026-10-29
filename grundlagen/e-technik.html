@@ -4,170 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Technik kompakt</title>
+<!-- Erzeugt von build.py aus src/pages/grundlagen/e-technik.md. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <script>
 window.MathJax = {
-  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
   svg: { fontCache: 'global' },
   options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
-<style>
-/* Layout: Lernpfad in sieben Bausteinen. Lesespalte mit klebrigem Inhaltsverzeichnis, jede Abbildung ein kleines Experiment. */
-:root {
-  --bg: #f2f4f6;
-  --surface: #fbfcfd;
-  --fg: #16202a;
-  --muted: #5a6875;
-  --rule: #d3dae1;
-  --grid: #e3e8ed;
-  --accent: #2448b8;
-  --accent-soft: #dfe6fa;
-  --elec: #2b66d9;
-  --hole: #c8424f;
-  --bin0: #3a6fd8;
-  --bin1: #14937f;
-  --bin2: #c9900e;
-  --bin3: #c8424f;
-  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
-  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-    --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-    --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0d131a; --surface: #131b24; --fg: #e2e8ee; --muted: #93a1af; --rule: #263240; --grid: #1c2632;
-  --accent: #7d9cf2; --accent-soft: #1b2a4d; --elec: #5f95f0; --hole: #ef6b78;
-  --bin0: #6a96f0; --bin1: #34c2aa; --bin2: #e7b43c; --bin3: #ef6b78;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
-.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px; }
-@media (min-width: 1100px) {
-  .wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
-  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; max-height: calc(100vh - 56px); overflow: auto; }
-  .toc-mobile { display: none; }
-}
-@media (max-width: 1099px) { nav.toc { display: none; } }
-main { min-width: 0; max-width: 800px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
-h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); font-weight: 600; margin-top: 10px; }
-h3 { font-size: 1.22rem; font-weight: 600; margin-top: 1.8em; }
-p { margin: 0.9em 0; }
-a { color: var(--accent); }
-strong { font-weight: 600; }
-.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-.lede { font-size: 1.2rem; line-height: 1.5; max-width: 34em; margin-top: 18px; }
-.muted { color: var(--muted); }
-nav.toc { font-family: var(--font-display); font-size: 15px; }
-nav.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
-nav.toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; text-decoration: none; color: var(--muted); padding: 5px 8px; border-radius: 4px; }
-nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); background: var(--surface); }
-nav.toc a.on { color: var(--fg); background: var(--accent-soft); }
-nav.toc .n { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
-.toc-mobile { margin: 28px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; font-family: var(--font-display); }
-.toc-mobile summary { cursor: pointer; color: var(--muted); }
-.toc-mobile ol { margin: 8px 0 4px; padding-left: 1.4em; }
-section { padding-top: 64px; scroll-margin-top: 20px; }
-.step { display: flex; align-items: center; gap: 10px; }
-.step b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--surface); background: var(--accent); border-radius: 3px; padding: 1px 7px; }
-figure.fig { margin: 28px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
-figure.fig figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); margin-top: 12px; }
-figure.fig figcaption b { color: var(--fg); font-family: var(--font-display); font-weight: 600; }
-canvas { display: block; width: 100%; max-width: 100%; }
-.c-em { aspect-ratio: 2.4 / 1; } .c-tube { aspect-ratio: 2.1 / 1; } .c-att { aspect-ratio: 2.2 / 1; }
-.c-pair { aspect-ratio: 2.4 / 1; } .c-drift { aspect-ratio: 2 / 1; } .c-int { aspect-ratio: 2.6 / 1; } .c-sq { aspect-ratio: 1 / 1; }
-@media (max-width: 560px) { .c-em { aspect-ratio: 1.5 / 1; } .c-tube, .c-att, .c-drift { aspect-ratio: 0.85 / 1; } .c-pair { aspect-ratio: 1.4 / 1; } .c-int { aspect-ratio: 1.5 / 1; } }
-.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.three .lbl { font-family: var(--font-display); font-size: 14px; color: var(--muted); margin-bottom: 6px; }
-@media (max-width: 640px) { .three { grid-template-columns: minmax(0, 1fr); } }
-.svgbox { overflow-x: auto; }
-.svgbox svg { display: block; width: 100%; min-width: 600px; height: auto; }
-.ctrls { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); align-items: end; }
-.ctrl { display: grid; gap: 2px; flex: 1 1 170px; min-width: 0; }
-.ctrl .lab { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 14px; color: var(--muted); }
-.ctrl output { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
-input[type="range"] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
-select { font-family: var(--font-display); font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 8px; }
-.btn { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
-.btn:hover { border-color: var(--muted); }
-.btn:focus-visible, input:focus-visible, select:focus-visible, nav a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chk { display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 14px; flex: 0 0 auto; }
-.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
-.readout { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 10px; line-height: 1.7; }
-.readout .k { color: var(--muted); }
-.tbl { overflow-x: auto; margin: 20px 0; }
-table { border-collapse: collapse; width: 100%; font-size: 15px; }
-th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
-th { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 14px; }
-td.num, th.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.eq { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 4px 0; }
-mjx-container[display="true"] { margin: 0.6em 0 !important; }
-.sym { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 15px; margin: -4px 0 18px; padding-left: 4px; }
-.sym dt { font-family: var(--font-mono); font-size: 14px; }
-.sym dd { margin: 0; color: var(--muted); }
-.merke { background: var(--accent-soft); border-radius: 6px; padding: 12px 16px; margin: 26px 0; }
-.merke .eyebrow { color: var(--accent); }
-.merke p, .merke ul { margin: 0.35em 0; }
-.merke ul { padding-left: 1.2em; }
-ul.tight { padding-left: 1.2em; } ul.tight li { margin: 0.35em 0; }
-footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
-.d-fg { fill: var(--fg); } .d-mut { fill: var(--muted); } .d-acc { fill: var(--accent); } .d-surf { fill: var(--surface); } .d-soft { fill: var(--accent-soft); } .d-bg { fill: var(--bg); }
-.d-st { stroke: var(--fg); fill: none; } .d-stm { stroke: var(--muted); fill: none; } .d-sta { stroke: var(--accent); fill: none; }
-.d-e { fill: var(--elec); } .d-h { fill: var(--hole); } .d-b2 { fill: var(--bin2); }
-.d-ste { stroke: var(--elec); fill: none; } .d-stb2 { stroke: var(--bin2); fill: none; }
-svg text { font-family: var(--font-display); }
-svg text.m { font-family: var(--font-mono); }
-
-.ov-box { fill: var(--bg); stroke: var(--rule); stroke-width: 1.2; transition: fill .35s, stroke .35s; }
-.ov-t { fill: var(--fg); font-weight: 700; } .ov-s { fill: var(--muted); }
-.ov-st.on .ov-box { fill: var(--accent); stroke: var(--accent); }
-.ov-st.on .ov-t, .ov-st.on .ov-s { fill: var(--surface); }
-.ov-st:hover .ov-box { stroke: var(--accent); }
-.ov-st:focus-visible { outline: none; } .ov-st:focus-visible .ov-box { stroke: var(--accent); stroke-width: 3; }
-.ov-dot { fill: var(--bin2); transition: fill .3s; }
-.ov-cap { position: relative; min-height: 3em; margin: 6px 0 0; font-size: 15.5px; max-width: none; }
-.ov-cap span { position: absolute; inset: 0 auto auto 0; opacity: 0; transition: opacity .4s; }
-.ov-cap span.on { opacity: 1; position: relative; }
-@media (prefers-reduced-motion: reduce) { .ov-cap { display: none; } }
-.topbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin: 0 0 14px; }
-.theme { display: inline-flex; border: 1.5px solid var(--fg); border-radius: 3px; overflow: hidden; font-family: var(--font-display); font-size: 13.5px; }
-.theme button { font: inherit; font-weight: 600; color: var(--fg); background: transparent; border: 0; padding: 4px 11px; cursor: pointer; }
-.theme button + button { border-left: 1.5px solid var(--fg); }
-.theme button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.theme button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-#amp-pz, #amp-pz-t { transition: opacity .25s; }
-[hidden] { display: none !important; }
-.c-amp { aspect-ratio: 1.5 / 1; margin-top: 10px; }
-@media (max-width: 560px) { .c-amp { aspect-ratio: 0.78 / 1; } }
-.theme button { font-family: var(--font-display); }
-.c-ef { aspect-ratio: 1.7 / 1; touch-action: none; } .c-lz { aspect-ratio: 1.75 / 1; } .c-ind { aspect-ratio: 1.45 / 1; } .c-emw { aspect-ratio: 2.6 / 1; }
-.c-rc { aspect-ratio: 1.9 / 1; margin-top: 8px; } .c-kl { aspect-ratio: 1.9 / 1; } .c-op { aspect-ratio: 2.2 / 1; margin-top: 8px; } .c-nz { aspect-ratio: 2 / 1; }
-@media (max-width: 560px) { .c-ef { aspect-ratio: 1 / 1; } .c-lz { aspect-ratio: 1.3 / 1; } .c-ind { aspect-ratio: 0.8 / 1; } .c-emw { aspect-ratio: 1.6 / 1; } .c-rc, .c-kl, .c-op, .c-nz { aspect-ratio: 1.1 / 1; } }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
-.two .lbl { font-family: var(--font-display); font-size: 14px; color: var(--muted); margin-bottom: 6px; }
-@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } }
-ol.steps { padding-left: 1.3em; } ol.steps li { margin: 0.45em 0; }
-input:disabled { opacity: 0.4; }
-nav.toc .lv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 14px; padding-left: 8px; }
-.c-pn { aspect-ratio: 2.1 / 1; } @media (max-width: 560px) { .c-pn { aspect-ratio: 1.1 / 1; } }
-h4 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; margin: 1.4em 0 0; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-</style>
-<style>body { margin: 0; } .backlink { font-family: var(--font-display); font-size: 14px; margin: 0 0 18px; } .backlink a { text-decoration: none; }</style>
-<script>try{var t=new URLSearchParams(location.search).get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -192,7 +43,6 @@ html { scroll-behavior: smooth; }
       <li><a href="#formeln"><span class="n">A</span><span>Formeln und Konstanten</span></a></li>
     </ol>
   </nav>
-
   <main>
     <header id="ueberblick">
       <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#grundlagen">Grundlagen</a></p>
@@ -200,738 +50,897 @@ html { scroll-behavior: smooth; }
         <div class="theme" role="group" aria-label="Darstellung"><button type="button" data-t="light">Hell</button><button type="button" data-t="dark">Dunkel</button><button type="button" data-t="system">System</button></div></div>
       <h1>E-Technik kompakt</h1>
       <p class="lede">Was man aus der Elektrotechnik parat haben sollte, um Detektoren, Verstärker und Pulsformer zu verstehen: Felder, Bauelemente, Schaltungen und Rauschen. Jeder Abschnitt baut auf dem vorherigen auf.</p>
-      <details class="toc-mobile">
-        <summary>Inhalt</summary>
-        <ol>
-          <li><a href="#grundgroessen">Ladung, Strom, Spannung</a></li><li><a href="#efeld">Elektrisches Feld</a></li><li><a href="#bfeld">Magnetfeld und Lorentzkraft</a></li><li><a href="#induktion">Induktion</a></li><li><a href="#maxwell">Maxwell und EM-Wellen</a></li>
-          <li><a href="#passiv">Widerstand, Kondensator, Spule</a></li><li><a href="#halbleiter">Halbleiter, Diode, Transistor</a></li>
-          <li><a href="#rc">RC-Glied</a></li><li><a href="#impedanz">Impedanz und Filter</a></li><li><a href="#opv">Operationsverstärker</a></li><li><a href="#rauschen">Rauschen</a></li><li><a href="#formeln">Formeln und Konstanten</a></li>
-        </ol>
-      </details>
+      <details class="toc-mobile"><summary>Inhalt</summary><ol><li><a href="#grundgroessen">Ladung, Strom, Spannung</a></li><li><a href="#efeld">Elektrisches Feld</a></li><li><a href="#bfeld">Magnetfeld und Lorentzkraft</a></li><li><a href="#induktion">Induktion</a></li><li><a href="#maxwell">Maxwell und EM-Wellen</a></li><li><a href="#passiv">Widerstand, Kondensator, Spule</a></li><li><a href="#halbleiter">Halbleiter, Diode, Transistor</a></li><li><a href="#rc">RC-Glied</a></li><li><a href="#impedanz">Impedanz und Filter</a></li><li><a href="#opv">Operationsverstärker</a></li><li><a href="#rauschen">Rauschen</a></li><li><a href="#formeln">Formeln und Konstanten</a></li></ol></details>
     </header>
-
-
-    <!-- 1 -->
-    <section id="grundgroessen">
-      <div class="step"><b>1</b><span class="eyebrow">Grundlagen</span></div>
-      <h2>Ladung, Strom, Spannung</h2>
-      <p><strong>Ladung</strong> \(Q\) ist die Grundgröße. Sie ist immer ein Vielfaches der Elementarladung \(e = 1{,}602\cdot10^{-19}\) C. Ein Elektron trägt \(-e\), ein Proton \(+e\). Gleiche Ladungen stoßen sich ab, ungleiche ziehen sich an.</p>
-      <p><strong>Strom</strong> \(I\) ist Ladung, die pro Zeit durch einen Querschnitt fließt. 1 Ampere sind 1 Coulomb pro Sekunde, also etwa \(6\cdot10^{18}\) Elektronen pro Sekunde.</p>
-      <div class="eq">$$I = \frac{\mathrm dQ}{\mathrm dt} \qquad\Longleftrightarrow\qquad Q = \int I\,\mathrm dt$$</div>
-      <p><strong>Spannung</strong> \(U\) ist Energie pro Ladung. Fällt eine Ladung \(Q\) durch die Spannung \(U\), gewinnt oder verliert sie die Energie \(W = Q\cdot U\). Daher kommt auch die Einheit Elektronenvolt: 1 eV ist die Energie eines Elektrons, das 1 V durchläuft. Spannung wird immer zwischen zwei Punkten gemessen, sie ist eine Potentialdifferenz.</p>
-      <p>Ein <strong>Widerstand</strong> \(R\) setzt Strom und Spannung ins Verhältnis. Für ohmsche Bauteile ist das Verhältnis konstant:</p>
-      <div class="eq">$$U = R\cdot I \qquad\qquad P = U\cdot I = I^2 R = \frac{U^2}{R}$$</div>
-      <p>\(P\) ist die Leistung, also die Energie pro Zeit, die der Widerstand in Wärme umsetzt.</p>
-
-      <h3>Die zwei Kirchhoffschen Regeln</h3>
-      <ul class="tight">
-        <li><strong>Knotenregel:</strong> In einen Knoten fließt genauso viel Strom hinein wie heraus. Ladung geht nicht verloren: \(\sum I = 0\).</li>
-        <li><strong>Maschenregel:</strong> Auf einem geschlossenen Umlauf addieren sich alle Spannungen zu null: \(\sum U = 0\). Anschaulich: Wer einmal im Kreis läuft, kommt auf derselben Höhe an.</li>
-      </ul>
-      <p>Mit diesen beiden Regeln und dem ohmschen Gesetz lässt sich jede Gleichstromschaltung berechnen. Das wichtigste Beispiel ist der <strong>Spannungsteiler</strong>: Zwei Widerstände in Reihe teilen die Spannung im Verhältnis ihrer Werte.</p>
-      <div class="eq">$$U_2 = U\cdot\frac{R_2}{R_1 + R_2}$$</div>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg id="vd-svg" viewBox="0 0 640 290" role="img" aria-label="Spannungsteiler aus Spannungsquelle, R1 und R2 in Reihe, mit optionalem Lastwiderstand parallel zu R2. Die berechneten Ströme und Spannungen stehen neben den Bauteilen.">
-          <defs><marker id="vd-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-acc"/></marker></defs>
-          <g class="d-st" stroke-width="1.8">
-            <line x1="90" y1="40" x2="300" y2="40"/><line x1="90" y1="40" x2="90" y2="118"/><line x1="90" y1="142" x2="90" y2="260"/><line x1="90" y1="260" x2="300" y2="260"/>
-            <line x1="72" y1="118" x2="108" y2="118" stroke-width="2.4"/><line x1="80" y1="142" x2="100" y2="142" stroke-width="4"/>
-            <line x1="300" y1="40" x2="300" y2="62"/><rect x="290" y="62" width="20" height="56" rx="1"/><line x1="300" y1="118" x2="300" y2="182"/>
-            <rect x="290" y="182" width="20" height="56" rx="1"/><line x1="300" y1="238" x2="300" y2="260"/>
-            <line x1="300" y1="150" x2="540" y2="150"/><line x1="300" y1="260" x2="540" y2="260"/>
-            <circle cx="540" cy="150" r="4" class="d-surf"/><circle cx="540" cy="260" r="4" class="d-surf"/>
-          </g>
-          <g id="vd-load" class="d-st" stroke-width="1.8">
-            <line x1="440" y1="150" x2="440" y2="182"/><rect x="430" y="182" width="20" height="56" rx="1"/><line x1="440" y1="238" x2="440" y2="260"/>
-            <text x="462" y="214" class="d-fg" font-size="14" stroke="none">R_L</text>
-            <text x="462" y="232" class="d-mut m" font-size="12" stroke="none" id="vd-il"></text>
-          </g>
-          <circle cx="300" cy="150" r="4" class="d-fg"/>
-          <line x1="150" y1="28" x2="240" y2="28" class="d-sta" stroke-width="2" marker-end="url(#vd-ar)"/>
-          <g class="d-fg" font-size="14">
-            <text x="40" y="135" text-anchor="middle">U</text><text x="40" y="153" text-anchor="middle" class="m" font-size="12" id="vd-u"></text>
-            <text x="195" y="20" text-anchor="middle" class="d-acc" id="vd-i"></text>
-            <text x="322" y="88">R₁</text><text x="322" y="106" class="m d-mut" font-size="12" id="vd-r1"></text>
-            <text x="230" y="94" text-anchor="end" id="vd-u1"></text>
-            <text x="322" y="208">R₂</text><text x="322" y="226" class="m d-mut" font-size="12" id="vd-r2"></text>
-            <text x="230" y="214" text-anchor="end" id="vd-u2"></text>
-            <text x="556" y="208">U₂</text><text x="556" y="226" class="m" font-size="12" id="vd-u2b"></text>
-          </g>
-          <g class="d-stm" stroke-width="1.2" stroke-dasharray="3 3"><line x1="250" y1="64" x2="250" y2="116"/><line x1="250" y1="184" x2="250" y2="236"/><line x1="580" y1="156" x2="580" y2="254"/></g>
-        </svg>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="vd-us">Quellspannung U</label><output id="vd-us-o"></output></div><input id="vd-us" type="range" min="1" max="24" step="0.5" value="12"></div>
-          <div class="ctrl"><div class="lab"><label for="vd-r1s">R₁</label><output id="vd-r1s-o"></output></div><input id="vd-r1s" type="range" min="2" max="5" step="0.01" value="3"></div>
-          <div class="ctrl"><div class="lab"><label for="vd-r2s">R₂</label><output id="vd-r2s-o"></output></div><input id="vd-r2s" type="range" min="2" max="5" step="0.01" value="3.3"></div>
-        </div>
-        <div class="ctrls">
-          <label class="chk"><input id="vd-lc" type="checkbox"> Last R_L anschließen</label>
-          <div class="ctrl"><div class="lab"><label for="vd-rl">R_L</label><output id="vd-rl-o"></output></div><input id="vd-rl" type="range" min="2" max="6" step="0.01" value="3.5"></div>
-        </div>
-        <div class="readout" id="vd-read"></div>
-        <figcaption><b>Abb. 1</b> Spannungsteiler. Die Werte neben den Bauteilen rechnen live mit. Die Maschenregel siehst du direkt: \(U_1 + U_2 = U\). Schließt du eine Last an, liegt sie parallel zu \(R_2\), der untere Teil wird niederohmiger, und \(U_2\) sinkt. Wie stark, hängt vom Verhältnis \(R_L\) zu \(R_2\) ab. Das ist der Grund, warum Messgeräte und Verstärkereingänge einen hohen Eingangswiderstand haben sollen.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Strom ist Ladung pro Zeit, Spannung ist Energie pro Ladung.</li>
-        <li>\(U = RI\), \(P = UI\). Knoten: Ströme summieren sich zu null. Masche: Spannungen summieren sich zu null.</li>
-        <li>Reihe: Widerstände addieren sich. Parallel: Kehrwerte addieren sich, \(1/R = 1/R_1 + 1/R_2\).</li>
-      </ul></div>
-    </section>
-
-    <!-- 2 -->
-    <section id="efeld">
-      <div class="step"><b>2</b><span class="eyebrow">Felder</span></div>
-      <h2>Elektrisches Feld und Potential</h2>
-      <p>Zwei Punktladungen üben aufeinander eine Kraft aus, das <strong>Coulomb-Gesetz</strong>:</p>
-      <div class="eq">$$F = \frac{1}{4\pi\varepsilon_0}\,\frac{Q_1 Q_2}{r^2}$$</div>
-      <p>Statt von Kraft zwischen zwei Ladungen spricht man meist vom <strong>elektrischen Feld</strong> \(\vec E\): Jede Ladung erzeugt um sich herum ein Feld, und eine zweite Ladung \(q\) spürt darin die Kraft \(\vec F = q\vec E\). Das Feld ist also „Kraft pro Ladung“, Einheit V/m. Für eine Punktladung zeigt es radial nach außen (bei positiver Ladung) und fällt mit \(1/r^2\) ab.</p>
-      <p>Das <strong>Potential</strong> φ ist die potentielle Energie pro Ladung an einem Ort. Spannung ist die Differenz zweier Potentiale. Feld und Potential hängen eng zusammen: Das Feld zeigt immer in die Richtung, in der das Potential am stärksten abfällt.</p>
-      <div class="eq">$$\vec E = -\nabla\varphi \qquad\qquad U_{AB} = \varphi_A - \varphi_B = \int_A^B \vec E\cdot\mathrm d\vec s$$</div>
-      <p>Im einfachsten Fall, einem homogenen Feld zwischen zwei Platten im Abstand \(d\), gilt einfach \(E = U/d\). Das ist genau das Feld im Sensor eines Röntgendetektors.</p>
-      <ul class="tight">
-        <li><strong>Feldlinien</strong> zeigen die Richtung der Kraft auf eine positive Ladung. Sie beginnen an positiven und enden an negativen Ladungen.</li>
-        <li><strong>Äquipotentiallinien</strong> verbinden Punkte gleichen Potentials. Sie stehen immer senkrecht auf den Feldlinien. Entlang einer Äquipotentiallinie kostet es keine Energie, eine Ladung zu verschieben.</li>
-      </ul>
-
-      <figure class="fig">
-        <canvas id="cv-ef" class="c-ef" tabindex="0" role="img" aria-label="Interaktives Feldbild: verschiebbare Punktladungen mit Feldlinien und farbigem Potential."></canvas>
-        <div class="ctrls">
-          <button class="btn" type="button" id="ef-addp">Ladung + hinzufügen</button>
-          <button class="btn" type="button" id="ef-addn">Ladung − hinzufügen</button>
-          <button class="btn" type="button" id="ef-del">Letzte entfernen</button>
-          <label class="chk"><input id="ef-pot" type="checkbox" checked> Potential zeigen</label>
-          <label class="chk"><input id="ef-lines" type="checkbox" checked> Feldlinien</label>
-        </div>
-        <div class="readout" id="ef-read"></div>
-        <figcaption><b>Abb. 2</b> Feld von Punktladungen (je 1 nC). Ladungen lassen sich verschieben, ein Doppelklick dreht das Vorzeichen. Rot ist hohes, blau niedriges Potential, die feinen Linien sind Äquipotentiallinien. Bewegst du die Maus über das Feld, siehst du unten Feldstärke und Potential an dieser Stelle. Abstände in cm.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Feld = Kraft pro Ladung, \(\vec F = q\vec E\). Potential = Energie pro Ladung.</li>
-        <li>Feld zeigt vom hohen zum niedrigen Potential, \(\vec E = -\nabla\varphi\). Im Plattenkondensator \(E = U/d\).</li>
-      </ul></div>
-    </section>
-
-    <!-- 4 -->
-    <section id="bfeld">
-      <div class="step"><b>3</b><span class="eyebrow">Felder</span></div>
-      <h2>Magnetfeld und Lorentzkraft</h2>
-      <p>Bewegte Ladungen, also Ströme, erzeugen ein <strong>Magnetfeld</strong> \(\vec B\) (Einheit Tesla). Um einen geraden Leiter laufen die Feldlinien in Kreisen. Die Richtung gibt die <strong>Rechte-Hand-Regel</strong>: Daumen in Stromrichtung, die gekrümmten Finger zeigen die Feldrichtung. Der Betrag im Abstand \(r\) ist</p>
-      <div class="eq">$$B = \frac{\mu_0 I}{2\pi r}$$</div>
-      <p>Magnetische Feldlinien haben weder Anfang noch Ende, es gibt keine magnetischen „Ladungen“. Auch ein Stabmagnet ist im Inneren aus atomaren Kreisströmen aufgebaut.</p>
-
-      <h3>Lorentzkraft</h3>
-      <p>Umgekehrt spürt eine bewegte Ladung im Magnetfeld eine Kraft, senkrecht zur Geschwindigkeit und senkrecht zum Feld. Zusammen mit dem elektrischen Anteil:</p>
-      <div class="eq">$$\vec F = q\,\big(\vec E + \vec v\times\vec B\big)$$</div>
-      <p>Weil die magnetische Kraft immer senkrecht zur Bewegung steht, ändert sie nur die Richtung, nicht die Geschwindigkeit. In einem homogenen Feld fliegt ein Teilchen deshalb auf einer Kreisbahn mit dem Radius</p>
-      <div class="eq">$$r = \frac{m v}{|q| B}, \qquad T = \frac{2\pi m}{|q| B}$$</div>
-      <p>Die Umlaufzeit \(T\) hängt nicht von der Geschwindigkeit ab. Kommt ein elektrisches Feld senkrecht dazu, können sich beide Kräfte aufheben. Das passiert genau bei \(v = E/B\), dann fliegt das Teilchen geradeaus (<strong>Wien-Filter</strong>, ein einfacher Geschwindigkeitsfilter).</p>
-
-      <figure class="fig">
-        <canvas id="cv-lz" class="c-lz" role="img" aria-label="Animation: ein Elektron fliegt in ein Magnetfeld und beschreibt eine Kreisbahn; mit zusätzlichem elektrischem Feld kann es geradeaus fliegen."></canvas>
-        <div class="ctrls">
-          <div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="lz-q">Teilchen</label></div><select id="lz-q"><option value="-1">Elektron</option><option value="1">Positron</option></select></div>
-          <div class="ctrl"><div class="lab"><label for="lz-v">Geschwindigkeit</label><output id="lz-v-o"></output></div><input id="lz-v" type="range" min="1" max="10" step="0.1" value="5"></div>
-          <div class="ctrl"><div class="lab"><label for="lz-b">Magnetfeld B (in die Seite)</label><output id="lz-b-o"></output></div><input id="lz-b" type="range" min="0" max="5" step="0.05" value="1.5"></div>
-          <div class="ctrl"><div class="lab"><label for="lz-e">Elektrisches Feld E (nach oben)</label><output id="lz-e-o"></output></div><input id="lz-e" type="range" min="-20" max="20" step="0.25" value="0"></div>
-        </div>
-        <div class="readout" id="lz-read"></div>
-        <figcaption><b>Abb. 3</b> Ein Teilchen fliegt von links in ein homogenes Magnetfeld, das in die Bildebene hineinzeigt (Kreuze). Die Bahn ist ein Kreis mit Radius \(r = mv/(|q|B)\), die Zeit ist stark verlangsamt. Mit einem elektrischen Feld lässt sich die Ablenkung aufheben: Stell E so ein, dass \(|E| = vB\) ist. Abstände in mm.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Ströme erzeugen Magnetfelder, um einen Leiter kreisförmig: \(B = \mu_0 I / 2\pi r\).</li>
-        <li>Lorentzkraft \(\vec F = q(\vec E + \vec v\times\vec B)\): magnetischer Anteil senkrecht zur Bewegung, ändert nur die Richtung.</li>
-      </ul></div>
-    </section>
-
-    <!-- 5 -->
-    <section id="induktion">
-      <div class="step"><b>4</b><span class="eyebrow">Felder</span></div>
-      <h2>Induktion</h2>
-      <p>Ein sich änderndes Magnetfeld erzeugt eine Spannung. Entscheidend ist der <strong>magnetische Fluss</strong> Φ, also wie viel Feld durch eine Fläche tritt (\(\Phi = B\cdot A\) bei senkrechtem, homogenem Feld). Das <strong>Induktionsgesetz</strong> von Faraday:</p>
-      <div class="eq">$$U_{\text{ind}} = -N\,\frac{\mathrm d\Phi}{\mathrm dt}$$</div>
-      <p>mit der Windungszahl \(N\) der Spule. Es zählt nur die <em>Änderung</em>: Ein ruhender Magnet in einer Spule induziert nichts, ein bewegter schon. Das Minuszeichen ist die <strong>Lenzsche Regel</strong>: Der induzierte Strom ist so gerichtet, dass sein eigenes Magnetfeld der Änderung entgegenwirkt.</p>
-
-      <figure class="fig">
-        <canvas id="cv-ind" class="c-ind" role="img" aria-label="Animation: ein Stabmagnet schwingt durch eine Spule. Darunter der magnetische Fluss und die induzierte Spannung über der Zeit, daneben ein Zeigermessgerät."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="ind-f">Bewegungsfrequenz</label><output id="ind-f-o"></output></div><input id="ind-f" type="range" min="0.1" max="2" step="0.05" value="0.5"></div>
-          <div class="ctrl"><div class="lab"><label for="ind-n">Windungen N</label><output id="ind-n-o"></output></div><input id="ind-n" type="range" min="10" max="500" step="10" value="200"></div>
-          <label class="chk"><input id="ind-flip" type="checkbox"> Magnet umdrehen</label>
-          <button class="btn" type="button" id="ind-play">Pause</button>
-        </div>
-        <figcaption><b>Abb. 4</b> Ein Magnet schwingt durch eine Spule. Der Fluss durch die Spule ist am größten, wenn der Magnet in der Mitte steckt. Die Spannung ist aber genau dort null, weil sich der Fluss in diesem Moment nicht ändert. Am größten ist sie beim schnellen Hinein- und Hinausfahren. Doppelte Frequenz ergibt doppelte Spannung, umgedrehter Magnet das umgekehrte Vorzeichen.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Nur ein sich ändernder Fluss induziert Spannung: \(U = -N\,\mathrm d\Phi/\mathrm dt\).</li>
-        <li>Eine Spule nutzt Induktion an sich selbst, siehe Abschnitt 6.</li>
-      </ul></div>
-    </section>
-
-    <!-- 6 -->
-    <section id="maxwell">
-      <div class="step"><b>5</b><span class="eyebrow">Felder</span></div>
-      <h2>Maxwell-Gleichungen und elektromagnetische Wellen</h2>
-      <p>Alles aus den Abschnitten 2 bis 4 steckt in vier Gleichungen. Man muss sie nicht auswendig können, aber ihre Aussage sollte man kennen:</p>
-      <div class="tbl"><table>
-        <thead><tr><th>Gleichung</th><th>Aussage in Worten</th></tr></thead>
-        <tbody>
-          <tr><td>\(\nabla\cdot\vec E = \rho/\varepsilon_0\)</td><td>Ladungen sind Quellen des elektrischen Feldes (Coulomb).</td></tr>
-          <tr><td>\(\nabla\cdot\vec B = 0\)</td><td>Es gibt keine magnetischen Ladungen, B-Feldlinien sind geschlossen.</td></tr>
-          <tr><td>\(\nabla\times\vec E = -\partial\vec B/\partial t\)</td><td>Ein sich änderndes Magnetfeld erzeugt ein elektrisches Wirbelfeld (Induktion).</td></tr>
-          <tr><td>\(\nabla\times\vec B = \mu_0\vec J + \mu_0\varepsilon_0\,\partial\vec E/\partial t\)</td><td>Ströme und sich ändernde elektrische Felder erzeugen Magnetfelder.</td></tr>
-        </tbody>
-      </table></div>
-      <p>Die letzten beiden Gleichungen zusammen haben eine bemerkenswerte Folge: Ein sich änderndes E-Feld erzeugt ein B-Feld, das sich ändernde B-Feld wieder ein E-Feld, und so weiter. Die Störung pflanzt sich selbst fort, ganz ohne Ladungen. Das ist eine <strong>elektromagnetische Welle</strong>. Ihre Geschwindigkeit ergibt sich allein aus den beiden Feldkonstanten:</p>
-      <div class="eq">$$c = \frac{1}{\sqrt{\mu_0\varepsilon_0}} \approx 3\cdot10^8\ \mathrm{m/s}$$</div>
-      <p>E und B stehen senkrecht aufeinander und senkrecht zur Ausbreitungsrichtung, schwingen in Phase, und es gilt \(E = cB\). Radio, Licht und Röntgenstrahlung sind alle solche Wellen, nur mit unterschiedlicher Frequenz. Ihre Teilchennatur, das Photon, beschreibt Baustein 1 der Seite <a href="../physik/roentgen.html#photon">„Vom Photon zum Bild“</a>.</p>
-
-      <figure class="fig">
-        <canvas id="cv-em" class="c-emw" role="img" aria-label="Animation einer elektromagnetischen Welle: das elektrische Feld schwingt vertikal, das magnetische senkrecht dazu, beide breiten sich nach rechts aus."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="em-l">Wellenlänge (Darstellung)</label><output id="em-l-o"></output></div><input id="em-l" type="range" min="0.5" max="3" step="0.05" value="1.4"></div>
-          <button class="btn" type="button" id="em-play">Pause</button>
-        </div>
-        <figcaption><b>Abb. 5</b> Elektromagnetische Welle. Das E-Feld (rot) schwingt in der Bildebene auf und ab, das B-Feld (blau) senkrecht dazu, perspektivisch schräg gezeichnet. Beide laufen gemeinsam mit Lichtgeschwindigkeit nach rechts.</figcaption>
-      </figure>
-    </section>
-
-    <!-- 6 -->
-    <section id="passiv">
-      <div class="step"><b>6</b><span class="eyebrow">Bauelemente</span></div>
-      <h2>Passive Bauelemente: Widerstand, Kondensator, Spule</h2>
-      <p>Die drei passiven Grundbauelemente unterscheiden sich darin, wie sie Strom und Spannung verknüpfen. Der Widerstand setzt Energie in Wärme um. Kondensator und Spule speichern Energie, der eine im elektrischen, die andere im magnetischen Feld.</p>
-      <div class="tbl"><table>
-        <thead><tr><th></th><th>Widerstand</th><th>Kondensator</th><th>Spule</th></tr></thead>
-        <tbody>
-          <tr><td>Grundgleichung</td><td>\(U = R\,I\)</td><td>\(I = C\,\dfrac{\mathrm dU}{\mathrm dt}\)</td><td>\(U = L\,\dfrac{\mathrm dI}{\mathrm dt}\)</td></tr>
-          <tr><td>Einheit</td><td>Ohm (Ω)</td><td>Farad (F)</td><td>Henry (H)</td></tr>
-          <tr><td>Energie</td><td>wird zu Wärme, \(P = I^2R\)</td><td>gespeichert, \(\tfrac12 CU^2\)</td><td>gespeichert, \(\tfrac12 LI^2\)</td></tr>
-          <tr><td>kann nicht springen</td><td>(nichts)</td><td>Spannung</td><td>Strom</td></tr>
-          <tr><td>bei Gleichspannung</td><td>R</td><td>sperrt</td><td>leitet (Kurzschluss)</td></tr>
-          <tr><td>bei hoher Frequenz</td><td>R</td><td>leitet</td><td>sperrt</td></tr>
-          <tr><td>Reihenschaltung</td><td>\(R_1 + R_2\)</td><td>\(1/C = 1/C_1 + 1/C_2\)</td><td>\(L_1 + L_2\)</td></tr>
-          <tr><td>Parallelschaltung</td><td>\(1/R = 1/R_1 + 1/R_2\)</td><td>\(C_1 + C_2\)</td><td>\(1/L = 1/L_1 + 1/L_2\)</td></tr>
-        </tbody>
-      </table></div>
-
-      <h3>Widerstand</h3>
-      <p>Der Widerstand eines Leiters hängt vom Material und von der Form ab:</p>
-      <div class="eq">$$R = \rho\,\frac{l}{A}$$</div>
-      <p>mit dem spezifischen Widerstand ρ, der Länge \(l\) und dem Querschnitt \(A\). Langer, dünner Draht hat viel Widerstand, kurzer, dicker wenig. Kupfer hat \(\rho \approx 1{,}7\cdot10^{-8}\) Ωm, Silizium ohne Dotierung rund \(2\cdot10^{3}\) Ωm, Glas über \(10^{10}\) Ωm. Die Spanne über viele Größenordnungen ist der Grund, warum man von Leitern, Halbleitern und Isolatoren spricht.</p>
-      <p>Bei Metallen steigt ρ mit der Temperatur, weil die Gitterschwingungen die Elektronen stärker streuen (Kaltleiter, PTC). Bei Halbleitern ist es umgekehrt: Mit der Temperatur werden mehr Ladungsträger frei, und der Widerstand sinkt (Heißleiter, NTC). Das nutzt man für Temperatursensoren.</p>
-
-      <h3>Kondensator</h3>
-
-      <p>Ein Kondensator besteht aus zwei leitenden Flächen, getrennt durch einen Isolator. Legt man eine Spannung an, sammelt sich auf der einen Platte positive, auf der anderen gleich viel negative Ladung. Die <strong>Kapazität</strong> \(C\) sagt, wie viel Ladung pro Volt hineinpasst:</p>
-      <div class="eq">$$Q = C\cdot U \qquad\qquad C_{\text{Platte}} = \varepsilon_0\,\varepsilon_r\,\frac{A}{d}$$</div>
-      <p>Große Fläche, kleiner Abstand und ein Isolator mit hoher Permittivität \(\varepsilon_r\) ergeben große Kapazität. Ein Detektorpixel ist selbst ein kleiner Plattenkondensator: Bei 0,2 × 0,2 mm² Fläche, 1,6 mm CdTe (\(\varepsilon_r \approx 11\)) sind das nur etwa 2,4 fF.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 640 220" role="img" aria-label="Plattenkondensator: obere Platte mit positiven Ladungen, untere mit negativen, dazwischen parallele Feldlinien von oben nach unten.">
-          <defs><marker id="pc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="d-acc"/></marker></defs>
-          <rect x="120" y="40" width="300" height="10" class="d-fg"/><rect x="120" y="170" width="300" height="10" class="d-fg"/>
-          <g class="d-h" font-size="16" font-weight="700"><text x="140" y="34">+</text><text x="190" y="34">+</text><text x="240" y="34">+</text><text x="290" y="34">+</text><text x="340" y="34">+</text><text x="390" y="34">+</text></g>
-          <g class="d-e" font-size="18" font-weight="700"><text x="141" y="200">−</text><text x="191" y="200">−</text><text x="241" y="200">−</text><text x="291" y="200">−</text><text x="341" y="200">−</text><text x="391" y="200">−</text></g>
-          <g class="d-sta" stroke-width="1.6"><line x1="150" y1="54" x2="150" y2="164" marker-end="url(#pc-ar)"/><line x1="200" y1="54" x2="200" y2="164" marker-end="url(#pc-ar)"/><line x1="250" y1="54" x2="250" y2="164" marker-end="url(#pc-ar)"/><line x1="300" y1="54" x2="300" y2="164" marker-end="url(#pc-ar)"/><line x1="350" y1="54" x2="350" y2="164" marker-end="url(#pc-ar)"/><line x1="400" y1="54" x2="400" y2="164" marker-end="url(#pc-ar)"/></g>
-          <g class="d-stm" stroke-width="1.2"><line x1="450" y1="50" x2="450" y2="170"/><line x1="444" y1="50" x2="456" y2="50"/><line x1="444" y1="170" x2="456" y2="170"/></g>
-          <g class="d-fg" font-size="14"><text x="464" y="115">d</text><text x="30" y="49">+Q</text><text x="30" y="181">−Q</text><text x="500" y="100">E = U / d</text><text x="500" y="122">C = ε₀ε_r A / d</text><text x="270" y="215" text-anchor="middle" class="d-mut" font-size="12">Fläche A</text></g>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 6</b> Plattenkondensator. Zwischen den Platten ist das Feld homogen und zeigt von + nach −. Die Ladungen sitzen auf den Innenseiten der Platten.</figcaption>
-      </figure>
-
-      <h4>Strom und Spannung am Kondensator</h4>
-      <p>Leitet man \(Q = CU\) nach der Zeit ab, bekommt man die Beziehung, die man für Schaltungen braucht:</p>
-      <div class="eq">$$I = C\,\frac{\mathrm dU}{\mathrm dt} \qquad\Longleftrightarrow\qquad U = \frac{1}{C}\int I\,\mathrm dt$$</div>
-      <ul class="tight">
-        <li>Ein Kondensator lässt Strom nur fließen, solange sich seine Spannung ändert. Bei Gleichspannung sperrt er, sobald er geladen ist.</li>
-        <li>Seine Spannung kann nicht springen, denn dafür bräuchte es einen unendlich großen Strom. Deshalb glättet er.</li>
-        <li>Er integriert den Strom: Die Spannung ist die bisher hineingeflossene Ladung geteilt durch \(C\). Das ist der Kern des ladungsempfindlichen Verstärkers.</li>
-        <li>Gespeicherte Energie: \(W = \tfrac12 C U^2\).</li>
-      </ul>
-
-      
-      <h3>Spule</h3>
-      <p>Eine Spule ist ein aufgewickelter Draht. Fließt Strom hindurch, entsteht in ihrem Inneren ein Magnetfeld. Ändert sich der Strom, ändert sich das Feld, und die Spule induziert in sich selbst eine Spannung, die der Änderung entgegenwirkt (<strong>Selbstinduktion</strong>, Abschnitt 4). Die <strong>Induktivität</strong> \(L\) beschreibt, wie stark. Für eine lange Zylinderspule gilt:</p>
-      <div class="eq">$$L = \mu_0\,\mu_r\,\frac{N^2 A}{l} \qquad\qquad U = L\,\frac{\mathrm dI}{\mathrm dt} \qquad\qquad W = \tfrac12 L I^2$$</div>
-      <p>Die Induktivität wächst mit dem Quadrat der Windungszahl, und ein Eisen- oder Ferritkern mit großem \(\mu_r\) vervielfacht sie.</p>
-      <ul class="tight">
-        <li>Der Strom durch eine Spule kann nicht springen. Versucht man ihn schlagartig abzuschalten, erzeugt sie eine hohe Spannungsspitze. Deshalb liegt parallel zu Relaisspulen eine Freilaufdiode.</li>
-        <li>Mit einem Widerstand zusammen entsteht ein RL-Glied mit der Zeitkonstante \(\tau = L/R\). Es verhält sich spiegelbildlich zum RC-Glied: Der Strom steigt exponentiell an.</li>
-        <li>Zwei Spulen auf einem gemeinsamen Kern bilden einen Transformator. Das Spannungsverhältnis entspricht dem Windungsverhältnis, \(U_2/U_1 = N_2/N_1\). Hochspannungsgeneratoren für Röntgenröhren beruhen darauf.</li>
-      </ul>
-      <p>In der Detektor-Elektronik selbst spielen Spulen kaum eine Rolle. Wichtig sind sie in Netzteilen, Transformatoren und als ungewollte (parasitäre) Induktivität langer Leitungen, die schnelle Signale verformt.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Widerstand: \(U = RI\), wandelt Energie in Wärme. \(R = \rho l/A\).</li>
-        <li>Kondensator: \(I = C\,\mathrm dU/\mathrm dt\), Spannung kann nicht springen, sperrt Gleichstrom.</li>
-        <li>Spule: \(U = L\,\mathrm dI/\mathrm dt\), Strom kann nicht springen, sperrt hohe Frequenzen.</li>
-      </ul></div>
-    </section>
-
-    <!-- 7 -->
-    <section id="halbleiter">
-      <div class="step"><b>7</b><span class="eyebrow">Bauelemente</span></div>
-      <h2>Halbleiter: von der Dotierung zum Transistor</h2>
-      <p>Dioden, Transistoren, Solarzellen und die Sensoren von Röntgendetektoren beruhen alle auf demselben Prinzip: Man steuert gezielt, wie viele bewegliche Ladungsträger es in einem Halbleiter gibt und wo.</p>
-
-      <h3>Leiter, Halbleiter, Isolator</h3>
-      <p>Im Kristall können Elektronen nur Energien in bestimmten Bändern haben. Im <strong>Valenzband</strong> sind sie in den Bindungen festgehalten, im <strong>Leitungsband</strong> frei beweglich. Dazwischen liegt die <strong>Bandlücke</strong> \(E_g\). Bei Metallen überlappen die Bänder, es gibt immer freie Elektronen. Bei Isolatoren ist die Lücke so groß (über 5 eV), dass praktisch kein Elektron hinüberkommt. Halbleiter liegen dazwischen: Silizium hat 1,12 eV, Germanium 0,66 eV, CdTe 1,44 eV. Eine Skizze dazu steht in Baustein 4 der Seite <a href="../physik/roentgen.html#halbleiter">„Vom Photon zum Bild“</a>.</p>
-
-      <h3>Eigenleitung</h3>
-      <p>Silizium hat vier Valenzelektronen, jedes Atom ist mit vier Nachbarn verbunden. Durch die Wärmebewegung reißt gelegentlich ein Elektron aus seiner Bindung und wird frei. Zurück bleibt ein <strong>Loch</strong>, eine fehlende Bindung, die sich wie eine positive Ladung verhält: Ein Nachbarelektron kann in die Lücke springen, wodurch das Loch weiterwandert. Elektronen und Löcher entstehen immer paarweise.</p>
-      <p>Die Dichte dieser Paare heißt <strong>Eigenleitungsdichte</strong> \(n_i\). In Silizium bei Raumtemperatur ist \(n_i \approx 10^{10}\ \text{cm}^{-3}\), bei etwa \(5\cdot10^{22}\) Atomen pro cm³ also nur ein freies Elektron auf rund \(10^{12}\) Atome. Sie steigt stark mit der Temperatur, ungefähr wie \(e^{-E_g/2kT}\). Deshalb rauschen Detektoren mit kleiner Bandlücke stärker und werden gekühlt (Germanium-Detektoren mit flüssigem Stickstoff).</p>
-
-      <h3>Dotierung</h3>
-      <p>Reines Silizium leitet schlecht. Baut man gezielt Fremdatome ein, ändert sich das um viele Größenordnungen, schon ein Fremdatom auf eine Million Siliziumatome reicht:</p>
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 640 248" role="img" aria-label="Siliziumgitter mit Dotieratomen. Links ein Phosphoratom mit einem überzähligen, frei beweglichen Elektron (n-Dotierung). Rechts ein Boratom mit einem fehlenden Bindungselektron, einem Loch (p-Dotierung).">
-          <line x1="60" y1="60" x2="130" y2="60" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="60" y1="60" x2="60" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="130" y1="60" x2="200" y2="60" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="130" y1="60" x2="130" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="200" y1="60" x2="200" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="60" y1="120" x2="130" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="60" y1="120" x2="60" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="130" y1="120" x2="200" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="130" y1="120" x2="130" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="200" y1="120" x2="200" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="60" y1="180" x2="130" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="130" y1="180" x2="200" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<circle cx="60" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="60" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="130" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="130" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="200" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="200" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="60" cy="120" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="60" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="130" cy="120" r="17" class="d-surf" style="stroke:var(--fg)" stroke-width="2"/><text x="130" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="700">P</text>
-<circle cx="200" cy="120" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="200" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="60" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="60" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="130" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="130" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="200" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="200" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="160" cy="92" r="6" class="d-e"/><path d="M142 108 Q 154 90 156 94" class="d-stm" stroke-dasharray="2 2"/>
-<text x="172" y="100" class="d-fg" font-size="12">freies Elektron</text>
-          <line x1="390" y1="60" x2="460" y2="60" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="390" y1="60" x2="390" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="460" y1="60" x2="530" y2="60" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="460" y1="60" x2="460" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="530" y1="60" x2="530" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="390" y1="120" x2="460" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="390" y1="120" x2="390" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="460" y1="120" x2="530" y2="120" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="460" y1="120" x2="460" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="530" y1="120" x2="530" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="390" y1="180" x2="460" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<line x1="460" y1="180" x2="530" y2="180" class="d-stm" stroke-width="4" opacity="0.35"/>
-<circle cx="390" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="390" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="460" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="460" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="530" cy="60" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="530" y="65" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="390" cy="120" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="390" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="460" cy="120" r="17" class="d-surf" style="stroke:var(--fg)" stroke-width="2"/><text x="460" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="700">B</text>
-<circle cx="530" cy="120" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="530" y="125" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="390" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="390" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="460" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="460" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="530" cy="180" r="17" class="d-soft" style="stroke:var(--muted)" stroke-width="1.2"/><text x="530" y="185" text-anchor="middle" class="d-fg" font-size="13" font-weight="400">Si</text>
-<circle cx="495" cy="120" r="6" class="d-surf" style="stroke:var(--hole)" stroke-width="2"/>
-<text x="495" y="106" class="d-fg" font-size="12" text-anchor="middle">Loch</text>
-          <text x="130" y="222" text-anchor="middle" class="d-fg" font-size="14" font-weight="600">n-Dotierung</text><text x="130" y="238" text-anchor="middle" class="d-mut" font-size="12">Donator, 5 Valenzelektronen</text>
-          <text x="460" y="222" text-anchor="middle" class="d-fg" font-size="14" font-weight="600">p-Dotierung</text><text x="460" y="238" text-anchor="middle" class="d-mut" font-size="12">Akzeptor, 3 Valenzelektronen</text>
-        </svg>
-        </div>
-        <figcaption><b>Abb. 7</b> Dotierung im Siliziumgitter, vereinfacht in 2D. Jedes Siliziumatom ist mit vier Nachbarn verbunden. Ein Phosphoratom bringt ein fünftes Elektron mit, das keinen Bindungspartner findet und sich frei bewegen kann. Einem Boratom fehlt ein Elektron für die vierte Bindung. Die Lücke, das Loch, kann von Nachbarelektronen gefüllt werden und wandert dadurch wie eine positive Ladung.</figcaption>
-      </figure>
-      <ul class="tight">
-        <li><strong>n-dotiert</strong> (Phosphor, Arsen, 5 Valenzelektronen): Jedes Fremdatom spendet ein freies Elektron (<strong>Donator</strong>). Elektronen sind die <strong>Majoritätsträger</strong>, Löcher die Minoritätsträger. Das Atom selbst bleibt als ortsfestes positives Ion zurück.</li>
-        <li><strong>p-dotiert</strong> (Bor, Gallium, 3 Valenzelektronen): Jedem Fremdatom fehlt ein Elektron, es nimmt eines aus der Umgebung auf (<strong>Akzeptor</strong>) und hinterlässt ein Loch. Löcher sind die Majoritätsträger. Das Atom bleibt als negatives Ion zurück.</li>
-      </ul>
-      <p>Wichtig: Ein dotierter Halbleiter ist insgesamt elektrisch neutral. Zu jedem freien Elektron gehört ein positives Ion, zu jedem Loch ein negatives. Erst wenn man die beweglichen Träger wegschiebt, bleiben die Ionen als Ladung übrig.</p>
-
-      <h3>Der pn-Übergang</h3>
-      <p>Bringt man ein p- und ein n-Gebiet in Kontakt, wandern Elektronen aus dem n-Gebiet ins p-Gebiet und Löcher umgekehrt, einfach weil auf der anderen Seite weniger davon sind (<strong>Diffusion</strong>). An der Grenze treffen sie sich und rekombinieren. Zurück bleibt eine Zone ohne freie Ladungsträger, die <strong>Raumladungszone</strong> oder Verarmungszone. In ihr sitzen nur noch die ortsfesten Ionen: negative auf der p-Seite, positive auf der n-Seite.</p>
-      <p>Diese Ionen erzeugen ein elektrisches Feld, das weitere Diffusion bremst. Es stellt sich ein Gleichgewicht mit einer eingebauten Spannung, der <strong>Diffusionsspannung</strong> \(U_D\), ein (in Silizium etwa 0,6–0,8 V). Die Breite der Zone hängt von der Dotierung und der angelegten Spannung ab:</p>
-      <div class="eq">$$w = \sqrt{\frac{2\varepsilon}{e}\,\frac{N_A + N_D}{N_A N_D}\,\big(U_D - U\big)}$$</div>
-      <figure class="fig">
-        <canvas id="cv-pn" class="c-pn" role="img" aria-label="pn-Übergang: links p-Gebiet mit Löchern, rechts n-Gebiet mit Elektronen, dazwischen die Raumladungszone mit ortsfesten Ionen. Darunter das elektrische Feld über dem Ort."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="pn-u">Angelegte Spannung U</label><output id="pn-u-o"></output></div><input id="pn-u" type="range" min="-50" max="0.6" step="0.05" value="0"></div>
-          <div class="ctrl"><div class="lab"><label for="pn-n">Dotierung (beide Seiten)</label><output id="pn-n-o"></output></div><input id="pn-n" type="range" min="13" max="17" step="0.05" value="15"></div>
-        </div>
-        <div class="readout" id="pn-read"></div>
-        <figcaption><b>Abb. 8</b> pn-Übergang in Silizium, beide Seiten gleich stark dotiert. Oben: Löcher (rot, links) und Elektronen (blau, rechts) sind frei beweglich. In der Raumladungszone in der Mitte gibt es keine freien Ladungsträger mehr, dort bleiben nur die ortsfesten Ionen der Dotieratome zurück (− links, + rechts). Unten das elektrische Feld, das diese Ionen erzeugen. Eine negative Spannung (Sperrrichtung) verbreitert die Zone, eine positive (Durchlassrichtung) baut sie ab. Schwächere Dotierung ergibt eine breitere Zone.</figcaption>
-      </figure>
-      <ul class="tight">
-        <li><strong>Sperrrichtung</strong> (Plus an n, Minus an p, \(U < 0\)): Die Spannung zieht die freien Träger noch weiter von der Grenze weg. Die Zone wird breiter, es fließt nur ein winziger Sperrstrom aus thermisch erzeugten Paaren.</li>
-        <li><strong>Durchlassrichtung</strong> (\(U > 0\)): Die Spannung schiebt die Träger in die Zone hinein. Nähert sich \(U\) der Diffusionsspannung, verschwindet die Barriere, und der Strom steigt exponentiell.</li>
-      </ul>
-      <p>Für Strahlungsdetektoren ist die Sperrrichtung entscheidend: Die Raumladungszone ist ein Volumen ohne freie Ladungsträger, aber mit starkem Feld. Ein Photon, das dort Elektron-Loch-Paare erzeugt, liefert ein sauberes Signal, weil das Feld die Paare sofort trennt. Siliziumsensoren sind großflächige, schwach dotierte Dioden, die mit hoher Sperrspannung über die ganze Dicke <strong>voll verarmt</strong> werden. Schwache Dotierung ist dafür wichtig, wie die Simulation zeigt.</p>
-
-      <h3>Dioden</h3>
-      <p>Eine Diode ist ein pn-Übergang mit zwei Anschlüssen. Ihre Kennlinie folgt der Shockley-Gleichung:</p>
-      <div class="eq">$$I = I_S\left(e^{U/(n\,U_T)} - 1\right), \qquad U_T = \frac{kT}{e} \approx 26\ \mathrm{mV}\ \text{bei Raumtemperatur}$$</div>
-      <div class="tbl"><table>
-        <thead><tr><th>Typ</th><th>Besonderheit</th><th>Einsatz</th></tr></thead>
-        <tbody>
-          <tr><td>Gleichrichterdiode</td><td>Si-pn-Übergang, Durchlass ab ca. 0,7 V</td><td>Netzteile, Schutz gegen Verpolung</td></tr>
-          <tr><td>Schottky-Diode</td><td>Metall-Halbleiter-Kontakt statt pn, ca. 0,2–0,4 V, sehr schnell</td><td>schnelle Schaltungen; auch Kontakte von CdTe-Sensoren</td></tr>
-          <tr><td>Z-Diode</td><td>bricht in Sperrrichtung bei definierter Spannung kontrolliert durch</td><td>Spannungsstabilisierung, Überspannungsschutz</td></tr>
-          <tr><td>Leuchtdiode (LED)</td><td>Rekombination sendet Licht aus, Farbe hängt von der Bandlücke ab</td><td>Beleuchtung, Anzeigen</td></tr>
-          <tr><td>Photodiode</td><td>in Sperrrichtung, Licht erzeugt Paare in der Raumladungszone</td><td>Lichtsensoren; unter dem Szintillator eines Flachdetektors</td></tr>
-          <tr><td>Detektordiode</td><td>großvolumig, voll verarmt, hohe Sperrspannung</td><td>Röntgen- und Teilchendetektoren (Si, CdTe als Schottky)</td></tr>
-        </tbody>
-      </table></div>
-
-      <h3>Transistoren</h3>
-      <p>Ein Transistor hat drei Anschlüsse. Mit einem kleinen Signal am Steueranschluss steuert er einen großen Strom zwischen den beiden anderen. Er kann damit <strong>schalten</strong> (voll an oder aus) und <strong>verstärken</strong> (Zwischenwerte proportional zum Steuersignal). Es gibt zwei Grundtypen:</p>
-      <ul class="tight">
-        <li><strong>Bipolartransistor (BJT)</strong>: zwei pn-Übergänge hintereinander (npn oder pnp). Ein kleiner Basisstrom \(I_B\) steuert einen großen Kollektorstrom \(I_C = B\cdot I_B\), mit der Stromverstärkung \(B\) von typisch 100 bis 500. Die Basis-Emitter-Strecke verhält sich wie eine Diode, also etwa 0,7 V.</li>
-        <li><strong>MOSFET</strong>: Das Gate ist durch eine dünne Oxidschicht isoliert. Die Gate-Spannung \(U_{GS}\) zieht Ladungsträger an die Oberfläche und bildet dort einen leitenden Kanal. Es fließt kein Gatestrom, gesteuert wird allein durch Spannung. MOSFETs sind die Bausteine praktisch aller integrierten Schaltungen, auch der Pixel-ASICs von Detektoren.</li>
-      </ul>
-      <p>Beim MOSFET unterscheidet man zwei Arbeitsbereiche. Im <strong>linearen Bereich</strong> (kleines \(U_{DS}\)) wirkt der Kanal wie ein Widerstand, dessen Wert die Gate-Spannung einstellt. So baut man auf Chips Schalter und einstellbare Widerstände, etwa den Entladepfad eines ladungsempfindlichen Verstärkers. Im <strong>Sättigungsbereich</strong> hängt der Strom fast nur noch von \(U_{GS}\) ab, der Transistor ist eine steuerbare Stromquelle und damit die Grundlage jedes Verstärkers.</p>
-      <div class="eq">$$I_D = k\left[(U_{GS}-U_{th})\,U_{DS} - \tfrac12 U_{DS}^2\right] \ \text{(linear)}, \qquad I_D = \tfrac{k}{2}\,(U_{GS}-U_{th})^2 \ \text{(Sättigung)}$$</div>
-      <figure class="fig">
-        <canvas id="cv-kl" class="c-kl" role="img" aria-label="Kennlinien: entweder Strom-Spannungs-Kennlinie einer Diode oder Ausgangskennlinienfeld eines MOSFET."></canvas>
-        <div class="ctrls">
-          <div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="kl-m">Bauteil</label></div><select id="kl-m"><option value="d">Diode</option><option value="m">MOSFET</option><option value="b">Bipolartransistor</option></select></div>
-          <div class="ctrl" id="kl-t-w"><div class="lab"><label for="kl-t">Temperatur</label><output id="kl-t-o"></output></div><input id="kl-t" type="range" min="-20" max="120" step="1" value="25"></div>
-          <div class="ctrl" id="kl-b-w" hidden><div class="lab"><label for="kl-b">Basisstrom I_B</label><output id="kl-b-o"></output></div><input id="kl-b" type="range" min="5" max="50" step="1" value="25"></div>
-          <div class="ctrl" id="kl-g-w" hidden><div class="lab"><label for="kl-g">Gate-Spannung U_GS</label><output id="kl-g-o"></output></div><input id="kl-g" type="range" min="1" max="4" step="0.05" value="2.5"></div>
-        </div>
-        <div class="readout" id="kl-read"></div>
-        <figcaption><b>Abb. 9</b> Diode: Strom über Spannung, mit Temperatureinfluss (der Sättigungsstrom verdoppelt sich etwa alle 10 K, deshalb sinkt die Durchlassspannung mit der Temperatur um rund 2 mV/K). MOSFET: Drainstrom über \(U_{DS}\) für mehrere Gate-Spannungen. Die hervorgehobene Kurve gehört zur eingestellten \(U_{GS}\). Im linearen Bereich am Anfang entspricht ihre Steigung dem Kehrwert des Kanalwiderstands, rechts der Grenze ist der Strom fast konstant. Bipolartransistor: Kollektorstrom über \(U_{CE}\) für mehrere Basisströme, mit Stromverstärkung \(B\) = 200. Modellwerte MOSFET: \(U_{th}\) = 1 V, \(k\) = 2 mA/V².</figcaption>
-      </figure>
-      <div class="tbl"><table>
-        <thead><tr><th></th><th>Bipolartransistor</th><th>MOSFET</th></tr></thead>
-        <tbody>
-          <tr><td>Steuergröße</td><td>Basisstrom \(I_B\)</td><td>Gate-Spannung \(U_{GS}\)</td></tr>
-          <tr><td>Steuerleistung</td><td>braucht dauernd Basisstrom</td><td>praktisch keine (isoliertes Gate)</td></tr>
-          <tr><td>Stärken</td><td>rauscharm bei niedriger Impedanz, hohe Steilheit</td><td>winzig, sparsam, ideal für Chips und Schalter</td></tr>
-          <tr><td>typisch in</td><td>diskreten Verstärkern, Analogtechnik</td><td>integrierten Schaltungen, Leistungsschaltern, ASICs</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Dotierung: n = zusätzliche Elektronen (Donatoren), p = Löcher (Akzeptoren). Insgesamt bleibt der Halbleiter neutral.</li>
-        <li>pn-Übergang: Raumladungszone ohne freie Träger, mit Feld. Sperrrichtung macht sie breiter, Durchlassrichtung baut sie ab.</li>
-        <li>Detektoren nutzen voll verarmte Dioden in Sperrrichtung: Photonen erzeugen dort Paare, das Feld trennt sie.</li>
-        <li>Transistor: kleines Steuersignal steuert großen Strom. BJT stromgesteuert, MOSFET spannungsgesteuert.</li>
-      </ul></div>
-    </section>
-
-    <!-- 7 -->
-    <section id="rc">
-      <div class="step"><b>8</b><span class="eyebrow">Schaltungen</span></div>
-      <h2>RC-Glied: Laden und Entladen</h2>
-      <p>Schaltet man einen Widerstand und einen Kondensator in Reihe an eine Spannung \(U_0\), lädt sich der Kondensator nicht sofort auf. Am Anfang ist er leer, die ganze Spannung liegt am Widerstand, und es fließt der größte Strom. Je voller der Kondensator wird, desto weniger Spannung bleibt für den Widerstand, und der Strom wird kleiner. Das Ergebnis ist ein exponentieller Verlauf:</p>
-      <div class="eq">$$U_C(t) = U_0\,\big(1 - e^{-t/\tau}\big) \qquad\qquad \tau = R\,C$$</div>
-      <p>Die <strong>Zeitkonstante</strong> τ ist die wichtigste Zahl einer RC-Schaltung. Nach einer Zeitkonstante sind 63 % erreicht, nach drei etwa 95 %, nach fünf über 99 %. Beim Entladen über den Widerstand fällt die Spannung entsprechend mit \(U_0\,e^{-t/\tau}\). Die Einheit passt: Ω · F = s, praktisch zum Merken ist kΩ · µF = ms und kΩ · fF = ps.</p>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg viewBox="0 0 640 150" role="img" aria-label="RC-Glied: Rechteckquelle, Widerstand R in Serie, Kondensator C nach Masse. Abgriff am Kondensator ergibt den Tiefpass, am Widerstand den Hochpass.">
-          <g class="d-st" stroke-width="1.8">
-            <circle cx="70" cy="80" r="22"/><path d="M58 88 L58 72 L70 72 L70 88 L82 88 L82 72" stroke-width="1.6"/>
-            <line x1="70" y1="58" x2="70" y2="30"/><line x1="70" y1="30" x2="200" y2="30"/><rect x="200" y="22" width="60" height="16" rx="1"/><line x1="260" y1="30" x2="360" y2="30"/>
-            <line x1="360" y1="30" x2="360" y2="72"/><line x1="340" y1="72" x2="380" y2="72" stroke-width="2.6"/><line x1="340" y1="82" x2="380" y2="82" stroke-width="2.6"/><line x1="360" y1="82" x2="360" y2="130"/>
-            <line x1="70" y1="102" x2="70" y2="130"/><line x1="70" y1="130" x2="520" y2="130"/><line x1="360" y1="30" x2="520" y2="30"/>
-            <circle cx="520" cy="30" r="4" class="d-surf"/><circle cx="520" cy="130" r="4" class="d-surf"/>
-          </g>
-          <g class="d-fg" font-size="14"><text x="70" y="125" text-anchor="middle" font-size="12" class="d-mut">U_e</text><text x="230" y="58" text-anchor="middle">R</text><text x="392" y="82">C</text><text x="534" y="84">U_C</text></g>
-          <g class="d-stm" stroke-dasharray="3 3"><line x1="560" y1="36" x2="560" y2="124"/><line x1="200" y1="10" x2="260" y2="10"/></g>
-          <text x="230" y="8" text-anchor="middle" class="d-mut" font-size="11">U_R</text>
-        </svg>
-        </div>
-        <canvas id="cv-rc" class="c-rc" role="img" aria-label="Simulation: Rechteckspannung am RC-Glied, Spannung am Kondensator und am Widerstand über der Zeit."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="rc-r">R</label><output id="rc-r-o"></output></div><input id="rc-r" type="range" min="0" max="2" step="0.01" value="1"></div>
-          <div class="ctrl"><div class="lab"><label for="rc-c">C</label><output id="rc-c-o"></output></div><input id="rc-c" type="range" min="-2" max="1" step="0.01" value="-1"></div>
-          <div class="ctrl"><div class="lab"><label for="rc-t">Periode der Rechteckspannung</label><output id="rc-t-o"></output></div><input id="rc-t" type="range" min="-1" max="2" step="0.01" value="1"></div>
-        </div>
-        <div class="readout" id="rc-read"></div>
-        <figcaption><b>Abb. 10</b> Eine Rechteckspannung zwischen 0 und 5 V am RC-Glied. Oben die Spannung am Kondensator: Sie folgt der Eingangsspannung mit Verzögerung, die Kanten werden rund (<strong>Tiefpass</strong>). Unten die Spannung am Widerstand, \(U_R = R\cdot I\): Sie zeigt nur die Sprünge und klingt danach ab (<strong>Hochpass</strong>). Die Markierung zeigt, wo eine Zeitkonstante nach dem Sprung liegt. Ist die Periode viel länger als τ, lädt der Kondensator jedes Mal voll, ist sie viel kürzer, mittelt er nur noch.</figcaption>
-      </figure>
-      <p>Das ist die Brücke zum Pulsformer: Ein CR-Glied mit Abgriff am Widerstand ist ein Hochpass und macht aus einer Stufe einen abklingenden Puls. Ein RC-Glied mit Abgriff am Kondensator ist ein Tiefpass und rundet ihn ab.</p>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>τ = RC. Nach 1τ: 63 %, nach 3τ: 95 %, nach 5τ: über 99 %.</li>
-        <li>Spannung am C: Tiefpass, glättet. Spannung am R: Hochpass, zeigt nur Änderungen.</li>
-      </ul></div>
-    </section>
-
-    <!-- 8 -->
-    <section id="impedanz">
-      <div class="step"><b>9</b><span class="eyebrow">Schaltungen</span></div>
-      <h2>Wechselstrom, Impedanz und Filter</h2>
-      <p>Bei sinusförmigen Signalen rechnet man am bequemsten mit <strong>komplexen Zahlen</strong>. Eine Schwingung \(U(t) = \hat U\cos(\omega t + \varphi)\) wird zum Zeiger \(\underline U = \hat U e^{j\varphi}\), der mit der Kreisfrequenz \(\omega = 2\pi f\) rotiert. Die Länge des Zeigers ist die Amplitude, sein Winkel die Phase. (In der E-Technik schreibt man \(j\) statt \(i\), weil \(i\) schon für den Strom vergeben ist.)</p>
-      <p>Der Vorteil: Ableiten wird zu Multiplikation mit \(j\omega\), Integrieren zu Division. Damit wird aus jedem Bauelement eine komplexe <strong>Impedanz</strong> \(Z = \underline U / \underline I\), mit der man wie mit Widerständen rechnet:</p>
-      <div class="tbl"><table>
-        <thead><tr><th>Bauelement</th><th>Impedanz</th><th>bei tiefer Frequenz</th><th>bei hoher Frequenz</th><th>Phase U zu I</th></tr></thead>
-        <tbody>
-          <tr><td>Widerstand</td><td>\(Z_R = R\)</td><td>R</td><td>R</td><td>0°</td></tr>
-          <tr><td>Kondensator</td><td>\(Z_C = \dfrac{1}{j\omega C}\)</td><td>sperrt (∞)</td><td>leitet (→ 0)</td><td>−90° (Strom eilt vor)</td></tr>
-          <tr><td>Spule</td><td>\(Z_L = j\omega L\)</td><td>leitet (→ 0)</td><td>sperrt (∞)</td><td>+90° (Spannung eilt vor)</td></tr>
-        </tbody>
-      </table></div>
-
-      <h3>Tiefpass und Hochpass</h3>
-      <p>Das RC-Glied aus Abschnitt 8 ist jetzt einfach ein Spannungsteiler aus \(R\) und \(Z_C\). Abgriff am Kondensator (Tiefpass) und am Widerstand (Hochpass):</p>
-      <div class="eq">$$H_{\text{TP}} = \frac{Z_C}{R + Z_C} = \frac{1}{1 + j\omega RC} \qquad\qquad H_{\text{HP}} = \frac{R}{R + Z_C} = \frac{j\omega RC}{1 + j\omega RC}$$</div>
-      <p>Bei der <strong>Grenzfrequenz</strong> \(f_g = 1/(2\pi RC)\) sind Widerstand und Kondensator gleich groß, die Amplitude ist auf \(1/\sqrt2 \approx 0{,}71\) gefallen (−3 dB) und die Phase um 45° verschoben. Weit darüber fällt der Tiefpass mit 20 dB pro Dekade: zehnfache Frequenz, zehntel Amplitude.</p>
-      <p><strong>Dezibel</strong> sind ein logarithmisches Maß für Verhältnisse. Für Spannungen gilt \(\text{dB} = 20\log_{10}(U_2/U_1)\): −3 dB ≈ 0,71, −6 dB ≈ 0,5, −20 dB = 0,1, −40 dB = 0,01. Die Darstellung von Betrag in dB und Phase über der logarithmischen Frequenz heißt <strong>Bode-Diagramm</strong>.</p>
-
-      <figure class="fig">
-        <div class="two">
-          <div><div class="lbl">Bode-Diagramm</div><canvas id="cv-bode" class="c-sq" role="img" aria-label="Bode-Diagramm: Betrag in dB und Phase in Grad über der Frequenz, mit Markierung der gewählten Frequenz."></canvas></div>
-          <div><div class="lbl">Zeitverlauf bei der gewählten Frequenz</div><canvas id="cv-bt" class="c-sq" role="img" aria-label="Sinus am Eingang und Ausgang des Filters bei der gewählten Frequenz."></canvas></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="bd-t">Filter</label></div><select id="bd-t"><option value="lp">Tiefpass (Abgriff C)</option><option value="hp">Hochpass (Abgriff R)</option></select></div>
-          <div class="ctrl"><div class="lab"><label for="bd-r">R</label><output id="bd-r-o"></output></div><input id="bd-r" type="range" min="2" max="6" step="0.01" value="4"></div>
-          <div class="ctrl"><div class="lab"><label for="bd-c">C</label><output id="bd-c-o"></output></div><input id="bd-c" type="range" min="-11" max="-6" step="0.01" value="-8"></div>
-          <div class="ctrl"><div class="lab"><label for="bd-f">Signalfrequenz</label><output id="bd-f-o"></output></div><input id="bd-f" type="range" min="1" max="6" step="0.01" value="3.2"></div>
-        </div>
-        <div class="readout" id="bd-read"></div>
-        <figcaption><b>Abb. 11</b> Links das Bode-Diagramm des RC-Filters, rechts ein Sinus der gewählten Frequenz am Eingang (grau) und am Ausgang (blau). Schiebe die Signalfrequenz über die Grenzfrequenz (gestrichelt) und beobachte, wie Amplitude und Phasenverschiebung zusammenhängen.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Impedanzen: \(Z_R = R\), \(Z_C = 1/(j\omega C)\), \(Z_L = j\omega L\). Damit rechnet man wie mit Widerständen.</li>
-        <li>RC-Filter: \(f_g = 1/(2\pi RC)\), dort −3 dB und 45°. Darüber bzw. darunter 20 dB pro Dekade.</li>
-      </ul></div>
-    </section>
-
-    <!-- 10 -->
-    <section id="opv">
-      <div class="step"><b>10</b><span class="eyebrow">Schaltungen</span></div>
-      <h2>Operationsverstärker</h2>
-      <p>Ein Operationsverstärker (OPV) ist ein Differenzverstärker mit zwei Eingängen (+ und −) und einem Ausgang. Er verstärkt die Spannungsdifferenz zwischen den Eingängen mit einem riesigen Faktor \(A\), oft \(10^5\) bis \(10^6\): \(U_a = A\,(U_+ - U_-)\). Allein ist das unbrauchbar, schon ein Mikrovolt Differenz würde ihn in die Begrenzung treiben. Nützlich wird er erst mit <strong>Gegenkopplung</strong>: Ein Teil des Ausgangs wird auf den − Eingang zurückgeführt.</p>
-
-      <h3>Die zwei Faustregeln</h3>
-      <p>Mit Gegenkopplung lässt sich fast jede OPV-Schaltung mit zwei Regeln verstehen:</p>
-      <ol class="steps">
-        <li><strong>In die Eingänge fließt kein Strom.</strong> Der Eingangswiderstand ist praktisch unendlich.</li>
-        <li><strong>Der Ausgang stellt sich so ein, dass beide Eingänge dieselbe Spannung haben</strong>, \(U_- = U_+\). Grund: Jede Differenz würde mit \(A\) verstärkt und über die Gegenkopplung sofort ausgeglichen.</li>
-      </ol>
-      <p>Liegt der + Eingang auf Masse, hält der OPV also auch den − Eingang auf 0 V, obwohl er nicht direkt mit Masse verbunden ist. Das nennt man <strong>virtuelle Masse</strong>.</p>
-
-      <h3>Die Grundschaltungen</h3>
-      <ul class="tight">
-        <li><strong>Invertierender Verstärker:</strong> Wegen der virtuellen Masse fließt durch \(R_1\) der Strom \(U_e/R_1\). Weil nichts in den Eingang fließt, muss er komplett durch \(R_2\) weiter. Dafür muss der Ausgang auf \(-R_2 \cdot U_e/R_1\) gehen: \(U_a = -\tfrac{R_2}{R_1}U_e\).</li>
-        <li><strong>Nichtinvertierender Verstärker:</strong> \(U_e\) liegt am + Eingang, \(R_1\) und \(R_2\) bilden einen Spannungsteiler vom Ausgang zum − Eingang. Der OPV regelt, bis der geteilte Ausgang gleich \(U_e\) ist: \(U_a = \big(1 + \tfrac{R_2}{R_1}\big)U_e\).</li>
-        <li><strong>Spannungsfolger:</strong> Der Ausgang direkt auf den − Eingang, also \(U_a = U_e\). Verstärkt nicht, belastet aber die Quelle nicht und kann trotzdem Strom liefern (Impedanzwandler, vgl. Abb. 1 mit Last).</li>
-        <li><strong>Integrator:</strong> Wie der invertierende Verstärker, aber mit Kondensator statt \(R_2\). Der Strom \(U_e/R\) lädt den Kondensator, also \(U_a = -\tfrac{1}{RC}\int U_e\,\mathrm dt\). Ersetzt man \(R\) und \(U_e\) durch eine Stromquelle, den Sensor, ist das genau der <strong>ladungsempfindliche Verstärker</strong>: \(U_a = -Q/C_f\).</li>
-      </ul>
-
-      <figure class="fig">
-        <div class="svgbox">
-        <svg id="op-svg" viewBox="0 0 560 200" role="img" aria-label="Schaltbild der gewählten Operationsverstärker-Grundschaltung.">
-          <g class="d-st" stroke-width="1.8">
-            <path d="M300 60 L300 160 L380 110 Z"/><line x1="380" y1="110" x2="470" y2="110"/><circle cx="470" cy="110" r="4" class="d-surf"/>
-          </g>
-          <g class="d-fg" font-size="15"><text x="308" y="91">−</text><text x="308" y="141">+</text><text x="482" y="115" font-size="14">U_a</text></g>
-          <!-- invertierend -->
-          <g id="op-inv" class="op-g">
-            <g class="d-st" stroke-width="1.8"><circle cx="60" cy="85" r="4" class="d-surf"/><line x1="64" y1="85" x2="120" y2="85"/><rect x="120" y="78" width="56" height="14" rx="1"/><line x1="176" y1="85" x2="300" y2="85"/>
-              <line x1="230" y1="85" x2="230" y2="30"/><line x1="230" y1="30" x2="280" y2="30"/><rect x="280" y="23" width="56" height="14" rx="1"/><line x1="336" y1="30" x2="420" y2="30"/><line x1="420" y1="30" x2="420" y2="110"/>
-              <line x1="300" y1="135" x2="270" y2="135"/><line x1="270" y1="135" x2="270" y2="168"/><line x1="258" y1="168" x2="282" y2="168"/><line x1="262" y1="173" x2="278" y2="173"/><line x1="266" y1="178" x2="274" y2="178"/></g>
-            <g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text x="148" y="70" text-anchor="middle">R₁</text><text x="308" y="16" text-anchor="middle">R₂</text></g>
-            <circle cx="230" cy="85" r="3.5" class="d-fg"/><circle cx="420" cy="110" r="3.5" class="d-fg"/>
-          </g>
-          <!-- nichtinvertierend -->
-          <g id="op-non" class="op-g">
-            <g class="d-st" stroke-width="1.8"><circle cx="60" cy="135" r="4" class="d-surf"/><line x1="64" y1="135" x2="300" y2="135"/>
-              <line x1="300" y1="85" x2="230" y2="85"/><line x1="230" y1="85" x2="230" y2="30"/><line x1="230" y1="30" x2="280" y2="30"/><rect x="280" y="23" width="56" height="14" rx="1"/><line x1="336" y1="30" x2="420" y2="30"/><line x1="420" y1="30" x2="420" y2="110"/>
-              <line x1="230" y1="85" x2="230" y2="100"/><rect x="223" y="100" width="14" height="44" rx="1"/><line x1="230" y1="144" x2="230" y2="168"/><line x1="218" y1="168" x2="242" y2="168"/><line x1="222" y1="173" x2="238" y2="173"/><line x1="226" y1="178" x2="234" y2="178"/></g>
-            <g class="d-fg" font-size="14"><text x="40" y="128">U_e</text><text x="210" y="126" text-anchor="end">R₁</text><text x="308" y="16" text-anchor="middle">R₂</text></g>
-            <circle cx="230" cy="85" r="3.5" class="d-fg"/><circle cx="420" cy="110" r="3.5" class="d-fg"/>
-          </g>
-          <!-- Folger -->
-          <g id="op-fol" class="op-g">
-            <g class="d-st" stroke-width="1.8"><circle cx="60" cy="135" r="4" class="d-surf"/><line x1="64" y1="135" x2="300" y2="135"/>
-              <line x1="300" y1="85" x2="230" y2="85"/><line x1="230" y1="85" x2="230" y2="30"/><line x1="230" y1="30" x2="420" y2="30"/><line x1="420" y1="30" x2="420" y2="110"/></g>
-            <g class="d-fg" font-size="14"><text x="40" y="128">U_e</text></g>
-            <circle cx="420" cy="110" r="3.5" class="d-fg"/>
-          </g>
-          <!-- Integrator -->
-          <g id="op-int" class="op-g">
-            <g class="d-st" stroke-width="1.8"><circle cx="60" cy="85" r="4" class="d-surf"/><line x1="64" y1="85" x2="120" y2="85"/><rect x="120" y="78" width="56" height="14" rx="1"/><line x1="176" y1="85" x2="300" y2="85"/>
-              <line x1="230" y1="85" x2="230" y2="30"/><line x1="230" y1="30" x2="304" y2="30"/><line x1="304" y1="16" x2="304" y2="44" stroke-width="2.6"/><line x1="314" y1="16" x2="314" y2="44" stroke-width="2.6"/><line x1="314" y1="30" x2="420" y2="30"/><line x1="420" y1="30" x2="420" y2="110"/>
-              <line x1="300" y1="135" x2="270" y2="135"/><line x1="270" y1="135" x2="270" y2="168"/><line x1="258" y1="168" x2="282" y2="168"/><line x1="262" y1="173" x2="278" y2="173"/><line x1="266" y1="178" x2="274" y2="178"/></g>
-            <g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text x="148" y="70" text-anchor="middle">R</text><text x="330" y="14">C</text></g>
-            <circle cx="230" cy="85" r="3.5" class="d-fg"/><circle cx="420" cy="110" r="3.5" class="d-fg"/>
-          </g>
-          <text x="210" y="196" class="d-mut" font-size="12" id="op-vm">virtuelle Masse am − Eingang</text>
-        </svg>
-        </div>
-        <canvas id="cv-op" class="c-op" role="img" aria-label="Eingangs- und Ausgangsspannung der gewählten Operationsverstärker-Schaltung über der Zeit, mit Begrenzung an der Versorgungsspannung."></canvas>
-        <div class="ctrls">
-          <div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="op-c">Schaltung</label></div><select id="op-c"><option value="inv">Invertierender Verstärker</option><option value="non">Nichtinvertierender Verstärker</option><option value="fol">Spannungsfolger</option><option value="int">Integrator</option></select></div>
-          <div class="ctrl" style="flex:0 1 130px"><div class="lab"><label for="op-w">Eingang</label></div><select id="op-w"><option value="sin">Sinus</option><option value="sq">Rechteck</option></select></div>
-          <div class="ctrl"><div class="lab"><label for="op-a">Amplitude U_e</label><output id="op-a-o"></output></div><input id="op-a" type="range" min="0.1" max="5" step="0.05" value="1"></div>
-        </div>
-        <div class="ctrls">
-          <div class="ctrl" id="op-r1-w"><div class="lab"><label for="op-r1">R₁ / R</label><output id="op-r1-o"></output></div><input id="op-r1" type="range" min="0" max="2" step="0.01" value="1"></div>
-          <div class="ctrl" id="op-r2-w"><div class="lab"><label for="op-r2">R₂</label><output id="op-r2-o"></output></div><input id="op-r2" type="range" min="0" max="2.3" step="0.01" value="1.5"></div>
-          <div class="ctrl" id="op-cc-w" hidden><div class="lab"><label for="op-cc">C</label><output id="op-cc-o"></output></div><input id="op-cc" type="range" min="0" max="3" step="0.01" value="2"></div>
-          <div class="ctrl" id="op-f-w"><div class="lab"><label for="op-f">Frequenz</label><output id="op-f-o"></output></div><input id="op-f" type="range" min="1" max="4" step="0.01" value="3"></div>
-        </div>
-        <div class="readout" id="op-read"></div>
-        <figcaption><b>Abb. 12</b> Die vier Grundschaltungen mit idealem OPV an ±12 V Versorgung. Grau der Eingang, blau der Ausgang, gestrichelt die Versorgungsgrenzen. Dreh die Verstärkung hoch, bis der Ausgang an ±12 V abgeschnitten wird. Beim Integrator wird aus einem Rechteck ein Dreieck, aus einem Sinus ein um 90° verschobener Sinus mit Amplitude \(\hat U_e/(2\pi f RC)\). Der Gleichanteil des Integrators ist hier herausgerechnet, ein realer Integrator braucht dafür einen Widerstand parallel zu C, wie beim CSA.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Mit Gegenkopplung: kein Eingangsstrom, und der OPV macht \(U_- = U_+\).</li>
-        <li>Invertierend \(-R_2/R_1\), nichtinvertierend \(1 + R_2/R_1\), Folger 1, Integrator \(-\frac{1}{RC}\int\).</li>
-        <li>Der CSA ist ein Integrator mit Stromquelle am Eingang.</li>
-      </ul></div>
-    </section>
-
-    <!-- 11 -->
-    <section id="rauschen">
-      <div class="step"><b>11</b><span class="eyebrow">Schaltungen</span></div>
-      <h2>Rauschen</h2>
-      <p>Jede reale Schaltung rauscht: Das Signal ist von zufälligen Schwankungen überlagert. Drei Quellen sollte man kennen.</p>
-      <ul class="tight">
-        <li><strong>Thermisches Rauschen</strong> (Johnson-Nyquist): Die Elektronen in jedem Widerstand bewegen sich wegen ihrer Temperatur zufällig. Das erzeugt eine Rauschspannung, die nur von \(R\), \(T\) und der betrachteten Bandbreite \(B\) abhängt:
+<section id="grundgroessen">
+<div class="step"><b>1</b><span class="eyebrow">Grundlagen</span></div>
+<h2>Ladung, Strom, Spannung</h2>
+<p><strong>Ladung</strong> <span class="arithmatex">\(Q\)</span> ist die Grundgröße. Sie ist immer ein Vielfaches der Elementarladung <span class="arithmatex">\(e = 1{,}602\cdot10^{-19}\)</span> C. Ein Elektron trägt <span class="arithmatex">\(-e\)</span>, ein Proton <span class="arithmatex">\(+e\)</span>. Gleiche Ladungen stoßen sich ab, ungleiche ziehen sich an.</p>
+<p><strong>Strom</strong> <span class="arithmatex">\(I\)</span> ist Ladung, die pro Zeit durch einen Querschnitt fließt. 1 Ampere sind 1 Coulomb pro Sekunde, also etwa <span class="arithmatex">\(6\cdot10^{18}\)</span> Elektronen pro Sekunde.</p>
+<div class="eq">\[
+I = \frac{\mathrm dQ}{\mathrm dt} \qquad\Longleftrightarrow\qquad Q = \int I\,\mathrm dt
+\]</div>
+<p><strong>Spannung</strong> <span class="arithmatex">\(U\)</span> ist Energie pro Ladung. Fällt eine Ladung <span class="arithmatex">\(Q\)</span> durch die Spannung <span class="arithmatex">\(U\)</span>, gewinnt oder verliert sie die Energie <span class="arithmatex">\(W = Q\cdot U\)</span>. Daher kommt auch die Einheit Elektronenvolt: 1 eV ist die Energie eines Elektrons, das 1 V durchläuft. Spannung wird immer zwischen zwei Punkten gemessen, sie ist eine Potentialdifferenz.</p>
+<p>Ein <strong>Widerstand</strong> <span class="arithmatex">\(R\)</span> setzt Strom und Spannung ins Verhältnis. Für ohmsche Bauteile ist das Verhältnis konstant:</p>
+<div class="eq">\[
+U = R\cdot I \qquad\qquad P = U\cdot I = I^2 R = \frac{U^2}{R}
+\]</div>
+<p><span class="arithmatex">\(P\)</span> ist die Leistung, also die Energie pro Zeit, die der Widerstand in Wärme umsetzt.</p>
+<h3>Die zwei Kirchhoffschen Regeln</h3>
+<ul class="tight">
+<li><strong>Knotenregel:</strong> In einen Knoten fließt genauso viel Strom hinein wie heraus. Ladung geht nicht verloren: <span class="arithmatex">\(\sum I = 0\)</span>.</li>
+<li><strong>Maschenregel:</strong> Auf einem geschlossenen Umlauf addieren sich alle Spannungen zu null: <span class="arithmatex">\(\sum U = 0\)</span>. Anschaulich: Wer einmal im Kreis läuft, kommt auf derselben Höhe an.</li>
+</ul>
+<p>Mit diesen beiden Regeln und dem ohmschen Gesetz lässt sich jede Gleichstromschaltung berechnen. Das wichtigste Beispiel ist der <strong>Spannungsteiler</strong>: Zwei Widerstände in Reihe teilen die Spannung im Verhältnis ihrer Werte.</p>
+<div class="eq">\[
+U_2 = U\cdot\frac{R_2}{R_1 + R_2}
+\]</div>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Spannungsteiler aus Spannungsquelle, R1 und R2 in Reihe, mit optionalem Lastwiderstand parallel zu R2. Die berechneten Ströme und Spannungen stehen neben den Bauteilen." id="vd-svg" role="img" viewbox="0 0 640 290">
+<defs><marker id="vd-ar" markerheight="7" markerwidth="7" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-acc" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<g class="d-st" stroke-width="1.8">
+<line x1="90" x2="300" y1="40" y2="40"></line><line x1="90" x2="90" y1="40" y2="118"></line><line x1="90" x2="90" y1="142" y2="260"></line><line x1="90" x2="300" y1="260" y2="260"></line>
+<line stroke-width="2.4" x1="72" x2="108" y1="118" y2="118"></line><line stroke-width="4" x1="80" x2="100" y1="142" y2="142"></line>
+<line x1="300" x2="300" y1="40" y2="62"></line><rect height="56" rx="1" width="20" x="290" y="62"></rect><line x1="300" x2="300" y1="118" y2="182"></line>
+<rect height="56" rx="1" width="20" x="290" y="182"></rect><line x1="300" x2="300" y1="238" y2="260"></line>
+<line x1="300" x2="540" y1="150" y2="150"></line><line x1="300" x2="540" y1="260" y2="260"></line>
+<circle class="d-surf" cx="540" cy="150" r="4"></circle><circle class="d-surf" cx="540" cy="260" r="4"></circle>
+</g>
+<g class="d-st" id="vd-load" stroke-width="1.8">
+<line x1="440" x2="440" y1="150" y2="182"></line><rect height="56" rx="1" width="20" x="430" y="182"></rect><line x1="440" x2="440" y1="238" y2="260"></line>
+<text class="d-fg" font-size="14" stroke="none" x="462" y="214">R_L</text>
+<text class="d-mut m" font-size="12" id="vd-il" stroke="none" x="462" y="232"></text>
+</g>
+<circle class="d-fg" cx="300" cy="150" r="4"></circle>
+<line class="d-sta" marker-end="url(#vd-ar)" stroke-width="2" x1="150" x2="240" y1="28" y2="28"></line>
+<g class="d-fg" font-size="14">
+<text text-anchor="middle" x="40" y="135">U</text><text class="m" font-size="12" id="vd-u" text-anchor="middle" x="40" y="153"></text>
+<text class="d-acc" id="vd-i" text-anchor="middle" x="195" y="20"></text>
+<text x="322" y="88">R₁</text><text class="m d-mut" font-size="12" id="vd-r1" x="322" y="106"></text>
+<text id="vd-u1" text-anchor="end" x="230" y="94"></text>
+<text x="322" y="208">R₂</text><text class="m d-mut" font-size="12" id="vd-r2" x="322" y="226"></text>
+<text id="vd-u2" text-anchor="end" x="230" y="214"></text>
+<text x="556" y="208">U₂</text><text class="m" font-size="12" id="vd-u2b" x="556" y="226"></text>
+</g>
+<g class="d-stm" stroke-dasharray="3 3" stroke-width="1.2"><line x1="250" x2="250" y1="64" y2="116"></line><line x1="250" x2="250" y1="184" y2="236"></line><line x1="580" x2="580" y1="156" y2="254"></line></g>
+</svg>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="vd-us">Quellspannung U</label><output id="vd-us-o"></output></div><input id="vd-us" max="24" min="1" step="0.5" type="range" value="12"/></div>
+<div class="ctrl"><div class="lab"><label for="vd-r1s">R₁</label><output id="vd-r1s-o"></output></div><input id="vd-r1s" max="5" min="2" step="0.01" type="range" value="3"/></div>
+<div class="ctrl"><div class="lab"><label for="vd-r2s">R₂</label><output id="vd-r2s-o"></output></div><input id="vd-r2s" max="5" min="2" step="0.01" type="range" value="3.3"/></div>
+</div>
+<div class="ctrls">
+<label class="chk"><input id="vd-lc" type="checkbox"/> Last R_L anschließen</label>
+<div class="ctrl"><div class="lab"><label for="vd-rl">R_L</label><output id="vd-rl-o"></output></div><input id="vd-rl" max="6" min="2" step="0.01" type="range" value="3.5"/></div>
+</div>
+<div class="readout" id="vd-read"></div>
+<figcaption><b>Abb. 1</b> Spannungsteiler. Die Werte neben den Bauteilen rechnen live mit. Die Maschenregel siehst du direkt: \(U_1 + U_2 = U\). Schließt du eine Last an, liegt sie parallel zu \(R_2\), der untere Teil wird niederohmiger, und \(U_2\) sinkt. Wie stark, hängt vom Verhältnis \(R_L\) zu \(R_2\) ab. Das ist der Grund, warum Messgeräte und Verstärkereingänge einen hohen Eingangswiderstand haben sollen.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Strom ist Ladung pro Zeit, Spannung ist Energie pro Ladung.</li>
+<li><span class="arithmatex">\(U = RI\)</span>, <span class="arithmatex">\(P = UI\)</span>. Knoten: Ströme summieren sich zu null. Masche: Spannungen summieren sich zu null.</li>
+<li>Reihe: Widerstände addieren sich. Parallel: Kehrwerte addieren sich, <span class="arithmatex">\(1/R = 1/R_1 + 1/R_2\)</span>.</li>
+</ul>
+</div>
+</section>
+<section id="efeld">
+<div class="step"><b>2</b><span class="eyebrow">Felder</span></div>
+<h2>Elektrisches Feld und Potential</h2>
+<p>Zwei Punktladungen üben aufeinander eine Kraft aus, das <strong>Coulomb-Gesetz</strong>:</p>
+<div class="eq">\[
+F = \frac{1}{4\pi\varepsilon_0}\,\frac{Q_1 Q_2}{r^2}
+\]</div>
+<p>Statt von Kraft zwischen zwei Ladungen spricht man meist vom <strong>elektrischen Feld</strong> <span class="arithmatex">\(\vec E\)</span>: Jede Ladung erzeugt um sich herum ein Feld, und eine zweite Ladung <span class="arithmatex">\(q\)</span> spürt darin die Kraft <span class="arithmatex">\(\vec F = q\vec E\)</span>. Das Feld ist also „Kraft pro Ladung“, Einheit V/m. Für eine Punktladung zeigt es radial nach außen (bei positiver Ladung) und fällt mit <span class="arithmatex">\(1/r^2\)</span> ab.</p>
+<p>Das <strong>Potential</strong> φ ist die potentielle Energie pro Ladung an einem Ort. Spannung ist die Differenz zweier Potentiale. Feld und Potential hängen eng zusammen: Das Feld zeigt immer in die Richtung, in der das Potential am stärksten abfällt.</p>
+<div class="eq">\[
+\vec E = -\nabla\varphi \qquad\qquad U_{AB} = \varphi_A - \varphi_B = \int_A^B \vec E\cdot\mathrm d\vec s
+\]</div>
+<p>Im einfachsten Fall, einem homogenen Feld zwischen zwei Platten im Abstand <span class="arithmatex">\(d\)</span>, gilt einfach <span class="arithmatex">\(E = U/d\)</span>. Das ist genau das Feld im Sensor eines Röntgendetektors.</p>
+<ul class="tight">
+<li><strong>Feldlinien</strong> zeigen die Richtung der Kraft auf eine positive Ladung. Sie beginnen an positiven und enden an negativen Ladungen.</li>
+<li><strong>Äquipotentiallinien</strong> verbinden Punkte gleichen Potentials. Sie stehen immer senkrecht auf den Feldlinien. Entlang einer Äquipotentiallinie kostet es keine Energie, eine Ladung zu verschieben.</li>
+</ul>
+<figure class="fig">
+<canvas aria-label="Interaktives Feldbild: verschiebbare Punktladungen mit Feldlinien und farbigem Potential." class="c-ef" id="cv-ef" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<button class="btn" id="ef-addp" type="button">Ladung + hinzufügen</button>
+<button class="btn" id="ef-addn" type="button">Ladung − hinzufügen</button>
+<button class="btn" id="ef-del" type="button">Letzte entfernen</button>
+<label class="chk"><input checked="" id="ef-pot" type="checkbox"/> Potential zeigen</label>
+<label class="chk"><input checked="" id="ef-lines" type="checkbox"/> Feldlinien</label>
+</div>
+<div class="readout" id="ef-read"></div>
+<figcaption><b>Abb. 2</b> Feld von Punktladungen (je 1 nC). Ladungen lassen sich verschieben, ein Doppelklick dreht das Vorzeichen. Rot ist hohes, blau niedriges Potential, die feinen Linien sind Äquipotentiallinien. Bewegst du die Maus über das Feld, siehst du unten Feldstärke und Potential an dieser Stelle. Abstände in cm.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Feld = Kraft pro Ladung, <span class="arithmatex">\(\vec F = q\vec E\)</span>. Potential = Energie pro Ladung.</li>
+<li>Feld zeigt vom hohen zum niedrigen Potential, <span class="arithmatex">\(\vec E = -\nabla\varphi\)</span>. Im Plattenkondensator <span class="arithmatex">\(E = U/d\)</span>.</li>
+</ul>
+</div>
+</section>
+<section id="bfeld">
+<div class="step"><b>3</b><span class="eyebrow">Felder</span></div>
+<h2>Magnetfeld und Lorentzkraft</h2>
+<p>Bewegte Ladungen, also Ströme, erzeugen ein <strong>Magnetfeld</strong> <span class="arithmatex">\(\vec B\)</span> (Einheit Tesla). Um einen geraden Leiter laufen die Feldlinien in Kreisen. Die Richtung gibt die <strong>Rechte-Hand-Regel</strong>: Daumen in Stromrichtung, die gekrümmten Finger zeigen die Feldrichtung. Der Betrag im Abstand <span class="arithmatex">\(r\)</span> ist</p>
+<div class="eq">\[
+B = \frac{\mu_0 I}{2\pi r}
+\]</div>
+<p>Magnetische Feldlinien haben weder Anfang noch Ende, es gibt keine magnetischen „Ladungen“. Auch ein Stabmagnet ist im Inneren aus atomaren Kreisströmen aufgebaut.</p>
+<h3>Lorentzkraft</h3>
+<p>Umgekehrt spürt eine bewegte Ladung im Magnetfeld eine Kraft, senkrecht zur Geschwindigkeit und senkrecht zum Feld. Zusammen mit dem elektrischen Anteil:</p>
+<div class="eq">\[
+\vec F = q\,\big(\vec E + \vec v\times\vec B\big)
+\]</div>
+<p>Weil die magnetische Kraft immer senkrecht zur Bewegung steht, ändert sie nur die Richtung, nicht die Geschwindigkeit. In einem homogenen Feld fliegt ein Teilchen deshalb auf einer Kreisbahn mit dem Radius</p>
+<div class="eq">\[
+r = \frac{m v}{|q| B}, \qquad T = \frac{2\pi m}{|q| B}
+\]</div>
+<p>Die Umlaufzeit <span class="arithmatex">\(T\)</span> hängt nicht von der Geschwindigkeit ab. Kommt ein elektrisches Feld senkrecht dazu, können sich beide Kräfte aufheben. Das passiert genau bei <span class="arithmatex">\(v = E/B\)</span>, dann fliegt das Teilchen geradeaus (<strong>Wien-Filter</strong>, ein einfacher Geschwindigkeitsfilter).</p>
+<figure class="fig">
+<canvas aria-label="Animation: ein Elektron fliegt in ein Magnetfeld und beschreibt eine Kreisbahn; mit zusätzlichem elektrischem Feld kann es geradeaus fliegen." class="c-lz" id="cv-lz" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="lz-q">Teilchen</label></div><select id="lz-q"><option value="-1">Elektron</option><option value="1">Positron</option></select></div>
+<div class="ctrl"><div class="lab"><label for="lz-v">Geschwindigkeit</label><output id="lz-v-o"></output></div><input id="lz-v" max="10" min="1" step="0.1" type="range" value="5"/></div>
+<div class="ctrl"><div class="lab"><label for="lz-b">Magnetfeld B (in die Seite)</label><output id="lz-b-o"></output></div><input id="lz-b" max="5" min="0" step="0.05" type="range" value="1.5"/></div>
+<div class="ctrl"><div class="lab"><label for="lz-e">Elektrisches Feld E (nach oben)</label><output id="lz-e-o"></output></div><input id="lz-e" max="20" min="-20" step="0.25" type="range" value="0"/></div>
+</div>
+<div class="readout" id="lz-read"></div>
+<figcaption><b>Abb. 3</b> Ein Teilchen fliegt von links in ein homogenes Magnetfeld, das in die Bildebene hineinzeigt (Kreuze). Die Bahn ist ein Kreis mit Radius \(r = mv/(|q|B)\), die Zeit ist stark verlangsamt. Mit einem elektrischen Feld lässt sich die Ablenkung aufheben: Stell E so ein, dass \(|E| = vB\) ist. Abstände in mm.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Ströme erzeugen Magnetfelder, um einen Leiter kreisförmig: <span class="arithmatex">\(B = \mu_0 I / 2\pi r\)</span>.</li>
+<li>Lorentzkraft <span class="arithmatex">\(\vec F = q(\vec E + \vec v\times\vec B)\)</span>: magnetischer Anteil senkrecht zur Bewegung, ändert nur die Richtung.</li>
+</ul>
+</div>
+</section>
+<section id="induktion">
+<div class="step"><b>4</b><span class="eyebrow">Felder</span></div>
+<h2>Induktion</h2>
+<p>Ein sich änderndes Magnetfeld erzeugt eine Spannung. Entscheidend ist der <strong>magnetische Fluss</strong> Φ, also wie viel Feld durch eine Fläche tritt (<span class="arithmatex">\(\Phi = B\cdot A\)</span> bei senkrechtem, homogenem Feld). Das <strong>Induktionsgesetz</strong> von Faraday:</p>
+<div class="eq">\[
+U_{\text{ind}} = -N\,\frac{\mathrm d\Phi}{\mathrm dt}
+\]</div>
+<p>mit der Windungszahl <span class="arithmatex">\(N\)</span> der Spule. Es zählt nur die <em>Änderung</em>: Ein ruhender Magnet in einer Spule induziert nichts, ein bewegter schon. Das Minuszeichen ist die <strong>Lenzsche Regel</strong>: Der induzierte Strom ist so gerichtet, dass sein eigenes Magnetfeld der Änderung entgegenwirkt.</p>
+<figure class="fig">
+<canvas aria-label="Animation: ein Stabmagnet schwingt durch eine Spule. Darunter der magnetische Fluss und die induzierte Spannung über der Zeit, daneben ein Zeigermessgerät." class="c-ind" id="cv-ind" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="ind-f">Bewegungsfrequenz</label><output id="ind-f-o"></output></div><input id="ind-f" max="2" min="0.1" step="0.05" type="range" value="0.5"/></div>
+<div class="ctrl"><div class="lab"><label for="ind-n">Windungen N</label><output id="ind-n-o"></output></div><input id="ind-n" max="500" min="10" step="10" type="range" value="200"/></div>
+<label class="chk"><input id="ind-flip" type="checkbox"/> Magnet umdrehen</label>
+<button class="btn" id="ind-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 4</b> Ein Magnet schwingt durch eine Spule. Der Fluss durch die Spule ist am größten, wenn der Magnet in der Mitte steckt. Die Spannung ist aber genau dort null, weil sich der Fluss in diesem Moment nicht ändert. Am größten ist sie beim schnellen Hinein- und Hinausfahren. Doppelte Frequenz ergibt doppelte Spannung, umgedrehter Magnet das umgekehrte Vorzeichen.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Nur ein sich ändernder Fluss induziert Spannung: <span class="arithmatex">\(U = -N\,\mathrm d\Phi/\mathrm dt\)</span>.</li>
+<li>Eine Spule nutzt Induktion an sich selbst, siehe Abschnitt 6.</li>
+</ul>
+</div>
+</section>
+<section id="maxwell">
+<div class="step"><b>5</b><span class="eyebrow">Felder</span></div>
+<h2>Maxwell-Gleichungen und elektromagnetische Wellen</h2>
+<p>Alles aus den Abschnitten 2 bis 4 steckt in vier Gleichungen. Man muss sie nicht auswendig können, aber ihre Aussage sollte man kennen:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Gleichung</th>
+<th>Aussage in Worten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\nabla\cdot\vec E = \rho/\varepsilon_0\)</span></td>
+<td>Ladungen sind Quellen des elektrischen Feldes (Coulomb).</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\nabla\cdot\vec B = 0\)</span></td>
+<td>Es gibt keine magnetischen Ladungen, B-Feldlinien sind geschlossen.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\nabla\times\vec E = -\partial\vec B/\partial t\)</span></td>
+<td>Ein sich änderndes Magnetfeld erzeugt ein elektrisches Wirbelfeld (Induktion).</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\nabla\times\vec B = \mu_0\vec J + \mu_0\varepsilon_0\,\partial\vec E/\partial t\)</span></td>
+<td>Ströme und sich ändernde elektrische Felder erzeugen Magnetfelder.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Die letzten beiden Gleichungen zusammen haben eine bemerkenswerte Folge: Ein sich änderndes E-Feld erzeugt ein B-Feld, das sich ändernde B-Feld wieder ein E-Feld, und so weiter. Die Störung pflanzt sich selbst fort, ganz ohne Ladungen. Das ist eine <strong>elektromagnetische Welle</strong>. Ihre Geschwindigkeit ergibt sich allein aus den beiden Feldkonstanten:</p>
+<div class="eq">\[
+c = \frac{1}{\sqrt{\mu_0\varepsilon_0}} \approx 3\cdot10^8\ \mathrm{m/s}
+\]</div>
+<p>E und B stehen senkrecht aufeinander und senkrecht zur Ausbreitungsrichtung, schwingen in Phase, und es gilt <span class="arithmatex">\(E = cB\)</span>. Radio, Licht und Röntgenstrahlung sind alle solche Wellen, nur mit unterschiedlicher Frequenz. Ihre Teilchennatur, das Photon, beschreibt Baustein 1 der Seite <a href="../physik/roentgen.html#photon">„Vom Photon zum Bild“</a>.</p>
+<figure class="fig">
+<canvas aria-label="Animation einer elektromagnetischen Welle: das elektrische Feld schwingt vertikal, das magnetische senkrecht dazu, beide breiten sich nach rechts aus." class="c-emw" id="cv-em" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="em-l">Wellenlänge (Darstellung)</label><output id="em-l-o"></output></div><input id="em-l" max="3" min="0.5" step="0.05" type="range" value="1.4"/></div>
+<button class="btn" id="em-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 5</b> Elektromagnetische Welle. Das E-Feld (rot) schwingt in der Bildebene auf und ab, das B-Feld (blau) senkrecht dazu, perspektivisch schräg gezeichnet. Beide laufen gemeinsam mit Lichtgeschwindigkeit nach rechts.</figcaption>
+</figure>
+</section>
+<section id="passiv">
+<div class="step"><b>6</b><span class="eyebrow">Bauelemente</span></div>
+<h2>Passive Bauelemente: Widerstand, Kondensator, Spule</h2>
+<p>Die drei passiven Grundbauelemente unterscheiden sich darin, wie sie Strom und Spannung verknüpfen. Der Widerstand setzt Energie in Wärme um. Kondensator und Spule speichern Energie, der eine im elektrischen, die andere im magnetischen Feld.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Widerstand</th>
+<th>Kondensator</th>
+<th>Spule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grundgleichung</td>
+<td><span class="arithmatex">\(U = R\,I\)</span></td>
+<td><span class="arithmatex">\(I = C\,\dfrac{\mathrm dU}{\mathrm dt}\)</span></td>
+<td><span class="arithmatex">\(U = L\,\dfrac{\mathrm dI}{\mathrm dt}\)</span></td>
+</tr>
+<tr>
+<td>Einheit</td>
+<td>Ohm (Ω)</td>
+<td>Farad (F)</td>
+<td>Henry (H)</td>
+</tr>
+<tr>
+<td>Energie</td>
+<td>wird zu Wärme, <span class="arithmatex">\(P = I^2R\)</span></td>
+<td>gespeichert, <span class="arithmatex">\(\tfrac12 CU^2\)</span></td>
+<td>gespeichert, <span class="arithmatex">\(\tfrac12 LI^2\)</span></td>
+</tr>
+<tr>
+<td>kann nicht springen</td>
+<td>(nichts)</td>
+<td>Spannung</td>
+<td>Strom</td>
+</tr>
+<tr>
+<td>bei Gleichspannung</td>
+<td>R</td>
+<td>sperrt</td>
+<td>leitet (Kurzschluss)</td>
+</tr>
+<tr>
+<td>bei hoher Frequenz</td>
+<td>R</td>
+<td>leitet</td>
+<td>sperrt</td>
+</tr>
+<tr>
+<td>Reihenschaltung</td>
+<td><span class="arithmatex">\(R_1 + R_2\)</span></td>
+<td><span class="arithmatex">\(1/C = 1/C_1 + 1/C_2\)</span></td>
+<td><span class="arithmatex">\(L_1 + L_2\)</span></td>
+</tr>
+<tr>
+<td>Parallelschaltung</td>
+<td><span class="arithmatex">\(1/R = 1/R_1 + 1/R_2\)</span></td>
+<td><span class="arithmatex">\(C_1 + C_2\)</span></td>
+<td><span class="arithmatex">\(1/L = 1/L_1 + 1/L_2\)</span></td>
+</tr>
+</tbody>
+</table></div>
+<h3>Widerstand</h3>
+<p>Der Widerstand eines Leiters hängt vom Material und von der Form ab:</p>
+<div class="eq">\[
+R = \rho\,\frac{l}{A}
+\]</div>
+<p>mit dem spezifischen Widerstand ρ, der Länge <span class="arithmatex">\(l\)</span> und dem Querschnitt <span class="arithmatex">\(A\)</span>. Langer, dünner Draht hat viel Widerstand, kurzer, dicker wenig. Kupfer hat <span class="arithmatex">\(\rho \approx 1{,}7\cdot10^{-8}\)</span> Ωm, Silizium ohne Dotierung rund <span class="arithmatex">\(2\cdot10^{3}\)</span> Ωm, Glas über <span class="arithmatex">\(10^{10}\)</span> Ωm. Die Spanne über viele Größenordnungen ist der Grund, warum man von Leitern, Halbleitern und Isolatoren spricht.</p>
+<p>Bei Metallen steigt ρ mit der Temperatur, weil die Gitterschwingungen die Elektronen stärker streuen (Kaltleiter, PTC). Bei Halbleitern ist es umgekehrt: Mit der Temperatur werden mehr Ladungsträger frei, und der Widerstand sinkt (Heißleiter, NTC). Das nutzt man für Temperatursensoren.</p>
+<h3>Kondensator</h3>
+<p>Ein Kondensator besteht aus zwei leitenden Flächen, getrennt durch einen Isolator. Legt man eine Spannung an, sammelt sich auf der einen Platte positive, auf der anderen gleich viel negative Ladung. Die <strong>Kapazität</strong> <span class="arithmatex">\(C\)</span> sagt, wie viel Ladung pro Volt hineinpasst:</p>
+<div class="eq">\[
+Q = C\cdot U \qquad\qquad C_{\text{Platte}} = \varepsilon_0\,\varepsilon_r\,\frac{A}{d}
+\]</div>
+<p>Große Fläche, kleiner Abstand und ein Isolator mit hoher Permittivität <span class="arithmatex">\(\varepsilon_r\)</span> ergeben große Kapazität. Ein Detektorpixel ist selbst ein kleiner Plattenkondensator: Bei 0,2 × 0,2 mm² Fläche, 1,6 mm CdTe (<span class="arithmatex">\(\varepsilon_r \approx 11\)</span>) sind das nur etwa 2,4 fF.</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Plattenkondensator: obere Platte mit positiven Ladungen, untere mit negativen, dazwischen parallele Feldlinien von oben nach unten." role="img" viewbox="0 0 640 220">
+<defs><marker id="pc-ar" markerheight="6" markerwidth="6" orient="auto" refx="9" refy="5" viewbox="0 0 10 10"><path class="d-acc" d="M0,0 L10,5 L0,10 z"></path></marker></defs>
+<rect class="d-fg" height="10" width="300" x="120" y="40"></rect><rect class="d-fg" height="10" width="300" x="120" y="170"></rect>
+<g class="d-h" font-size="16" font-weight="700"><text x="140" y="34">+</text><text x="190" y="34">+</text><text x="240" y="34">+</text><text x="290" y="34">+</text><text x="340" y="34">+</text><text x="390" y="34">+</text></g>
+<g class="d-e" font-size="18" font-weight="700"><text x="141" y="200">−</text><text x="191" y="200">−</text><text x="241" y="200">−</text><text x="291" y="200">−</text><text x="341" y="200">−</text><text x="391" y="200">−</text></g>
+<g class="d-sta" stroke-width="1.6"><line marker-end="url(#pc-ar)" x1="150" x2="150" y1="54" y2="164"></line><line marker-end="url(#pc-ar)" x1="200" x2="200" y1="54" y2="164"></line><line marker-end="url(#pc-ar)" x1="250" x2="250" y1="54" y2="164"></line><line marker-end="url(#pc-ar)" x1="300" x2="300" y1="54" y2="164"></line><line marker-end="url(#pc-ar)" x1="350" x2="350" y1="54" y2="164"></line><line marker-end="url(#pc-ar)" x1="400" x2="400" y1="54" y2="164"></line></g>
+<g class="d-stm" stroke-width="1.2"><line x1="450" x2="450" y1="50" y2="170"></line><line x1="444" x2="456" y1="50" y2="50"></line><line x1="444" x2="456" y1="170" y2="170"></line></g>
+<g class="d-fg" font-size="14"><text x="464" y="115">d</text><text x="30" y="49">+Q</text><text x="30" y="181">−Q</text><text x="500" y="100">E = U / d</text><text x="500" y="122">C = ε₀ε_r A / d</text><text class="d-mut" font-size="12" text-anchor="middle" x="270" y="215">Fläche A</text></g>
+</svg>
+</div>
+<figcaption><b>Abb. 6</b> Plattenkondensator. Zwischen den Platten ist das Feld homogen und zeigt von + nach −. Die Ladungen sitzen auf den Innenseiten der Platten.</figcaption>
+</figure>
+<h4>Strom und Spannung am Kondensator</h4>
+<p>Leitet man <span class="arithmatex">\(Q = CU\)</span> nach der Zeit ab, bekommt man die Beziehung, die man für Schaltungen braucht:</p>
+<div class="eq">\[
+I = C\,\frac{\mathrm dU}{\mathrm dt} \qquad\Longleftrightarrow\qquad U = \frac{1}{C}\int I\,\mathrm dt
+\]</div>
+<ul class="tight">
+<li>Ein Kondensator lässt Strom nur fließen, solange sich seine Spannung ändert. Bei Gleichspannung sperrt er, sobald er geladen ist.</li>
+<li>Seine Spannung kann nicht springen, denn dafür bräuchte es einen unendlich großen Strom. Deshalb glättet er.</li>
+<li>Er integriert den Strom: Die Spannung ist die bisher hineingeflossene Ladung geteilt durch <span class="arithmatex">\(C\)</span>. Das ist der Kern des ladungsempfindlichen Verstärkers.</li>
+<li>Gespeicherte Energie: <span class="arithmatex">\(W = \tfrac12 C U^2\)</span>.</li>
+</ul>
+<h3>Spule</h3>
+<p>Eine Spule ist ein aufgewickelter Draht. Fließt Strom hindurch, entsteht in ihrem Inneren ein Magnetfeld. Ändert sich der Strom, ändert sich das Feld, und die Spule induziert in sich selbst eine Spannung, die der Änderung entgegenwirkt (<strong>Selbstinduktion</strong>, Abschnitt 4). Die <strong>Induktivität</strong> <span class="arithmatex">\(L\)</span> beschreibt, wie stark. Für eine lange Zylinderspule gilt:</p>
+<div class="eq">\[
+L = \mu_0\,\mu_r\,\frac{N^2 A}{l} \qquad\qquad U = L\,\frac{\mathrm dI}{\mathrm dt} \qquad\qquad W = \tfrac12 L I^2
+\]</div>
+<p>Die Induktivität wächst mit dem Quadrat der Windungszahl, und ein Eisen- oder Ferritkern mit großem <span class="arithmatex">\(\mu_r\)</span> vervielfacht sie.</p>
+<ul class="tight">
+<li>Der Strom durch eine Spule kann nicht springen. Versucht man ihn schlagartig abzuschalten, erzeugt sie eine hohe Spannungsspitze. Deshalb liegt parallel zu Relaisspulen eine Freilaufdiode.</li>
+<li>Mit einem Widerstand zusammen entsteht ein RL-Glied mit der Zeitkonstante <span class="arithmatex">\(\tau = L/R\)</span>. Es verhält sich spiegelbildlich zum RC-Glied: Der Strom steigt exponentiell an.</li>
+<li>Zwei Spulen auf einem gemeinsamen Kern bilden einen Transformator. Das Spannungsverhältnis entspricht dem Windungsverhältnis, <span class="arithmatex">\(U_2/U_1 = N_2/N_1\)</span>. Hochspannungsgeneratoren für Röntgenröhren beruhen darauf.</li>
+</ul>
+<p>In der Detektor-Elektronik selbst spielen Spulen kaum eine Rolle. Wichtig sind sie in Netzteilen, Transformatoren und als ungewollte (parasitäre) Induktivität langer Leitungen, die schnelle Signale verformt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Widerstand: <span class="arithmatex">\(U = RI\)</span>, wandelt Energie in Wärme. <span class="arithmatex">\(R = \rho l/A\)</span>.</li>
+<li>Kondensator: <span class="arithmatex">\(I = C\,\mathrm dU/\mathrm dt\)</span>, Spannung kann nicht springen, sperrt Gleichstrom.</li>
+<li>Spule: <span class="arithmatex">\(U = L\,\mathrm dI/\mathrm dt\)</span>, Strom kann nicht springen, sperrt hohe Frequenzen.</li>
+</ul>
+</div>
+</section>
+<section id="halbleiter">
+<div class="step"><b>7</b><span class="eyebrow">Bauelemente</span></div>
+<h2>Halbleiter: von der Dotierung zum Transistor</h2>
+<p>Dioden, Transistoren, Solarzellen und die Sensoren von Röntgendetektoren beruhen alle auf demselben Prinzip: Man steuert gezielt, wie viele bewegliche Ladungsträger es in einem Halbleiter gibt und wo.</p>
+<h3>Leiter, Halbleiter, Isolator</h3>
+<p>Im Kristall können Elektronen nur Energien in bestimmten Bändern haben. Im <strong>Valenzband</strong> sind sie in den Bindungen festgehalten, im <strong>Leitungsband</strong> frei beweglich. Dazwischen liegt die <strong>Bandlücke</strong> <span class="arithmatex">\(E_g\)</span>. Bei Metallen überlappen die Bänder, es gibt immer freie Elektronen. Bei Isolatoren ist die Lücke so groß (über 5 eV), dass praktisch kein Elektron hinüberkommt. Halbleiter liegen dazwischen: Silizium hat 1,12 eV, Germanium 0,66 eV, CdTe 1,44 eV. Eine Skizze dazu steht in Baustein 4 der Seite <a href="../physik/roentgen.html#halbleiter">„Vom Photon zum Bild“</a>.</p>
+<h3>Eigenleitung</h3>
+<p>Silizium hat vier Valenzelektronen, jedes Atom ist mit vier Nachbarn verbunden. Durch die Wärmebewegung reißt gelegentlich ein Elektron aus seiner Bindung und wird frei. Zurück bleibt ein <strong>Loch</strong>, eine fehlende Bindung, die sich wie eine positive Ladung verhält: Ein Nachbarelektron kann in die Lücke springen, wodurch das Loch weiterwandert. Elektronen und Löcher entstehen immer paarweise.</p>
+<p>Die Dichte dieser Paare heißt <strong>Eigenleitungsdichte</strong> <span class="arithmatex">\(n_i\)</span>. In Silizium bei Raumtemperatur ist <span class="arithmatex">\(n_i \approx 10^{10}\ \text{cm}^{-3}\)</span>, bei etwa <span class="arithmatex">\(5\cdot10^{22}\)</span> Atomen pro cm³ also nur ein freies Elektron auf rund <span class="arithmatex">\(10^{12}\)</span> Atome. Sie steigt stark mit der Temperatur, ungefähr wie <span class="arithmatex">\(e^{-E_g/2kT}\)</span>. Deshalb rauschen Detektoren mit kleiner Bandlücke stärker und werden gekühlt (Germanium-Detektoren mit flüssigem Stickstoff).</p>
+<h3>Dotierung</h3>
+<p>Reines Silizium leitet schlecht. Baut man gezielt Fremdatome ein, ändert sich das um viele Größenordnungen, schon ein Fremdatom auf eine Million Siliziumatome reicht:</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Siliziumgitter mit Dotieratomen. Links ein Phosphoratom mit einem überzähligen, frei beweglichen Elektron (n-Dotierung). Rechts ein Boratom mit einem fehlenden Bindungselektron, einem Loch (p-Dotierung)." role="img" viewbox="0 0 640 248">
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="60" x2="130" y1="60" y2="60"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="60" x2="60" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="130" x2="200" y1="60" y2="60"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="130" x2="130" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="200" x2="200" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="60" x2="130" y1="120" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="60" x2="60" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="130" x2="200" y1="120" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="130" x2="130" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="200" x2="200" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="60" x2="130" y1="180" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="130" x2="200" y1="180" y2="180"></line>
+<circle class="d-soft" cx="60" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="60" y="65">Si</text>
+<circle class="d-soft" cx="130" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="130" y="65">Si</text>
+<circle class="d-soft" cx="200" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="200" y="65">Si</text>
+<circle class="d-soft" cx="60" cy="120" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="60" y="125">Si</text>
+<circle class="d-surf" cx="130" cy="120" r="17" stroke-width="2" style="stroke:var(--fg)"></circle><text class="d-fg" font-size="13" font-weight="700" text-anchor="middle" x="130" y="125">P</text>
+<circle class="d-soft" cx="200" cy="120" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="200" y="125">Si</text>
+<circle class="d-soft" cx="60" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="60" y="185">Si</text>
+<circle class="d-soft" cx="130" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="130" y="185">Si</text>
+<circle class="d-soft" cx="200" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="200" y="185">Si</text>
+<circle class="d-e" cx="160" cy="92" r="6"></circle><path class="d-stm" d="M142 108 Q 154 90 156 94" stroke-dasharray="2 2"></path>
+<text class="d-fg" font-size="12" x="172" y="100">freies Elektron</text>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="390" x2="460" y1="60" y2="60"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="390" x2="390" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="460" x2="530" y1="60" y2="60"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="460" x2="460" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="530" x2="530" y1="60" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="390" x2="460" y1="120" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="390" x2="390" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="460" x2="530" y1="120" y2="120"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="460" x2="460" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="530" x2="530" y1="120" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="390" x2="460" y1="180" y2="180"></line>
+<line class="d-stm" opacity="0.35" stroke-width="4" x1="460" x2="530" y1="180" y2="180"></line>
+<circle class="d-soft" cx="390" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="390" y="65">Si</text>
+<circle class="d-soft" cx="460" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="460" y="65">Si</text>
+<circle class="d-soft" cx="530" cy="60" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="530" y="65">Si</text>
+<circle class="d-soft" cx="390" cy="120" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="390" y="125">Si</text>
+<circle class="d-surf" cx="460" cy="120" r="17" stroke-width="2" style="stroke:var(--fg)"></circle><text class="d-fg" font-size="13" font-weight="700" text-anchor="middle" x="460" y="125">B</text>
+<circle class="d-soft" cx="530" cy="120" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="530" y="125">Si</text>
+<circle class="d-soft" cx="390" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="390" y="185">Si</text>
+<circle class="d-soft" cx="460" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="460" y="185">Si</text>
+<circle class="d-soft" cx="530" cy="180" r="17" stroke-width="1.2" style="stroke:var(--muted)"></circle><text class="d-fg" font-size="13" font-weight="400" text-anchor="middle" x="530" y="185">Si</text>
+<circle class="d-surf" cx="495" cy="120" r="6" stroke-width="2" style="stroke:var(--hole)"></circle>
+<text class="d-fg" font-size="12" text-anchor="middle" x="495" y="106">Loch</text>
+<text class="d-fg" font-size="14" font-weight="600" text-anchor="middle" x="130" y="222">n-Dotierung</text><text class="d-mut" font-size="12" text-anchor="middle" x="130" y="238">Donator, 5 Valenzelektronen</text>
+<text class="d-fg" font-size="14" font-weight="600" text-anchor="middle" x="460" y="222">p-Dotierung</text><text class="d-mut" font-size="12" text-anchor="middle" x="460" y="238">Akzeptor, 3 Valenzelektronen</text>
+</svg>
+</div>
+<figcaption><b>Abb. 7</b> Dotierung im Siliziumgitter, vereinfacht in 2D. Jedes Siliziumatom ist mit vier Nachbarn verbunden. Ein Phosphoratom bringt ein fünftes Elektron mit, das keinen Bindungspartner findet und sich frei bewegen kann. Einem Boratom fehlt ein Elektron für die vierte Bindung. Die Lücke, das Loch, kann von Nachbarelektronen gefüllt werden und wandert dadurch wie eine positive Ladung.</figcaption>
+</figure>
+<ul class="tight">
+<li><strong>n-dotiert</strong> (Phosphor, Arsen, 5 Valenzelektronen): Jedes Fremdatom spendet ein freies Elektron (<strong>Donator</strong>). Elektronen sind die <strong>Majoritätsträger</strong>, Löcher die Minoritätsträger. Das Atom selbst bleibt als ortsfestes positives Ion zurück.</li>
+<li><strong>p-dotiert</strong> (Bor, Gallium, 3 Valenzelektronen): Jedem Fremdatom fehlt ein Elektron, es nimmt eines aus der Umgebung auf (<strong>Akzeptor</strong>) und hinterlässt ein Loch. Löcher sind die Majoritätsträger. Das Atom bleibt als negatives Ion zurück.</li>
+</ul>
+<p>Wichtig: Ein dotierter Halbleiter ist insgesamt elektrisch neutral. Zu jedem freien Elektron gehört ein positives Ion, zu jedem Loch ein negatives. Erst wenn man die beweglichen Träger wegschiebt, bleiben die Ionen als Ladung übrig.</p>
+<h3>Der pn-Übergang</h3>
+<p>Bringt man ein p- und ein n-Gebiet in Kontakt, wandern Elektronen aus dem n-Gebiet ins p-Gebiet und Löcher umgekehrt, einfach weil auf der anderen Seite weniger davon sind (<strong>Diffusion</strong>). An der Grenze treffen sie sich und rekombinieren. Zurück bleibt eine Zone ohne freie Ladungsträger, die <strong>Raumladungszone</strong> oder Verarmungszone. In ihr sitzen nur noch die ortsfesten Ionen: negative auf der p-Seite, positive auf der n-Seite.</p>
+<p>Diese Ionen erzeugen ein elektrisches Feld, das weitere Diffusion bremst. Es stellt sich ein Gleichgewicht mit einer eingebauten Spannung, der <strong>Diffusionsspannung</strong> <span class="arithmatex">\(U_D\)</span>, ein (in Silizium etwa 0,6–0,8 V). Die Breite der Zone hängt von der Dotierung und der angelegten Spannung ab:</p>
+<div class="eq">\[
+w = \sqrt{\frac{2\varepsilon}{e}\,\frac{N_A + N_D}{N_A N_D}\,\big(U_D - U\big)}
+\]</div>
+<figure class="fig">
+<canvas aria-label="pn-Übergang: links p-Gebiet mit Löchern, rechts n-Gebiet mit Elektronen, dazwischen die Raumladungszone mit ortsfesten Ionen. Darunter das elektrische Feld über dem Ort." class="c-pn" id="cv-pn" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="pn-u">Angelegte Spannung U</label><output id="pn-u-o"></output></div><input id="pn-u" max="0.6" min="-50" step="0.05" type="range" value="0"/></div>
+<div class="ctrl"><div class="lab"><label for="pn-n">Dotierung (beide Seiten)</label><output id="pn-n-o"></output></div><input id="pn-n" max="17" min="13" step="0.05" type="range" value="15"/></div>
+</div>
+<div class="readout" id="pn-read"></div>
+<figcaption><b>Abb. 8</b> pn-Übergang in Silizium, beide Seiten gleich stark dotiert. Oben: Löcher (rot, links) und Elektronen (blau, rechts) sind frei beweglich. In der Raumladungszone in der Mitte gibt es keine freien Ladungsträger mehr, dort bleiben nur die ortsfesten Ionen der Dotieratome zurück (− links, + rechts). Unten das elektrische Feld, das diese Ionen erzeugen. Eine negative Spannung (Sperrrichtung) verbreitert die Zone, eine positive (Durchlassrichtung) baut sie ab. Schwächere Dotierung ergibt eine breitere Zone.</figcaption>
+</figure>
+<ul class="tight">
+<li><strong>Sperrrichtung</strong> (Plus an n, Minus an p, <span class="arithmatex">\(U &lt; 0\)</span>): Die Spannung zieht die freien Träger noch weiter von der Grenze weg. Die Zone wird breiter, es fließt nur ein winziger Sperrstrom aus thermisch erzeugten Paaren.</li>
+<li><strong>Durchlassrichtung</strong> (<span class="arithmatex">\(U &gt; 0\)</span>): Die Spannung schiebt die Träger in die Zone hinein. Nähert sich <span class="arithmatex">\(U\)</span> der Diffusionsspannung, verschwindet die Barriere, und der Strom steigt exponentiell.</li>
+</ul>
+<p>Für Strahlungsdetektoren ist die Sperrrichtung entscheidend: Die Raumladungszone ist ein Volumen ohne freie Ladungsträger, aber mit starkem Feld. Ein Photon, das dort Elektron-Loch-Paare erzeugt, liefert ein sauberes Signal, weil das Feld die Paare sofort trennt. Siliziumsensoren sind großflächige, schwach dotierte Dioden, die mit hoher Sperrspannung über die ganze Dicke <strong>voll verarmt</strong> werden. Schwache Dotierung ist dafür wichtig, wie die Simulation zeigt.</p>
+<h3>Dioden</h3>
+<p>Eine Diode ist ein pn-Übergang mit zwei Anschlüssen. Ihre Kennlinie folgt der Shockley-Gleichung:</p>
+<div class="eq">\[
+I = I_S\left(e^{U/(n\,U_T)} - 1\right), \qquad U_T = \frac{kT}{e} \approx 26\ \mathrm{mV}\ \text{bei Raumtemperatur}
+\]</div>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Typ</th>
+<th>Besonderheit</th>
+<th>Einsatz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gleichrichterdiode</td>
+<td>Si-pn-Übergang, Durchlass ab ca. 0,7 V</td>
+<td>Netzteile, Schutz gegen Verpolung</td>
+</tr>
+<tr>
+<td>Schottky-Diode</td>
+<td>Metall-Halbleiter-Kontakt statt pn, ca. 0,2–0,4 V, sehr schnell</td>
+<td>schnelle Schaltungen; auch Kontakte von CdTe-Sensoren</td>
+</tr>
+<tr>
+<td>Z-Diode</td>
+<td>bricht in Sperrrichtung bei definierter Spannung kontrolliert durch</td>
+<td>Spannungsstabilisierung, Überspannungsschutz</td>
+</tr>
+<tr>
+<td>Leuchtdiode (LED)</td>
+<td>Rekombination sendet Licht aus, Farbe hängt von der Bandlücke ab</td>
+<td>Beleuchtung, Anzeigen</td>
+</tr>
+<tr>
+<td>Photodiode</td>
+<td>in Sperrrichtung, Licht erzeugt Paare in der Raumladungszone</td>
+<td>Lichtsensoren; unter dem Szintillator eines Flachdetektors</td>
+</tr>
+<tr>
+<td>Detektordiode</td>
+<td>großvolumig, voll verarmt, hohe Sperrspannung</td>
+<td>Röntgen- und Teilchendetektoren (Si, CdTe als Schottky)</td>
+</tr>
+</tbody>
+</table></div>
+<h3>Transistoren</h3>
+<p>Ein Transistor hat drei Anschlüsse. Mit einem kleinen Signal am Steueranschluss steuert er einen großen Strom zwischen den beiden anderen. Er kann damit <strong>schalten</strong> (voll an oder aus) und <strong>verstärken</strong> (Zwischenwerte proportional zum Steuersignal). Es gibt zwei Grundtypen:</p>
+<ul class="tight">
+<li><strong>Bipolartransistor (BJT)</strong>: zwei pn-Übergänge hintereinander (npn oder pnp). Ein kleiner Basisstrom <span class="arithmatex">\(I_B\)</span> steuert einen großen Kollektorstrom <span class="arithmatex">\(I_C = B\cdot I_B\)</span>, mit der Stromverstärkung <span class="arithmatex">\(B\)</span> von typisch 100 bis 500. Die Basis-Emitter-Strecke verhält sich wie eine Diode, also etwa 0,7 V.</li>
+<li><strong>MOSFET</strong>: Das Gate ist durch eine dünne Oxidschicht isoliert. Die Gate-Spannung <span class="arithmatex">\(U_{GS}\)</span> zieht Ladungsträger an die Oberfläche und bildet dort einen leitenden Kanal. Es fließt kein Gatestrom, gesteuert wird allein durch Spannung. MOSFETs sind die Bausteine praktisch aller integrierten Schaltungen, auch der Pixel-ASICs von Detektoren.</li>
+</ul>
+<p>Beim MOSFET unterscheidet man zwei Arbeitsbereiche. Im <strong>linearen Bereich</strong> (kleines <span class="arithmatex">\(U_{DS}\)</span>) wirkt der Kanal wie ein Widerstand, dessen Wert die Gate-Spannung einstellt. So baut man auf Chips Schalter und einstellbare Widerstände, etwa den Entladepfad eines ladungsempfindlichen Verstärkers. Im <strong>Sättigungsbereich</strong> hängt der Strom fast nur noch von <span class="arithmatex">\(U_{GS}\)</span> ab, der Transistor ist eine steuerbare Stromquelle und damit die Grundlage jedes Verstärkers.</p>
+<div class="eq">\[
+I_D = k\left[(U_{GS}-U_{th})\,U_{DS} - \tfrac12 U_{DS}^2\right] \ \text{(linear)}, \qquad I_D = \tfrac{k}{2}\,(U_{GS}-U_{th})^2 \ \text{(Sättigung)}
+\]</div>
+<figure class="fig">
+<canvas aria-label="Kennlinien: entweder Strom-Spannungs-Kennlinie einer Diode oder Ausgangskennlinienfeld eines MOSFET." class="c-kl" id="cv-kl" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="kl-m">Bauteil</label></div><select id="kl-m"><option value="d">Diode</option><option value="m">MOSFET</option><option value="b">Bipolartransistor</option></select></div>
+<div class="ctrl" id="kl-t-w"><div class="lab"><label for="kl-t">Temperatur</label><output id="kl-t-o"></output></div><input id="kl-t" max="120" min="-20" step="1" type="range" value="25"/></div>
+<div class="ctrl" hidden="" id="kl-b-w"><div class="lab"><label for="kl-b">Basisstrom I_B</label><output id="kl-b-o"></output></div><input id="kl-b" max="50" min="5" step="1" type="range" value="25"/></div>
+<div class="ctrl" hidden="" id="kl-g-w"><div class="lab"><label for="kl-g">Gate-Spannung U_GS</label><output id="kl-g-o"></output></div><input id="kl-g" max="4" min="1" step="0.05" type="range" value="2.5"/></div>
+</div>
+<div class="readout" id="kl-read"></div>
+<figcaption><b>Abb. 9</b> Diode: Strom über Spannung, mit Temperatureinfluss (der Sättigungsstrom verdoppelt sich etwa alle 10 K, deshalb sinkt die Durchlassspannung mit der Temperatur um rund 2 mV/K). MOSFET: Drainstrom über \(U_{DS}\) für mehrere Gate-Spannungen. Die hervorgehobene Kurve gehört zur eingestellten \(U_{GS}\). Im linearen Bereich am Anfang entspricht ihre Steigung dem Kehrwert des Kanalwiderstands, rechts der Grenze ist der Strom fast konstant. Bipolartransistor: Kollektorstrom über \(U_{CE}\) für mehrere Basisströme, mit Stromverstärkung \(B\) = 200. Modellwerte MOSFET: \(U_{th}\) = 1 V, \(k\) = 2 mA/V².</figcaption>
+</figure>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Bipolartransistor</th>
+<th>MOSFET</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Steuergröße</td>
+<td>Basisstrom <span class="arithmatex">\(I_B\)</span></td>
+<td>Gate-Spannung <span class="arithmatex">\(U_{GS}\)</span></td>
+</tr>
+<tr>
+<td>Steuerleistung</td>
+<td>braucht dauernd Basisstrom</td>
+<td>praktisch keine (isoliertes Gate)</td>
+</tr>
+<tr>
+<td>Stärken</td>
+<td>rauscharm bei niedriger Impedanz, hohe Steilheit</td>
+<td>winzig, sparsam, ideal für Chips und Schalter</td>
+</tr>
+<tr>
+<td>typisch in</td>
+<td>diskreten Verstärkern, Analogtechnik</td>
+<td>integrierten Schaltungen, Leistungsschaltern, ASICs</td>
+</tr>
+</tbody>
+</table></div>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Dotierung: n = zusätzliche Elektronen (Donatoren), p = Löcher (Akzeptoren). Insgesamt bleibt der Halbleiter neutral.</li>
+<li>pn-Übergang: Raumladungszone ohne freie Träger, mit Feld. Sperrrichtung macht sie breiter, Durchlassrichtung baut sie ab.</li>
+<li>Detektoren nutzen voll verarmte Dioden in Sperrrichtung: Photonen erzeugen dort Paare, das Feld trennt sie.</li>
+<li>Transistor: kleines Steuersignal steuert großen Strom. BJT stromgesteuert, MOSFET spannungsgesteuert.</li>
+</ul>
+</div>
+</section>
+<section id="rc">
+<div class="step"><b>8</b><span class="eyebrow">Schaltungen</span></div>
+<h2>RC-Glied: Laden und Entladen</h2>
+<p>Schaltet man einen Widerstand und einen Kondensator in Reihe an eine Spannung <span class="arithmatex">\(U_0\)</span>, lädt sich der Kondensator nicht sofort auf. Am Anfang ist er leer, die ganze Spannung liegt am Widerstand, und es fließt der größte Strom. Je voller der Kondensator wird, desto weniger Spannung bleibt für den Widerstand, und der Strom wird kleiner. Das Ergebnis ist ein exponentieller Verlauf:</p>
+<div class="eq">\[
+U_C(t) = U_0\,\big(1 - e^{-t/\tau}\big) \qquad\qquad \tau = R\,C
+\]</div>
+<p>Die <strong>Zeitkonstante</strong> τ ist die wichtigste Zahl einer RC-Schaltung. Nach einer Zeitkonstante sind 63 % erreicht, nach drei etwa 95 %, nach fünf über 99 %. Beim Entladen über den Widerstand fällt die Spannung entsprechend mit <span class="arithmatex">\(U_0\,e^{-t/\tau}\)</span>. Die Einheit passt: Ω · F = s, praktisch zum Merken ist kΩ · µF = ms und kΩ · fF = ps.</p>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="RC-Glied: Rechteckquelle, Widerstand R in Serie, Kondensator C nach Masse. Abgriff am Kondensator ergibt den Tiefpass, am Widerstand den Hochpass." role="img" viewbox="0 0 640 150">
+<g class="d-st" stroke-width="1.8">
+<circle cx="70" cy="80" r="22"></circle><path d="M58 88 L58 72 L70 72 L70 88 L82 88 L82 72" stroke-width="1.6"></path>
+<line x1="70" x2="70" y1="58" y2="30"></line><line x1="70" x2="200" y1="30" y2="30"></line><rect height="16" rx="1" width="60" x="200" y="22"></rect><line x1="260" x2="360" y1="30" y2="30"></line>
+<line x1="360" x2="360" y1="30" y2="72"></line><line stroke-width="2.6" x1="340" x2="380" y1="72" y2="72"></line><line stroke-width="2.6" x1="340" x2="380" y1="82" y2="82"></line><line x1="360" x2="360" y1="82" y2="130"></line>
+<line x1="70" x2="70" y1="102" y2="130"></line><line x1="70" x2="520" y1="130" y2="130"></line><line x1="360" x2="520" y1="30" y2="30"></line>
+<circle class="d-surf" cx="520" cy="30" r="4"></circle><circle class="d-surf" cx="520" cy="130" r="4"></circle>
+</g>
+<g class="d-fg" font-size="14"><text class="d-mut" font-size="12" text-anchor="middle" x="70" y="125">U_e</text><text text-anchor="middle" x="230" y="58">R</text><text x="392" y="82">C</text><text x="534" y="84">U_C</text></g>
+<g class="d-stm" stroke-dasharray="3 3"><line x1="560" x2="560" y1="36" y2="124"></line><line x1="200" x2="260" y1="10" y2="10"></line></g>
+<text class="d-mut" font-size="11" text-anchor="middle" x="230" y="8">U_R</text>
+</svg>
+</div>
+<canvas aria-label="Simulation: Rechteckspannung am RC-Glied, Spannung am Kondensator und am Widerstand über der Zeit." class="c-rc" id="cv-rc" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="rc-r">R</label><output id="rc-r-o"></output></div><input id="rc-r" max="2" min="0" step="0.01" type="range" value="1"/></div>
+<div class="ctrl"><div class="lab"><label for="rc-c">C</label><output id="rc-c-o"></output></div><input id="rc-c" max="1" min="-2" step="0.01" type="range" value="-1"/></div>
+<div class="ctrl"><div class="lab"><label for="rc-t">Periode der Rechteckspannung</label><output id="rc-t-o"></output></div><input id="rc-t" max="2" min="-1" step="0.01" type="range" value="1"/></div>
+</div>
+<div class="readout" id="rc-read"></div>
+<figcaption><b>Abb. 10</b> Eine Rechteckspannung zwischen 0 und 5 V am RC-Glied. Oben die Spannung am Kondensator: Sie folgt der Eingangsspannung mit Verzögerung, die Kanten werden rund (<strong>Tiefpass</strong>). Unten die Spannung am Widerstand, \(U_R = R\cdot I\): Sie zeigt nur die Sprünge und klingt danach ab (<strong>Hochpass</strong>). Die Markierung zeigt, wo eine Zeitkonstante nach dem Sprung liegt. Ist die Periode viel länger als τ, lädt der Kondensator jedes Mal voll, ist sie viel kürzer, mittelt er nur noch.</figcaption>
+</figure>
+<p>Das ist die Brücke zum Pulsformer: Ein CR-Glied mit Abgriff am Widerstand ist ein Hochpass und macht aus einer Stufe einen abklingenden Puls. Ein RC-Glied mit Abgriff am Kondensator ist ein Tiefpass und rundet ihn ab.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>τ = RC. Nach 1τ: 63 %, nach 3τ: 95 %, nach 5τ: über 99 %.</li>
+<li>Spannung am C: Tiefpass, glättet. Spannung am R: Hochpass, zeigt nur Änderungen.</li>
+</ul>
+</div>
+</section>
+<section id="impedanz">
+<div class="step"><b>9</b><span class="eyebrow">Schaltungen</span></div>
+<h2>Wechselstrom, Impedanz und Filter</h2>
+<p>Bei sinusförmigen Signalen rechnet man am bequemsten mit <strong>komplexen Zahlen</strong>. Eine Schwingung <span class="arithmatex">\(U(t) = \hat U\cos(\omega t + \varphi)\)</span> wird zum Zeiger <span class="arithmatex">\(\underline U = \hat U e^{j\varphi}\)</span>, der mit der Kreisfrequenz <span class="arithmatex">\(\omega = 2\pi f\)</span> rotiert. Die Länge des Zeigers ist die Amplitude, sein Winkel die Phase. (In der E-Technik schreibt man <span class="arithmatex">\(j\)</span> statt <span class="arithmatex">\(i\)</span>, weil <span class="arithmatex">\(i\)</span> schon für den Strom vergeben ist.)</p>
+<p>Der Vorteil: Ableiten wird zu Multiplikation mit <span class="arithmatex">\(j\omega\)</span>, Integrieren zu Division. Damit wird aus jedem Bauelement eine komplexe <strong>Impedanz</strong> <span class="arithmatex">\(Z = \underline U / \underline I\)</span>, mit der man wie mit Widerständen rechnet:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Bauelement</th>
+<th>Impedanz</th>
+<th>bei tiefer Frequenz</th>
+<th>bei hoher Frequenz</th>
+<th>Phase U zu I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Widerstand</td>
+<td><span class="arithmatex">\(Z_R = R\)</span></td>
+<td>R</td>
+<td>R</td>
+<td>0°</td>
+</tr>
+<tr>
+<td>Kondensator</td>
+<td><span class="arithmatex">\(Z_C = \dfrac{1}{j\omega C}\)</span></td>
+<td>sperrt (∞)</td>
+<td>leitet (→ 0)</td>
+<td>−90° (Strom eilt vor)</td>
+</tr>
+<tr>
+<td>Spule</td>
+<td><span class="arithmatex">\(Z_L = j\omega L\)</span></td>
+<td>leitet (→ 0)</td>
+<td>sperrt (∞)</td>
+<td>+90° (Spannung eilt vor)</td>
+</tr>
+</tbody>
+</table></div>
+<h3>Tiefpass und Hochpass</h3>
+<p>Das RC-Glied aus Abschnitt 8 ist jetzt einfach ein Spannungsteiler aus <span class="arithmatex">\(R\)</span> und <span class="arithmatex">\(Z_C\)</span>. Abgriff am Kondensator (Tiefpass) und am Widerstand (Hochpass):</p>
+<div class="eq">\[
+H_{\text{TP}} = \frac{Z_C}{R + Z_C} = \frac{1}{1 + j\omega RC} \qquad\qquad H_{\text{HP}} = \frac{R}{R + Z_C} = \frac{j\omega RC}{1 + j\omega RC}
+\]</div>
+<p>Bei der <strong>Grenzfrequenz</strong> <span class="arithmatex">\(f_g = 1/(2\pi RC)\)</span> sind Widerstand und Kondensator gleich groß, die Amplitude ist auf <span class="arithmatex">\(1/\sqrt2 \approx 0{,}71\)</span> gefallen (−3 dB) und die Phase um 45° verschoben. Weit darüber fällt der Tiefpass mit 20 dB pro Dekade: zehnfache Frequenz, zehntel Amplitude.</p>
+<p><strong>Dezibel</strong> sind ein logarithmisches Maß für Verhältnisse. Für Spannungen gilt <span class="arithmatex">\(\text{dB} = 20\log_{10}(U_2/U_1)\)</span>: −3 dB ≈ 0,71, −6 dB ≈ 0,5, −20 dB = 0,1, −40 dB = 0,01. Die Darstellung von Betrag in dB und Phase über der logarithmischen Frequenz heißt <strong>Bode-Diagramm</strong>.</p>
+<figure class="fig">
+<div class="two">
+<div><div class="lbl">Bode-Diagramm</div><canvas aria-label="Bode-Diagramm: Betrag in dB und Phase in Grad über der Frequenz, mit Markierung der gewählten Frequenz." class="c-sq" id="cv-bode" role="img"></canvas></div>
+<div><div class="lbl">Zeitverlauf bei der gewählten Frequenz</div><canvas aria-label="Sinus am Eingang und Ausgang des Filters bei der gewählten Frequenz." class="c-sq" id="cv-bt" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="bd-t">Filter</label></div><select id="bd-t"><option value="lp">Tiefpass (Abgriff C)</option><option value="hp">Hochpass (Abgriff R)</option></select></div>
+<div class="ctrl"><div class="lab"><label for="bd-r">R</label><output id="bd-r-o"></output></div><input id="bd-r" max="6" min="2" step="0.01" type="range" value="4"/></div>
+<div class="ctrl"><div class="lab"><label for="bd-c">C</label><output id="bd-c-o"></output></div><input id="bd-c" max="-6" min="-11" step="0.01" type="range" value="-8"/></div>
+<div class="ctrl"><div class="lab"><label for="bd-f">Signalfrequenz</label><output id="bd-f-o"></output></div><input id="bd-f" max="6" min="1" step="0.01" type="range" value="3.2"/></div>
+</div>
+<div class="readout" id="bd-read"></div>
+<figcaption><b>Abb. 11</b> Links das Bode-Diagramm des RC-Filters, rechts ein Sinus der gewählten Frequenz am Eingang (grau) und am Ausgang (blau). Schiebe die Signalfrequenz über die Grenzfrequenz (gestrichelt) und beobachte, wie Amplitude und Phasenverschiebung zusammenhängen.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Impedanzen: <span class="arithmatex">\(Z_R = R\)</span>, <span class="arithmatex">\(Z_C = 1/(j\omega C)\)</span>, <span class="arithmatex">\(Z_L = j\omega L\)</span>. Damit rechnet man wie mit Widerständen.</li>
+<li>RC-Filter: <span class="arithmatex">\(f_g = 1/(2\pi RC)\)</span>, dort −3 dB und 45°. Darüber bzw. darunter 20 dB pro Dekade.</li>
+</ul>
+</div>
+</section>
+<section id="opv">
+<div class="step"><b>10</b><span class="eyebrow">Schaltungen</span></div>
+<h2>Operationsverstärker</h2>
+<p>Ein Operationsverstärker (OPV) ist ein Differenzverstärker mit zwei Eingängen (+ und −) und einem Ausgang. Er verstärkt die Spannungsdifferenz zwischen den Eingängen mit einem riesigen Faktor <span class="arithmatex">\(A\)</span>, oft <span class="arithmatex">\(10^5\)</span> bis <span class="arithmatex">\(10^6\)</span>: <span class="arithmatex">\(U_a = A\,(U_+ - U_-)\)</span>. Allein ist das unbrauchbar, schon ein Mikrovolt Differenz würde ihn in die Begrenzung treiben. Nützlich wird er erst mit <strong>Gegenkopplung</strong>: Ein Teil des Ausgangs wird auf den − Eingang zurückgeführt.</p>
+<h3>Die zwei Faustregeln</h3>
+<p>Mit Gegenkopplung lässt sich fast jede OPV-Schaltung mit zwei Regeln verstehen:</p>
+<ol class="steps">
+<li><strong>In die Eingänge fließt kein Strom.</strong> Der Eingangswiderstand ist praktisch unendlich.</li>
+<li><strong>Der Ausgang stellt sich so ein, dass beide Eingänge dieselbe Spannung haben</strong>, <span class="arithmatex">\(U_- = U_+\)</span>. Grund: Jede Differenz würde mit <span class="arithmatex">\(A\)</span> verstärkt und über die Gegenkopplung sofort ausgeglichen.</li>
+</ol>
+<p>Liegt der + Eingang auf Masse, hält der OPV also auch den − Eingang auf 0 V, obwohl er nicht direkt mit Masse verbunden ist. Das nennt man <strong>virtuelle Masse</strong>.</p>
+<h3>Die Grundschaltungen</h3>
+<ul class="tight">
+<li><strong>Invertierender Verstärker:</strong> Wegen der virtuellen Masse fließt durch <span class="arithmatex">\(R_1\)</span> der Strom <span class="arithmatex">\(U_e/R_1\)</span>. Weil nichts in den Eingang fließt, muss er komplett durch <span class="arithmatex">\(R_2\)</span> weiter. Dafür muss der Ausgang auf <span class="arithmatex">\(-R_2 \cdot U_e/R_1\)</span> gehen: <span class="arithmatex">\(U_a = -\tfrac{R_2}{R_1}U_e\)</span>.</li>
+<li><strong>Nichtinvertierender Verstärker:</strong> <span class="arithmatex">\(U_e\)</span> liegt am + Eingang, <span class="arithmatex">\(R_1\)</span> und <span class="arithmatex">\(R_2\)</span> bilden einen Spannungsteiler vom Ausgang zum − Eingang. Der OPV regelt, bis der geteilte Ausgang gleich <span class="arithmatex">\(U_e\)</span> ist: <span class="arithmatex">\(U_a = \big(1 + \tfrac{R_2}{R_1}\big)U_e\)</span>.</li>
+<li><strong>Spannungsfolger:</strong> Der Ausgang direkt auf den − Eingang, also <span class="arithmatex">\(U_a = U_e\)</span>. Verstärkt nicht, belastet aber die Quelle nicht und kann trotzdem Strom liefern (Impedanzwandler, vgl. Abb. 1 mit Last).</li>
+<li><strong>Integrator:</strong> Wie der invertierende Verstärker, aber mit Kondensator statt <span class="arithmatex">\(R_2\)</span>. Der Strom <span class="arithmatex">\(U_e/R\)</span> lädt den Kondensator, also <span class="arithmatex">\(U_a = -\tfrac{1}{RC}\int U_e\,\mathrm dt\)</span>. Ersetzt man <span class="arithmatex">\(R\)</span> und <span class="arithmatex">\(U_e\)</span> durch eine Stromquelle, den Sensor, ist das genau der <strong>ladungsempfindliche Verstärker</strong>: <span class="arithmatex">\(U_a = -Q/C_f\)</span>.</li>
+</ul>
+<figure class="fig">
+<div class="svgbox">
+<svg aria-label="Schaltbild der gewählten Operationsverstärker-Grundschaltung." id="op-svg" role="img" viewbox="0 0 560 200">
+<g class="d-st" stroke-width="1.8">
+<path d="M300 60 L300 160 L380 110 Z"></path><line x1="380" x2="470" y1="110" y2="110"></line><circle class="d-surf" cx="470" cy="110" r="4"></circle>
+</g>
+<g class="d-fg" font-size="15"><text x="308" y="91">−</text><text x="308" y="141">+</text><text font-size="14" x="482" y="115">U_a</text></g>
+<!-- invertierend -->
+<g class="op-g" id="op-inv">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="85" r="4"></circle><line x1="64" x2="120" y1="85" y2="85"></line><rect height="14" rx="1" width="56" x="120" y="78"></rect><line x1="176" x2="300" y1="85" y2="85"></line>
+<line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="280" y1="30" y2="30"></line><rect height="14" rx="1" width="56" x="280" y="23"></rect><line x1="336" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="300" x2="270" y1="135" y2="135"></line><line x1="270" x2="270" y1="135" y2="168"></line><line x1="258" x2="282" y1="168" y2="168"></line><line x1="262" x2="278" y1="173" y2="173"></line><line x1="266" x2="274" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text text-anchor="middle" x="148" y="70">R₁</text><text text-anchor="middle" x="308" y="16">R₂</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- nichtinvertierend -->
+<g class="op-g" id="op-non">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="135" r="4"></circle><line x1="64" x2="300" y1="135" y2="135"></line>
+<line x1="300" x2="230" y1="85" y2="85"></line><line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="280" y1="30" y2="30"></line><rect height="14" rx="1" width="56" x="280" y="23"></rect><line x1="336" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="230" x2="230" y1="85" y2="100"></line><rect height="44" rx="1" width="14" x="223" y="100"></rect><line x1="230" x2="230" y1="144" y2="168"></line><line x1="218" x2="242" y1="168" y2="168"></line><line x1="222" x2="238" y1="173" y2="173"></line><line x1="226" x2="234" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="128">U_e</text><text text-anchor="end" x="210" y="126">R₁</text><text text-anchor="middle" x="308" y="16">R₂</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- Folger -->
+<g class="op-g" id="op-fol">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="135" r="4"></circle><line x1="64" x2="300" y1="135" y2="135"></line>
+<line x1="300" x2="230" y1="85" y2="85"></line><line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="128">U_e</text></g>
+<circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<!-- Integrator -->
+<g class="op-g" id="op-int">
+<g class="d-st" stroke-width="1.8"><circle class="d-surf" cx="60" cy="85" r="4"></circle><line x1="64" x2="120" y1="85" y2="85"></line><rect height="14" rx="1" width="56" x="120" y="78"></rect><line x1="176" x2="300" y1="85" y2="85"></line>
+<line x1="230" x2="230" y1="85" y2="30"></line><line x1="230" x2="304" y1="30" y2="30"></line><line stroke-width="2.6" x1="304" x2="304" y1="16" y2="44"></line><line stroke-width="2.6" x1="314" x2="314" y1="16" y2="44"></line><line x1="314" x2="420" y1="30" y2="30"></line><line x1="420" x2="420" y1="30" y2="110"></line>
+<line x1="300" x2="270" y1="135" y2="135"></line><line x1="270" x2="270" y1="135" y2="168"></line><line x1="258" x2="282" y1="168" y2="168"></line><line x1="262" x2="278" y1="173" y2="173"></line><line x1="266" x2="274" y1="178" y2="178"></line></g>
+<g class="d-fg" font-size="14"><text x="40" y="78">U_e</text><text text-anchor="middle" x="148" y="70">R</text><text x="330" y="14">C</text></g>
+<circle class="d-fg" cx="230" cy="85" r="3.5"></circle><circle class="d-fg" cx="420" cy="110" r="3.5"></circle>
+</g>
+<text class="d-mut" font-size="12" id="op-vm" x="210" y="196">virtuelle Masse am − Eingang</text>
+</svg>
+</div>
+<canvas aria-label="Eingangs- und Ausgangsspannung der gewählten Operationsverstärker-Schaltung über der Zeit, mit Begrenzung an der Versorgungsspannung." class="c-op" id="cv-op" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="op-c">Schaltung</label></div><select id="op-c"><option value="inv">Invertierender Verstärker</option><option value="non">Nichtinvertierender Verstärker</option><option value="fol">Spannungsfolger</option><option value="int">Integrator</option></select></div>
+<div class="ctrl" style="flex:0 1 130px"><div class="lab"><label for="op-w">Eingang</label></div><select id="op-w"><option value="sin">Sinus</option><option value="sq">Rechteck</option></select></div>
+<div class="ctrl"><div class="lab"><label for="op-a">Amplitude U_e</label><output id="op-a-o"></output></div><input id="op-a" max="5" min="0.1" step="0.05" type="range" value="1"/></div>
+</div>
+<div class="ctrls">
+<div class="ctrl" id="op-r1-w"><div class="lab"><label for="op-r1">R₁ / R</label><output id="op-r1-o"></output></div><input id="op-r1" max="2" min="0" step="0.01" type="range" value="1"/></div>
+<div class="ctrl" id="op-r2-w"><div class="lab"><label for="op-r2">R₂</label><output id="op-r2-o"></output></div><input id="op-r2" max="2.3" min="0" step="0.01" type="range" value="1.5"/></div>
+<div class="ctrl" hidden="" id="op-cc-w"><div class="lab"><label for="op-cc">C</label><output id="op-cc-o"></output></div><input id="op-cc" max="3" min="0" step="0.01" type="range" value="2"/></div>
+<div class="ctrl" id="op-f-w"><div class="lab"><label for="op-f">Frequenz</label><output id="op-f-o"></output></div><input id="op-f" max="4" min="1" step="0.01" type="range" value="3"/></div>
+</div>
+<div class="readout" id="op-read"></div>
+<figcaption><b>Abb. 12</b> Die vier Grundschaltungen mit idealem OPV an ±12 V Versorgung. Grau der Eingang, blau der Ausgang, gestrichelt die Versorgungsgrenzen. Dreh die Verstärkung hoch, bis der Ausgang an ±12 V abgeschnitten wird. Beim Integrator wird aus einem Rechteck ein Dreieck, aus einem Sinus ein um 90° verschobener Sinus mit Amplitude \(\hat U_e/(2\pi f RC)\). Der Gleichanteil des Integrators ist hier herausgerechnet, ein realer Integrator braucht dafür einen Widerstand parallel zu C, wie beim CSA.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Mit Gegenkopplung: kein Eingangsstrom, und der OPV macht <span class="arithmatex">\(U_- = U_+\)</span>.</li>
+<li>Invertierend <span class="arithmatex">\(-R_2/R_1\)</span>, nichtinvertierend <span class="arithmatex">\(1 + R_2/R_1\)</span>, Folger 1, Integrator <span class="arithmatex">\(-\frac{1}{RC}\int\)</span>.</li>
+<li>Der CSA ist ein Integrator mit Stromquelle am Eingang.</li>
+</ul>
+</div>
+</section>
+<section id="rauschen">
+<div class="step"><b>11</b><span class="eyebrow">Schaltungen</span></div>
+<h2>Rauschen</h2>
+<p>Jede reale Schaltung rauscht: Das Signal ist von zufälligen Schwankungen überlagert. Drei Quellen sollte man kennen.</p>
+<ul class="tight">
+<li><strong>Thermisches Rauschen</strong> (Johnson-Nyquist): Die Elektronen in jedem Widerstand bewegen sich wegen ihrer Temperatur zufällig. Das erzeugt eine Rauschspannung, die nur von \(R\), \(T\) und der betrachteten Bandbreite \(B\) abhängt:
           <div class="eq">$$u_{n,\text{rms}} = \sqrt{4\,k\,T\,R\,B}$$</div></li>
-        <li><strong>Schrotrauschen:</strong> Strom besteht aus einzelnen Ladungen, die zufällig ankommen, ähnlich wie Photonen. Ein Gleichstrom \(I\) schwankt deshalb um
+<li><strong>Schrotrauschen:</strong> Strom besteht aus einzelnen Ladungen, die zufällig ankommen, ähnlich wie Photonen. Ein Gleichstrom \(I\) schwankt deshalb um
           <div class="eq">$$i_{n,\text{rms}} = \sqrt{2\,e\,I\,B}$$</div>
           Bei Detektoren ist das der Leckstrom des Sensors: Er ist das Parallelrauschen aus der ENC-Formel.</li>
-        <li><strong>1/f-Rauschen:</strong> Schwankungen, die zu tiefen Frequenzen hin zunehmen, vor allem in Transistoren. Es dominiert bei langen Messzeiten.</li>
-      </ul>
-      <p>Thermisches und Schrotrauschen sind <strong>weiß</strong>: gleich stark bei allen Frequenzen. Ihre Leistung wächst deshalb linear mit der Bandbreite, die Amplitude mit \(\sqrt B\). Darum gibt man Rauschen oft als <strong>Rauschdichte</strong> in nV/√Hz an. Und darum verringert jeder Filter, der die Bandbreite begrenzt, das Rauschen. Genau das macht der Pulsformer, und genau deshalb rauscht ein schneller Pulsformer stärker als ein langsamer.</p>
-      <p>Unabhängige Rauschquellen addieren sich <strong>quadratisch</strong>: \(u_{\text{ges}} = \sqrt{u_1^2 + u_2^2 + \dots}\). Die größte Quelle dominiert schnell. Das <strong>Signal-Rausch-Verhältnis</strong> gibt man oft in dB an: \(\text{SNR} = 20\log_{10}(U_{\text{Signal}}/u_{n,\text{rms}})\).</p>
-
-      <figure class="fig">
-        <canvas id="cv-nz" class="c-nz" role="img" aria-label="Simuliertes thermisches Rauschsignal mit der berechneten Effektivspannung."></canvas>
-        <div class="ctrls">
-          <div class="ctrl"><div class="lab"><label for="nz-r">Widerstand R</label><output id="nz-r-o"></output></div><input id="nz-r" type="range" min="0" max="7" step="0.01" value="3"></div>
-          <div class="ctrl"><div class="lab"><label for="nz-t">Temperatur</label><output id="nz-t-o"></output></div><input id="nz-t" type="range" min="4" max="400" step="1" value="300"></div>
-          <div class="ctrl"><div class="lab"><label for="nz-b">Bandbreite B</label><output id="nz-b-o"></output></div><input id="nz-b" type="range" min="3" max="9" step="0.01" value="6"></div>
-          <div class="ctrl"><div class="lab"><label for="nz-i">Gleichstrom I (Schrot)</label><output id="nz-i-o"></output></div><input id="nz-i" type="range" min="-12" max="-3" step="0.05" value="-9"></div>
-        </div>
-        <div class="readout" id="nz-read"></div>
-        <figcaption><b>Abb. 13</b> Thermisches Rauschen eines Widerstands. Die Kurve ist ein zufälliges Signal mit der berechneten Effektivspannung (gestrichelt: ±1σ). Vierfacher Widerstand oder vierfache Bandbreite verdoppeln die Rauschspannung. Abkühlen auf flüssiges Helium (4 K) senkt sie gegenüber Raumtemperatur um fast eine Größenordnung. Unten zum Vergleich das Schrotrauschen des eingestellten Gleichstroms.</figcaption>
-      </figure>
-
-      <div class="merke"><div class="eyebrow">Merke</div><ul>
-        <li>Thermisch \(\sqrt{4kTRB}\), Schrot \(\sqrt{2eIB}\). Beide weiß, Amplitude wächst mit \(\sqrt B\).</li>
-        <li>Rauschquellen addieren sich quadratisch. Bandbreite begrenzen heißt Rauschen begrenzen.</li>
-      </ul></div>
-    </section>
-
-    <!-- A -->
-    <section id="formeln">
-      <div class="eyebrow">Anhang</div>
-      <h2>Formeln und Konstanten</h2>
-      <div class="tbl"><table>
-        <thead><tr><th>Konstante</th><th>Symbol</th><th class="num">Wert</th></tr></thead>
-        <tbody>
-          <tr><td>Elementarladung</td><td>\(e\)</td><td class="num">1,602·10⁻¹⁹ C</td></tr>
-          <tr><td>Elektrische Feldkonstante</td><td>\(\varepsilon_0\)</td><td class="num">8,854·10⁻¹² F/m</td></tr>
-          <tr><td>Magnetische Feldkonstante</td><td>\(\mu_0\)</td><td class="num">1,257·10⁻⁶ H/m</td></tr>
-          <tr><td>Lichtgeschwindigkeit</td><td>\(c\)</td><td class="num">2,998·10⁸ m/s</td></tr>
-          <tr><td>Boltzmann-Konstante</td><td>\(k\)</td><td class="num">1,381·10⁻²³ J/K</td></tr>
-          <tr><td>Elektronenmasse</td><td>\(m_e\)</td><td class="num">9,109·10⁻³¹ kg</td></tr>
-          <tr><td>Thermische Spannung bei 300 K</td><td>\(U_T = kT/e\)</td><td class="num">25,9 mV</td></tr>
-        </tbody>
-      </table></div>
-      <div class="tbl"><table>
-        <thead><tr><th>Thema</th><th>Formel</th></tr></thead>
-        <tbody>
-          <tr><td>Strom, Ohm, Leistung</td><td>\(I = \mathrm dQ/\mathrm dt\), \(U = RI\), \(P = UI\)</td></tr>
-          <tr><td>Reihe / parallel (R)</td><td>\(R = R_1 + R_2\) / \(1/R = 1/R_1 + 1/R_2\)</td></tr>
-          <tr><td>Spannungsteiler</td><td>\(U_2 = U\,R_2/(R_1+R_2)\)</td></tr>
-          <tr><td>Coulomb, Feld</td><td>\(F = Q_1Q_2/(4\pi\varepsilon_0 r^2)\), \(\vec F = q\vec E\), \(E = U/d\)</td></tr>
-          <tr><td>Kondensator</td><td>\(Q = CU\), \(C = \varepsilon_0\varepsilon_r A/d\), \(I = C\,\mathrm dU/\mathrm dt\), \(W = \tfrac12 CU^2\)</td></tr>
-          <tr><td>Magnetfeld, Lorentzkraft</td><td>\(B = \mu_0 I/(2\pi r)\), \(\vec F = q(\vec E + \vec v\times\vec B)\), \(r = mv/(qB)\)</td></tr>
-          <tr><td>Induktion, Spule</td><td>\(U = -N\,\mathrm d\Phi/\mathrm dt\), \(U = L\,\mathrm dI/\mathrm dt\), \(W = \tfrac12 LI^2\)</td></tr>
-          <tr><td>RC-Glied</td><td>\(\tau = RC\), \(U_C = U_0(1 - e^{-t/\tau})\)</td></tr>
-          <tr><td>Impedanzen</td><td>\(Z_R = R\), \(Z_C = 1/(j\omega C)\), \(Z_L = j\omega L\)</td></tr>
-          <tr><td>RC-Filter</td><td>\(f_g = 1/(2\pi RC)\), \(H_{\text{TP}} = 1/(1 + j\omega RC)\)</td></tr>
-          <tr><td>Dezibel (Spannung)</td><td>\(20\log_{10}(U_2/U_1)\): −3 dB ≈ 0,71, −20 dB = 0,1</td></tr>
-          <tr><td>Diode</td><td>\(I = I_S(e^{U/nU_T} - 1)\)</td></tr>
-          <tr><td>OPV</td><td>invertierend \(-R_2/R_1\), nichtinvertierend \(1 + R_2/R_1\), Integrator \(-\frac{1}{RC}\int U_e\,\mathrm dt\)</td></tr>
-          <tr><td>Rauschen</td><td>\(\sqrt{4kTRB}\), \(\sqrt{2eIB}\), quadratisch addieren</td></tr>
-        </tbody>
-      </table></div>
-      <p>Weiter zu <a href="../physik/roentgen.html#signal">„Vom Photon zum Bild“</a>, dort zeigt Baustein 6 den ladungsempfindlichen Verstärker und den Pulsformer im Detail.</p>
-    </section>
-
+<li><strong>1/f-Rauschen:</strong> Schwankungen, die zu tiefen Frequenzen hin zunehmen, vor allem in Transistoren. Es dominiert bei langen Messzeiten.</li>
+</ul>
+<p>Thermisches und Schrotrauschen sind <strong>weiß</strong>: gleich stark bei allen Frequenzen. Ihre Leistung wächst deshalb linear mit der Bandbreite, die Amplitude mit <span class="arithmatex">\(\sqrt B\)</span>. Darum gibt man Rauschen oft als <strong>Rauschdichte</strong> in nV/√Hz an. Und darum verringert jeder Filter, der die Bandbreite begrenzt, das Rauschen. Genau das macht der Pulsformer, und genau deshalb rauscht ein schneller Pulsformer stärker als ein langsamer.</p>
+<p>Unabhängige Rauschquellen addieren sich <strong>quadratisch</strong>: <span class="arithmatex">\(u_{\text{ges}} = \sqrt{u_1^2 + u_2^2 + \dots}\)</span>. Die größte Quelle dominiert schnell. Das <strong>Signal-Rausch-Verhältnis</strong> gibt man oft in dB an: <span class="arithmatex">\(\text{SNR} = 20\log_{10}(U_{\text{Signal}}/u_{n,\text{rms}})\)</span>.</p>
+<figure class="fig">
+<canvas aria-label="Simuliertes thermisches Rauschsignal mit der berechneten Effektivspannung." class="c-nz" id="cv-nz" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="nz-r">Widerstand R</label><output id="nz-r-o"></output></div><input id="nz-r" max="7" min="0" step="0.01" type="range" value="3"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-t">Temperatur</label><output id="nz-t-o"></output></div><input id="nz-t" max="400" min="4" step="1" type="range" value="300"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-b">Bandbreite B</label><output id="nz-b-o"></output></div><input id="nz-b" max="9" min="3" step="0.01" type="range" value="6"/></div>
+<div class="ctrl"><div class="lab"><label for="nz-i">Gleichstrom I (Schrot)</label><output id="nz-i-o"></output></div><input id="nz-i" max="-3" min="-12" step="0.05" type="range" value="-9"/></div>
+</div>
+<div class="readout" id="nz-read"></div>
+<figcaption><b>Abb. 13</b> Thermisches Rauschen eines Widerstands. Die Kurve ist ein zufälliges Signal mit der berechneten Effektivspannung (gestrichelt: ±1σ). Vierfacher Widerstand oder vierfache Bandbreite verdoppeln die Rauschspannung. Abkühlen auf flüssiges Helium (4 K) senkt sie gegenüber Raumtemperatur um fast eine Größenordnung. Unten zum Vergleich das Schrotrauschen des eingestellten Gleichstroms.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Thermisch <span class="arithmatex">\(\sqrt{4kTRB}\)</span>, Schrot <span class="arithmatex">\(\sqrt{2eIB}\)</span>. Beide weiß, Amplitude wächst mit <span class="arithmatex">\(\sqrt B\)</span>.</li>
+<li>Rauschquellen addieren sich quadratisch. Bandbreite begrenzen heißt Rauschen begrenzen.</li>
+</ul>
+</div>
+</section>
+<section id="formeln">
+<div class="eyebrow">Anhang</div>
+<h2>Formeln und Konstanten</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Konstante</th>
+<th>Symbol</th>
+<th class="num">Wert</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Elementarladung</td>
+<td><span class="arithmatex">\(e\)</span></td>
+<td class="num">1,602·10⁻¹⁹ C</td>
+</tr>
+<tr>
+<td>Elektrische Feldkonstante</td>
+<td><span class="arithmatex">\(\varepsilon_0\)</span></td>
+<td class="num">8,854·10⁻¹² F/m</td>
+</tr>
+<tr>
+<td>Magnetische Feldkonstante</td>
+<td><span class="arithmatex">\(\mu_0\)</span></td>
+<td class="num">1,257·10⁻⁶ H/m</td>
+</tr>
+<tr>
+<td>Lichtgeschwindigkeit</td>
+<td><span class="arithmatex">\(c\)</span></td>
+<td class="num">2,998·10⁸ m/s</td>
+</tr>
+<tr>
+<td>Boltzmann-Konstante</td>
+<td><span class="arithmatex">\(k\)</span></td>
+<td class="num">1,381·10⁻²³ J/K</td>
+</tr>
+<tr>
+<td>Elektronenmasse</td>
+<td><span class="arithmatex">\(m_e\)</span></td>
+<td class="num">9,109·10⁻³¹ kg</td>
+</tr>
+<tr>
+<td>Thermische Spannung bei 300 K</td>
+<td><span class="arithmatex">\(U_T = kT/e\)</span></td>
+<td class="num">25,9 mV</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Formel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strom, Ohm, Leistung</td>
+<td><span class="arithmatex">\(I = \mathrm dQ/\mathrm dt\)</span>, <span class="arithmatex">\(U = RI\)</span>, <span class="arithmatex">\(P = UI\)</span></td>
+</tr>
+<tr>
+<td>Reihe / parallel (R)</td>
+<td><span class="arithmatex">\(R = R_1 + R_2\)</span> / <span class="arithmatex">\(1/R = 1/R_1 + 1/R_2\)</span></td>
+</tr>
+<tr>
+<td>Spannungsteiler</td>
+<td><span class="arithmatex">\(U_2 = U\,R_2/(R_1+R_2)\)</span></td>
+</tr>
+<tr>
+<td>Coulomb, Feld</td>
+<td><span class="arithmatex">\(F = Q_1Q_2/(4\pi\varepsilon_0 r^2)\)</span>, <span class="arithmatex">\(\vec F = q\vec E\)</span>, <span class="arithmatex">\(E = U/d\)</span></td>
+</tr>
+<tr>
+<td>Kondensator</td>
+<td><span class="arithmatex">\(Q = CU\)</span>, <span class="arithmatex">\(C = \varepsilon_0\varepsilon_r A/d\)</span>, <span class="arithmatex">\(I = C\,\mathrm dU/\mathrm dt\)</span>, <span class="arithmatex">\(W = \tfrac12 CU^2\)</span></td>
+</tr>
+<tr>
+<td>Magnetfeld, Lorentzkraft</td>
+<td><span class="arithmatex">\(B = \mu_0 I/(2\pi r)\)</span>, <span class="arithmatex">\(\vec F = q(\vec E + \vec v\times\vec B)\)</span>, <span class="arithmatex">\(r = mv/(qB)\)</span></td>
+</tr>
+<tr>
+<td>Induktion, Spule</td>
+<td><span class="arithmatex">\(U = -N\,\mathrm d\Phi/\mathrm dt\)</span>, <span class="arithmatex">\(U = L\,\mathrm dI/\mathrm dt\)</span>, <span class="arithmatex">\(W = \tfrac12 LI^2\)</span></td>
+</tr>
+<tr>
+<td>RC-Glied</td>
+<td><span class="arithmatex">\(\tau = RC\)</span>, <span class="arithmatex">\(U_C = U_0(1 - e^{-t/\tau})\)</span></td>
+</tr>
+<tr>
+<td>Impedanzen</td>
+<td><span class="arithmatex">\(Z_R = R\)</span>, <span class="arithmatex">\(Z_C = 1/(j\omega C)\)</span>, <span class="arithmatex">\(Z_L = j\omega L\)</span></td>
+</tr>
+<tr>
+<td>RC-Filter</td>
+<td><span class="arithmatex">\(f_g = 1/(2\pi RC)\)</span>, <span class="arithmatex">\(H_{\text{TP}} = 1/(1 + j\omega RC)\)</span></td>
+</tr>
+<tr>
+<td>Dezibel (Spannung)</td>
+<td><span class="arithmatex">\(20\log_{10}(U_2/U_1)\)</span>: −3 dB ≈ 0,71, −20 dB = 0,1</td>
+</tr>
+<tr>
+<td>Diode</td>
+<td><span class="arithmatex">\(I = I_S(e^{U/nU_T} - 1)\)</span></td>
+</tr>
+<tr>
+<td>OPV</td>
+<td>invertierend <span class="arithmatex">\(-R_2/R_1\)</span>, nichtinvertierend <span class="arithmatex">\(1 + R_2/R_1\)</span>, Integrator <span class="arithmatex">\(-\frac{1}{RC}\int U_e\,\mathrm dt\)</span></td>
+</tr>
+<tr>
+<td>Rauschen</td>
+<td><span class="arithmatex">\(\sqrt{4kTRB}\)</span>, <span class="arithmatex">\(\sqrt{2eIB}\)</span>, quadratisch addieren</td>
+</tr>
+</tbody>
+</table></div>
+<p>Weiter zu <a href="../physik/roentgen.html#signal">„Vom Photon zum Bild“</a>, dort zeigt Baustein 6 den ladungsempfindlichen Verstärker und den Pulsformer im Detail.</p>
+</section>
     <footer>Alle Simulationen sind idealisierte Modelle. Sie zeigen Zusammenhänge, keine Eigenschaften realer Bauteile.</footer>
   </main>
 </div>
-
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
 <script>
-(() => {
-'use strict';
-const $ = s => document.querySelector(s);
-const root = document.documentElement;
-const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
-const DISP = '"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif';
-const nf = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
-function rgb(c) { c = c.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join(''); const v = parseInt(c, 16); return [v >> 16 & 255, v >> 8 & 255, v & 255]; }
-function rgba(c, a) { const [r, g, b] = rgb(c); return `rgba(${r},${g},${b},${a})`; }
-function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); }
-function fit(c) {
-  const r = c.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
-  const w = Math.max(1, r.width), h = Math.max(1, r.height), W = Math.round(w * dpr), H = Math.round(h * dpr);
-  if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
-  const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-  return { ctx, w, h };
-}
-function frame(ctx, x0px, y0px, w, h, o) {
-  const L = o.l ?? 48, R = o.r ?? 12, T = o.t ?? 12, B = o.b ?? 36;
-  const bx = x0px + L, by = y0px + T, bw = Math.max(10, w - L - R), bh = Math.max(10, h - T - B);
-  const tx = v => o.xlog ? Math.log10(v) : v;
-  const X = v => bx + (tx(v) - tx(o.x0)) / (tx(o.x1) - tx(o.x0)) * bw, Y = v => by + bh - (v - o.y0) / (o.y1 - o.y0) * bh;
-  ctx.font = `11px ${MONO}`; ctx.lineWidth = 1;
-  const grid = tok('--grid'), muted = tok('--muted');
-  for (const v of (o.xt || [])) { const x = X(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by + bh); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText(o.xf ? o.xf(v) : String(v), x, by + bh + 15); }
-  for (const v of (o.yt || [])) { const y = Y(v); ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx + bw, y); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(o.yf ? o.yf(v) : String(v), bx - 6, y + 4); }
-  ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.stroke();
-  ctx.fillStyle = muted; ctx.font = `12px ${DISP}`;
-  if (o.xl) { ctx.textAlign = 'center'; ctx.fillText(o.xl, bx + bw / 2, by + bh + 31); }
-  if (o.yl) { ctx.save(); ctx.translate(x0px + 12, by + bh / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
-  return { X, Y, bx, by, bw, bh };
-}
-function clipBox(ctx, f) { ctx.save(); ctx.beginPath(); ctx.rect(f.bx, f.by, f.bw, f.bh); ctx.clip(); }
-function niceStep(r) { const raw = r / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p; }
-function ticks(lo, hi) { const st = niceStep(hi - lo), a = []; for (let v = Math.ceil(lo / st) * st; v <= hi + st * 1e-6; v += st) a.push(+v.toFixed(10)); return { a, d: Math.max(0, -Math.floor(Math.log10(st) + 1e-9)) }; }
-const mods = [];
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.target._mod) e.target._mod.visible = e.isIntersecting; }), { rootMargin: '100px' });
-function reg(m) { m.visible = true; m.el._mod = m; io.observe(m.el); mods.push(m); new ResizeObserver(() => m.draw()).observe(m.el); return m; }
-const redrawAll = () => mods.forEach(m => m.draw());
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
-new MutationObserver(redrawAll).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-let last = performance.now();
-function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; for (const m of mods) if (m.anim && m.playing && m.visible) { m.step(dt); m.draw(); } requestAnimationFrame(loop); }
-requestAnimationFrame(loop);
-function playBtn(btn, m) { btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; }); if (!m.playing) btn.textContent = 'Abspielen'; }
-function rafDebounce(fn) { let p = false; return () => { if (p) return; p = true; requestAnimationFrame(() => { p = false; fn(); }); }; }
-const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f']]; const a = Math.abs(v); if (a === 0) return `0 ${unit}`; for (const [f, p] of P) if (a >= f * 0.9995) { const x = v / f; return `${nf(x, Math.abs(x) < 10 ? d : Math.abs(x) < 100 ? Math.max(0, d - 1) : 0)} ${p}${unit}`; } return `${nf(v / 1e-15, d)} f${unit}`; };
-
-/* ---------- Darstellung umschalten ---------- */
-(() => {
-  const btns = [...document.querySelectorAll('.theme button')];
-  let saved = 'system'; try { saved = localStorage.getItem('theme') || 'system'; } catch (e) {}
-  function apply(t) {
-    if (t === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
-    btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
-    try { localStorage.setItem('theme', t); } catch (e) {}
-  }
-  btns.forEach(b => b.addEventListener('click', () => apply(b.dataset.t)));
-  apply(saved);
-})();
-
 /* ---------- Abb. 1: Spannungsteiler ---------- */
 (() => {
   const iu = $('#vd-us'), i1 = $('#vd-r1s'), i2 = $('#vd-r2s'), il = $('#vd-rl'), ilc = $('#vd-lc');
@@ -950,7 +959,8 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   }
   [iu, i1, i2, il, ilc].forEach(e => e.addEventListener('input', upd)); upd();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 2: E-Feld ---------- */
 (() => {
   const c = $('#cv-ef'), iP = $('#ef-pot'), iL = $('#ef-lines');
@@ -1026,7 +1036,8 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   [iP, iL].forEach(e => e.addEventListener('input', () => m.draw()));
   read(); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 4: Lorentzkraft ---------- */
 (() => {
   const c = $('#cv-lz'), iq = $('#lz-q'), iv = $('#lz-v'), ib = $('#lz-b'), ie = $('#lz-e');
@@ -1085,7 +1096,8 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   [iq, iv, ib, ie].forEach(e => e.addEventListener('input', () => { start(); m.draw(); }));
   start(); if (reduceMotion) { for (let i = 0; i < 200; i++) stepPhys(0.02); } else { for (let i = 0; i < 20; i++) stepPhys(0.02); } m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 5: Induktion ---------- */
 (() => {
   const c = $('#cv-ind'), iF = $('#ind-f'), iN = $('#ind-n'), iFl = $('#ind-flip');
@@ -1143,7 +1155,8 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   [iF, iN, iFl].forEach(e => e.addEventListener('input', () => { hist.length = 0; m.draw(); }));
   for (let i = 0; i < 200; i++) m.step(0.02); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 6: EM-Welle ---------- */
 (() => {
   const c = $('#cv-em'), il = $('#em-l'); let ph = 0;
@@ -1171,66 +1184,51 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   });
   il.addEventListener('input', () => m.draw()); playBtn($('#em-play'), m); m.draw();
 })();
-
-/* ---------- Abb. 7: RC-Glied ---------- */
+</script>
+<script>
+/* ---------- pn-Übergang ---------- */
 (() => {
-  const c = $('#cv-rc'), ir = $('#rc-r'), ic = $('#rc-c'), it = $('#rc-t');
+  const c = $('#cv-pn'), iU = $('#pn-u'), iN = $('#pn-n');
+  const EPS = 11.7 * 8.854e-14, QE = 1.602e-19, NI = 1e10, UTH = 0.02585;
+  const rnd = []; for (let k = 0; k < 600; k++) rnd.push([Math.random(), Math.random()]);
   const m = reg({ el: c, draw() {
-    const R = Math.pow(10, +ir.value) * 1e3, C = Math.pow(10, +ic.value) * 1e-6, T = Math.pow(10, +it.value) * 1e-3, tau = R * C, U0 = 5;
-    $('#rc-r-o').textContent = SI(R, 'Ω'); $('#rc-c-o').textContent = SI(C, 'F'); $('#rc-t-o').textContent = SI(T, 's');
-    const N = 1500, tw = 3 * T, dt = tw / N, ue = new Float64Array(N), uc = new Float64Array(N);
-    let v = 0; const a = Math.exp(-dt / tau);
-    // eingeschwungen starten: 20 Perioden vorlaufen
-    for (let k = 0; k < 20 * N / 3; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; }
-    for (let k = 0; k < N; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; ue[k] = u; uc[k] = v; }
-    const { ctx, w, h } = fit(c), hh = h / 2;
-    const xt = [0, 1, 2, 3].map(i => i * T);
-    const f1 = frame(ctx, 0, 0, w, hh, { x0: 0, x1: tw, y0: -0.4, y1: 5.8, xt: [], yt: [0, 2.5, 5], yf: v => nf(v, 1), yl: 'U_C (V)', l: 52, t: 16, b: 6 });
-    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Kondensator (Tiefpass)', f1.bx + 6, 12);
-    clipBox(ctx, f1);
-    const line = (f, arr, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k < N; k++) { const x = f.X(k * dt), y = f.Y(arr[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
-    line(f1, ue, tok('--muted'), 1.4, [4, 3]); line(f1, uc, tok('--accent'), 2.2);
-    if (tau < T / 2) { const x = f1.X(tau); ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, f1.by); ctx.lineTo(x, f1.by + f1.bh); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = tok('--hole'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('1τ', x + 3, f1.by + 12); }
-    ctx.restore();
-    const ur = Float64Array.from(ue, (u, k) => u - uc[k]);
-    const f2 = frame(ctx, 0, hh, w, hh, { x0: 0, x1: tw, y0: -5.8, y1: 5.8, xt, yt: [-5, 0, 5], xf: v => v === 0 ? '0' : SI(v, 's', 1), yf: v => nf(v, 0), xl: 'Zeit', yl: 'U_R (V)', l: 52, t: 18 });
-    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Widerstand = R·I (Hochpass)', f2.bx + 6, hh + 13);
-    clipBox(ctx, f2); line(f2, ur, tok('--elec'), 2.2); ctx.restore();
-    $('#rc-read').innerHTML = `<span class="k">τ = RC =</span> ${SI(tau, 's')}  <span class="k">·</span>  <span class="k">Halbe Periode / τ =</span> ${nf(T / 2 / tau, T / 2 / tau < 10 ? 2 : 0)}  <span class="k">·</span>  <span class="k">Grenzfrequenz 1/(2πτ) =</span> ${SI(1 / (2 * Math.PI * tau), 'Hz')}`;
+    const U = +iU.value, N = Math.pow(10, +iN.value), UD = UTH * Math.log(N * N / (NI * NI));
+    const wcm = Math.sqrt(2 * EPS / QE * (2 / N) * Math.max(0.02, UD - U)), w = wcm * 1e4; // µm
+    const wmax = Math.sqrt(2 * EPS / QE * (2 / N) * (UD + 50)) * 1e4, span = wmax * 2.4;
+    const Em = QE * N * (wcm / 2) / EPS; // V/cm
+    $('#pn-u-o').textContent = `${nf(U, 2)} V`; $('#pn-n-o').textContent = `10^${nf(+iN.value, 1)} cm⁻³`.replace('10^', '10').replace(/(\d+),(\d)/, (a, b, c2) => a) ;
+    $('#pn-n-o').textContent = SI(N, '').trim() === '' ? '' : `${nf(N / Math.pow(10, Math.floor(+iN.value)), 1)}·10${String(Math.floor(+iN.value)).split('').map(ch => '⁰¹²³⁴⁵⁶⁷⁸⁹'[ch]).join('')} cm⁻³`;
+    const { ctx, w: W, h: H } = fit(c), narrow = W < 560;
+    const bx = 20, bw = W - 40, by = 22, bh = H * 0.5, X = um => bx + (um / span + 0.5) * bw;
+    const xl = X(-w / 2), xr = X(w / 2);
+    ctx.fillStyle = rgba(tok('--hole'), 0.1); ctx.fillRect(bx, by, X(0) - bx, bh);
+    ctx.fillStyle = rgba(tok('--elec'), 0.1); ctx.fillRect(X(0), by, bx + bw - X(0), bh);
+    ctx.fillStyle = tok('--surface'); ctx.fillRect(xl, by, xr - xl, bh);
+    ctx.strokeStyle = tok('--rule'); ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(xl, by); ctx.lineTo(xl, by + bh); ctx.moveTo(xr, by); ctx.lineTo(xr, by + bh); ctx.stroke(); ctx.setLineDash([]);
+    // freie Träger
+    for (let k = 0; k < rnd.length; k++) { const [u, v] = rnd[k]; const pside = k % 2 === 0; const x = pside ? bx + u * (X(0) - bx) : X(0) + u * (bx + bw - X(0)); if (x > xl - 3 && x < xr + 3) continue; const y = by + 6 + v * (bh - 12);
+      if (pside) { ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.stroke(); } else { ctx.fillStyle = tok('--elec'); ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); } }
+    // Ionen in der RLZ
+    ctx.font = `700 12px ${DISP}`; ctx.textAlign = 'center';
+    const nI = Math.max(1, Math.round((xr - xl) / 14));
+    for (let i = 0; i < nI; i++) for (let j = 0; j < 5; j++) { const x = xl + (i + 0.5) * (xr - xl) / nI, y = by + (j + 0.6) * bh / 5.4; const left = x < X(0); ctx.fillStyle = left ? tok('--hole') : tok('--elec'); ctx.fillText(left ? '−' : '+', x, y + 4); }
+    // Feldpfeil
+    if (xr - xl > 30) { const yA = by - 8; ctx.strokeStyle = tok('--fg'); ctx.fillStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xr - 4, yA); ctx.lineTo(xl + 8, yA); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xl + 2, yA); ctx.lineTo(xl + 10, yA - 4); ctx.lineTo(xl + 10, yA + 4); ctx.fill(); ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText('E', (xl + xr) / 2, yA - 4); }
+    ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--fg'); ctx.fillText('p', bx + 8, by + bh - 8); ctx.textAlign = 'right'; ctx.fillText('n', bx + bw - 8, by + bh - 8);
+    // Feldprofil
+    const py = by + bh + 14, ph = H - py - 30;
+    const f = frame(ctx, 0, py, W, ph + 30, { x0: -span / 2, x1: span / 2, y0: 0, y1: 1.1, xt: ticks(-span / 2, span / 2).a, yt: [], xf: v => nf(v, ticks(-span / 2, span / 2).d), xl: 'Ort (µm)', yl: '|E|', l: 20, t: 4 });
+    const Emax_ref = QE * N * (Math.sqrt(2 * EPS / QE * (2 / N) * (UD + 50)) / 2) / EPS;
+    clipBox(ctx, f); ctx.fillStyle = rgba(tok('--accent'), 0.25); ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(f.X(-w / 2), f.Y(0)); ctx.lineTo(f.X(0), f.Y(Em / Emax_ref)); ctx.lineTo(f.X(w / 2), f.Y(0)); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    const state = U > 0.3 ? 'Durchlassrichtung: Barriere fast abgebaut, Strom steigt exponentiell' : U < -0.05 ? 'Sperrrichtung: Zone verbreitert, nur kleiner Sperrstrom' : 'ohne äußere Spannung: Gleichgewicht';
+    $('#pn-read').innerHTML = `<span class="k">Diffusionsspannung U_D:</span> ${nf(UD, 2)} V  <span class="k">·</span>  <span class="k">Breite der Raumladungszone:</span> ${w < 1 ? nf(w * 1000, 0) + ' nm' : nf(w, w < 10 ? 2 : 1) + ' µm'}  <span class="k">·</span>  <span class="k">maximales Feld:</span> ${SI(Em * 100, 'V/m')}<br><span class="k">${state}</span>`;
   }});
-  [ir, ic, it].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
+  [iU, iN].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
 })();
-
-/* ---------- Abb. 8: Bode ---------- */
-(() => {
-  const cb = $('#cv-bode'), ct = $('#cv-bt'), iT = $('#bd-t'), iR = $('#bd-r'), iC = $('#bd-c'), iF = $('#bd-f');
-  function H(f) { const R = Math.pow(10, +iR.value), C = Math.pow(10, +iC.value), x = 2 * Math.PI * f * R * C; const lp = iT.value === 'lp'; const mag = lp ? 1 / Math.sqrt(1 + x * x) : x / Math.sqrt(1 + x * x); const ph = lp ? -Math.atan(x) : Math.PI / 2 - Math.atan(x); return { mag, ph }; }
-  function fg() { return 1 / (2 * Math.PI * Math.pow(10, +iR.value) * Math.pow(10, +iC.value)); }
-  const mB = reg({ el: cb, draw() {
-    const { ctx, w, h } = fit(cb), f0 = Math.pow(10, +iF.value), g = fg();
-    const xt = [10, 100, 1e3, 1e4, 1e5, 1e6], xf = v => v >= 1e6 ? '1M' : v >= 1e3 ? (v / 1e3) + 'k' : String(v);
-    const f1 = frame(ctx, 0, 0, w, h * 0.55, { x0: 10, x1: 1e6, xlog: true, y0: -60, y1: 6, xt, yt: [-60, -40, -20, -3, 0], xf: () => '', yf: v => String(v), yl: '|H| (dB)', l: 46, t: 8, b: 8 });
-    const f2 = frame(ctx, 0, h * 0.55, w, h * 0.45, { x0: 10, x1: 1e6, xlog: true, y0: -95, y1: 95, xt, yt: [-90, -45, 0, 45, 90], xf, yf: v => v + '°', xl: 'Frequenz (Hz)', yl: 'Phase', l: 46, t: 6 });
-    [f1, f2].forEach((f, i) => { clipBox(ctx, f); ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath();
-      for (let k = 0; k <= 400; k++) { const fr = Math.pow(10, 1 + 5 * k / 400), r = H(fr), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; const X = f.X(fr), Y = f.Y(y); k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke();
-      ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(g), f.by); ctx.lineTo(f.X(g), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
-      const r = H(f0), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(f.X(f0), f.Y(y), 4.5, 0, 7); ctx.fill(); ctx.restore(); });
-    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('f_g', Math.min(f1.X(g) + 4, f1.bx + f1.bw - 24), f1.by + 12);
-  }});
-  const mT = reg({ el: ct, draw() {
-    const { ctx, w, h } = fit(ct), f0 = Math.pow(10, +iF.value), r = H(f0);
-    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 2, y0: -1.25, y1: 1.25, xt: [0, 0.5, 1, 1.5, 2], yt: [-1, -0.5, 0, 0.5, 1], xf: v => nf(v, 1), yf: v => nf(v, 1), xl: 'Zeit (Perioden)', yl: 'Spannung (V)', l: 44 });
-    clipBox(ctx, f);
-    const cur = (amp, ph, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k <= 400; k++) { const t = 2 * k / 400, y = amp * Math.sin(2 * Math.PI * t + ph); k ? ctx.lineTo(f.X(t), f.Y(y)) : ctx.moveTo(f.X(t), f.Y(y)); } ctx.stroke(); ctx.setLineDash([]); };
-    cur(1, 0, tok('--muted'), 1.5, [4, 3]); cur(r.mag, r.ph, tok('--accent'), 2.4);
-    ctx.restore();
-    $('#bd-r-o').textContent = SI(Math.pow(10, +iR.value), 'Ω'); $('#bd-c-o').textContent = SI(Math.pow(10, +iC.value), 'F'); $('#bd-f-o').textContent = SI(f0, 'Hz');
-    $('#bd-read').innerHTML = `<span class="k">Grenzfrequenz f_g =</span> ${SI(fg(), 'Hz')}  <span class="k">·</span>  <span class="k">bei ${SI(f0, 'Hz')}:</span> |H| = ${nf(r.mag, 3)} = ${nf(20 * Math.log10(r.mag), 1)} dB  <span class="k">·</span>  <span class="k">Phase</span> ${nf(r.ph * 180 / Math.PI, 1)}°  <span class="k">·</span>  <span class="k">f / f_g =</span> ${nf(f0 / fg(), f0 / fg() < 10 ? 2 : 0)}`;
-  }});
-  [iT, iR, iC, iF].forEach(e => e.addEventListener('input', () => { mB.draw(); mT.draw(); })); mB.draw(); mT.draw();
-})();
-
+</script>
+<script>
 /* ---------- Abb. 9: Kennlinien ---------- */
 (() => {
   const c = $('#cv-kl'), iM = $('#kl-m'), iT = $('#kl-t'), iG = $('#kl-g'), iBb = $('#kl-b');
@@ -1278,49 +1276,69 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   }});
   [iM, iT, iG, iBb].forEach(e => e.addEventListener('input', () => m.draw())); m.draw();
 })();
-
-/* ---------- pn-Übergang ---------- */
+</script>
+<script>
+/* ---------- Abb. 7: RC-Glied ---------- */
 (() => {
-  const c = $('#cv-pn'), iU = $('#pn-u'), iN = $('#pn-n');
-  const EPS = 11.7 * 8.854e-14, QE = 1.602e-19, NI = 1e10, UTH = 0.02585;
-  const rnd = []; for (let k = 0; k < 600; k++) rnd.push([Math.random(), Math.random()]);
+  const c = $('#cv-rc'), ir = $('#rc-r'), ic = $('#rc-c'), it = $('#rc-t');
   const m = reg({ el: c, draw() {
-    const U = +iU.value, N = Math.pow(10, +iN.value), UD = UTH * Math.log(N * N / (NI * NI));
-    const wcm = Math.sqrt(2 * EPS / QE * (2 / N) * Math.max(0.02, UD - U)), w = wcm * 1e4; // µm
-    const wmax = Math.sqrt(2 * EPS / QE * (2 / N) * (UD + 50)) * 1e4, span = wmax * 2.4;
-    const Em = QE * N * (wcm / 2) / EPS; // V/cm
-    $('#pn-u-o').textContent = `${nf(U, 2)} V`; $('#pn-n-o').textContent = `10^${nf(+iN.value, 1)} cm⁻³`.replace('10^', '10').replace(/(\d+),(\d)/, (a, b, c2) => a) ;
-    $('#pn-n-o').textContent = SI(N, '').trim() === '' ? '' : `${nf(N / Math.pow(10, Math.floor(+iN.value)), 1)}·10${String(Math.floor(+iN.value)).split('').map(ch => '⁰¹²³⁴⁵⁶⁷⁸⁹'[ch]).join('')} cm⁻³`;
-    const { ctx, w: W, h: H } = fit(c), narrow = W < 560;
-    const bx = 20, bw = W - 40, by = 22, bh = H * 0.5, X = um => bx + (um / span + 0.5) * bw;
-    const xl = X(-w / 2), xr = X(w / 2);
-    ctx.fillStyle = rgba(tok('--hole'), 0.1); ctx.fillRect(bx, by, X(0) - bx, bh);
-    ctx.fillStyle = rgba(tok('--elec'), 0.1); ctx.fillRect(X(0), by, bx + bw - X(0), bh);
-    ctx.fillStyle = tok('--surface'); ctx.fillRect(xl, by, xr - xl, bh);
-    ctx.strokeStyle = tok('--rule'); ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
-    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(xl, by); ctx.lineTo(xl, by + bh); ctx.moveTo(xr, by); ctx.lineTo(xr, by + bh); ctx.stroke(); ctx.setLineDash([]);
-    // freie Träger
-    for (let k = 0; k < rnd.length; k++) { const [u, v] = rnd[k]; const pside = k % 2 === 0; const x = pside ? bx + u * (X(0) - bx) : X(0) + u * (bx + bw - X(0)); if (x > xl - 3 && x < xr + 3) continue; const y = by + 6 + v * (bh - 12);
-      if (pside) { ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.stroke(); } else { ctx.fillStyle = tok('--elec'); ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); } }
-    // Ionen in der RLZ
-    ctx.font = `700 12px ${DISP}`; ctx.textAlign = 'center';
-    const nI = Math.max(1, Math.round((xr - xl) / 14));
-    for (let i = 0; i < nI; i++) for (let j = 0; j < 5; j++) { const x = xl + (i + 0.5) * (xr - xl) / nI, y = by + (j + 0.6) * bh / 5.4; const left = x < X(0); ctx.fillStyle = left ? tok('--hole') : tok('--elec'); ctx.fillText(left ? '−' : '+', x, y + 4); }
-    // Feldpfeil
-    if (xr - xl > 30) { const yA = by - 8; ctx.strokeStyle = tok('--fg'); ctx.fillStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xr - 4, yA); ctx.lineTo(xl + 8, yA); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xl + 2, yA); ctx.lineTo(xl + 10, yA - 4); ctx.lineTo(xl + 10, yA + 4); ctx.fill(); ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText('E', (xl + xr) / 2, yA - 4); }
-    ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--fg'); ctx.fillText('p', bx + 8, by + bh - 8); ctx.textAlign = 'right'; ctx.fillText('n', bx + bw - 8, by + bh - 8);
-    // Feldprofil
-    const py = by + bh + 14, ph = H - py - 30;
-    const f = frame(ctx, 0, py, W, ph + 30, { x0: -span / 2, x1: span / 2, y0: 0, y1: 1.1, xt: ticks(-span / 2, span / 2).a, yt: [], xf: v => nf(v, ticks(-span / 2, span / 2).d), xl: 'Ort (µm)', yl: '|E|', l: 20, t: 4 });
-    const Emax_ref = QE * N * (Math.sqrt(2 * EPS / QE * (2 / N) * (UD + 50)) / 2) / EPS;
-    clipBox(ctx, f); ctx.fillStyle = rgba(tok('--accent'), 0.25); ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(f.X(-w / 2), f.Y(0)); ctx.lineTo(f.X(0), f.Y(Em / Emax_ref)); ctx.lineTo(f.X(w / 2), f.Y(0)); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
-    const state = U > 0.3 ? 'Durchlassrichtung: Barriere fast abgebaut, Strom steigt exponentiell' : U < -0.05 ? 'Sperrrichtung: Zone verbreitert, nur kleiner Sperrstrom' : 'ohne äußere Spannung: Gleichgewicht';
-    $('#pn-read').innerHTML = `<span class="k">Diffusionsspannung U_D:</span> ${nf(UD, 2)} V  <span class="k">·</span>  <span class="k">Breite der Raumladungszone:</span> ${w < 1 ? nf(w * 1000, 0) + ' nm' : nf(w, w < 10 ? 2 : 1) + ' µm'}  <span class="k">·</span>  <span class="k">maximales Feld:</span> ${SI(Em * 100, 'V/m')}<br><span class="k">${state}</span>`;
+    const R = Math.pow(10, +ir.value) * 1e3, C = Math.pow(10, +ic.value) * 1e-6, T = Math.pow(10, +it.value) * 1e-3, tau = R * C, U0 = 5;
+    $('#rc-r-o').textContent = SI(R, 'Ω'); $('#rc-c-o').textContent = SI(C, 'F'); $('#rc-t-o').textContent = SI(T, 's');
+    const N = 1500, tw = 3 * T, dt = tw / N, ue = new Float64Array(N), uc = new Float64Array(N);
+    let v = 0; const a = Math.exp(-dt / tau);
+    // eingeschwungen starten: 20 Perioden vorlaufen
+    for (let k = 0; k < 20 * N / 3; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; }
+    for (let k = 0; k < N; k++) { const u = ((k * dt) % T) < T / 2 ? U0 : 0; v = u + (v - u) * a; ue[k] = u; uc[k] = v; }
+    const { ctx, w, h } = fit(c), hh = h / 2;
+    const xt = [0, 1, 2, 3].map(i => i * T);
+    const f1 = frame(ctx, 0, 0, w, hh, { x0: 0, x1: tw, y0: -0.4, y1: 5.8, xt: [], yt: [0, 2.5, 5], yf: v => nf(v, 1), yl: 'U_C (V)', l: 52, t: 16, b: 6 });
+    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Kondensator (Tiefpass)', f1.bx + 6, 12);
+    clipBox(ctx, f1);
+    const line = (f, arr, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k < N; k++) { const x = f.X(k * dt), y = f.Y(arr[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
+    line(f1, ue, tok('--muted'), 1.4, [4, 3]); line(f1, uc, tok('--accent'), 2.2);
+    if (tau < T / 2) { const x = f1.X(tau); ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, f1.by); ctx.lineTo(x, f1.by + f1.bh); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = tok('--hole'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('1τ', x + 3, f1.by + 12); }
+    ctx.restore();
+    const ur = Float64Array.from(ue, (u, k) => u - uc[k]);
+    const f2 = frame(ctx, 0, hh, w, hh, { x0: 0, x1: tw, y0: -5.8, y1: 5.8, xt, yt: [-5, 0, 5], xf: v => v === 0 ? '0' : SI(v, 's', 1), yf: v => nf(v, 0), xl: 'Zeit', yl: 'U_R (V)', l: 52, t: 18 });
+    ctx.font = `600 12px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText('Spannung am Widerstand = R·I (Hochpass)', f2.bx + 6, hh + 13);
+    clipBox(ctx, f2); line(f2, ur, tok('--elec'), 2.2); ctx.restore();
+    $('#rc-read').innerHTML = `<span class="k">τ = RC =</span> ${SI(tau, 's')}  <span class="k">·</span>  <span class="k">Halbe Periode / τ =</span> ${nf(T / 2 / tau, T / 2 / tau < 10 ? 2 : 0)}  <span class="k">·</span>  <span class="k">Grenzfrequenz 1/(2πτ) =</span> ${SI(1 / (2 * Math.PI * tau), 'Hz')}`;
   }});
-  [iU, iN].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
+  [ir, ic, it].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
 })();
-
+</script>
+<script>
+/* ---------- Abb. 8: Bode ---------- */
+(() => {
+  const cb = $('#cv-bode'), ct = $('#cv-bt'), iT = $('#bd-t'), iR = $('#bd-r'), iC = $('#bd-c'), iF = $('#bd-f');
+  function H(f) { const R = Math.pow(10, +iR.value), C = Math.pow(10, +iC.value), x = 2 * Math.PI * f * R * C; const lp = iT.value === 'lp'; const mag = lp ? 1 / Math.sqrt(1 + x * x) : x / Math.sqrt(1 + x * x); const ph = lp ? -Math.atan(x) : Math.PI / 2 - Math.atan(x); return { mag, ph }; }
+  function fg() { return 1 / (2 * Math.PI * Math.pow(10, +iR.value) * Math.pow(10, +iC.value)); }
+  const mB = reg({ el: cb, draw() {
+    const { ctx, w, h } = fit(cb), f0 = Math.pow(10, +iF.value), g = fg();
+    const xt = [10, 100, 1e3, 1e4, 1e5, 1e6], xf = v => v >= 1e6 ? '1M' : v >= 1e3 ? (v / 1e3) + 'k' : String(v);
+    const f1 = frame(ctx, 0, 0, w, h * 0.55, { x0: 10, x1: 1e6, xlog: true, y0: -60, y1: 6, xt, yt: [-60, -40, -20, -3, 0], xf: () => '', yf: v => String(v), yl: '|H| (dB)', l: 46, t: 8, b: 8 });
+    const f2 = frame(ctx, 0, h * 0.55, w, h * 0.45, { x0: 10, x1: 1e6, xlog: true, y0: -95, y1: 95, xt, yt: [-90, -45, 0, 45, 90], xf, yf: v => v + '°', xl: 'Frequenz (Hz)', yl: 'Phase', l: 46, t: 6 });
+    [f1, f2].forEach((f, i) => { clipBox(ctx, f); ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let k = 0; k <= 400; k++) { const fr = Math.pow(10, 1 + 5 * k / 400), r = H(fr), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; const X = f.X(fr), Y = f.Y(y); k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke();
+      ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(g), f.by); ctx.lineTo(f.X(g), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+      const r = H(f0), y = i === 0 ? 20 * Math.log10(r.mag) : r.ph * 180 / Math.PI; ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(f.X(f0), f.Y(y), 4.5, 0, 7); ctx.fill(); ctx.restore(); });
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('f_g', Math.min(f1.X(g) + 4, f1.bx + f1.bw - 24), f1.by + 12);
+  }});
+  const mT = reg({ el: ct, draw() {
+    const { ctx, w, h } = fit(ct), f0 = Math.pow(10, +iF.value), r = H(f0);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 2, y0: -1.25, y1: 1.25, xt: [0, 0.5, 1, 1.5, 2], yt: [-1, -0.5, 0, 0.5, 1], xf: v => nf(v, 1), yf: v => nf(v, 1), xl: 'Zeit (Perioden)', yl: 'Spannung (V)', l: 44 });
+    clipBox(ctx, f);
+    const cur = (amp, ph, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k <= 400; k++) { const t = 2 * k / 400, y = amp * Math.sin(2 * Math.PI * t + ph); k ? ctx.lineTo(f.X(t), f.Y(y)) : ctx.moveTo(f.X(t), f.Y(y)); } ctx.stroke(); ctx.setLineDash([]); };
+    cur(1, 0, tok('--muted'), 1.5, [4, 3]); cur(r.mag, r.ph, tok('--accent'), 2.4);
+    ctx.restore();
+    $('#bd-r-o').textContent = SI(Math.pow(10, +iR.value), 'Ω'); $('#bd-c-o').textContent = SI(Math.pow(10, +iC.value), 'F'); $('#bd-f-o').textContent = SI(f0, 'Hz');
+    $('#bd-read').innerHTML = `<span class="k">Grenzfrequenz f_g =</span> ${SI(fg(), 'Hz')}  <span class="k">·</span>  <span class="k">bei ${SI(f0, 'Hz')}:</span> |H| = ${nf(r.mag, 3)} = ${nf(20 * Math.log10(r.mag), 1)} dB  <span class="k">·</span>  <span class="k">Phase</span> ${nf(r.ph * 180 / Math.PI, 1)}°  <span class="k">·</span>  <span class="k">f / f_g =</span> ${nf(f0 / fg(), f0 / fg() < 10 ? 2 : 0)}`;
+  }});
+  [iT, iR, iC, iF].forEach(e => e.addEventListener('input', () => { mB.draw(); mT.draw(); })); mB.draw(); mT.draw();
+})();
+</script>
+<script>
 /* ---------- Abb. 10: Operationsverstärker ---------- */
 (() => {
   const c = $('#cv-op'), iC = $('#op-c'), iW = $('#op-w'), iA = $('#op-a'), i1 = $('#op-r1'), i2 = $('#op-r2'), iCc = $('#op-cc'), iF = $('#op-f');
@@ -1354,7 +1372,8 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   }});
   [iC, iW, iA, i1, i2, iCc, iF].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
 })();
-
+</script>
+<script>
 /* ---------- Abb. 11: Rauschen ---------- */
 (() => {
   const c = $('#cv-nz'), iR = $('#nz-r'), iT = $('#nz-t'), iB = $('#nz-b'), iI = $('#nz-i');
@@ -1380,16 +1399,6 @@ const SI = (v, unit, d = 2) => { const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], 
   }});
   [iR, iT, iB, iI].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw()))); m.draw();
 })();
-
-/* Inhaltsverzeichnis */
-(() => {
-  const links = [...document.querySelectorAll('nav.toc a')];
-  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
-  const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); const a = map.get(e.target.id); if (a) a.classList.add('on'); } }), { rootMargin: '-30% 0px -60% 0px' });
-  document.querySelectorAll('main section').forEach(s => so.observe(s));
-})();
-})();
 </script>
-
 </body>
 </html>

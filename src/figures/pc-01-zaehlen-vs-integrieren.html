@@ -1,0 +1,117 @@
+<!-- title: Zählen statt integrieren
+     lib: pc -->
+<figure class="fig" id="fig-concept">
+<canvas aria-label="Animation: links summiert ein energieintegrierender Detektor die Energie aller Photonen eines Frames, rechts sortiert ein photonenzählender Detektor jedes Photon nach Energie in vier Bins." class="c-concept" id="cv-concept" role="img"></canvas>
+<div class="ctrls">
+<button class="btn" id="concept-play" type="button">Pause</button>
+<span class="muted" style="font-size:14px">Beide Detektoren sehen dieselben Photonen. Farbe = Energie-Bin des Photons.</span>
+</div>
+<figcaption><b>Abb. 1</b> Derselbe Photonenstrom, zwei Messprinzipien. Der energieintegrierende Detektor (links) liefert pro Frame eine einzige Zahl, die Summe der deponierten Energie plus Elektronikrauschen. Der photonenzählende Detektor (rechts) registriert jedes Photon einzeln und sortiert es per Schwellen in Energie-Bins.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 1: Konzept ---------- */
+(() => {
+  const c = $('#cv-concept');
+  const samp = sampler(transmit(tube(120), 10, 0));
+  const TH = [20,35,50,65];
+  const binOf = E => { let b = -1; for (let k = 0; k < 4; k++) if (E >= TH[k]) b = k; return b; };
+  const FR = 3.2;
+  const S = { ph: [], acc: 0, hist: [0,0,0,0], tF: 0, spawn: 0, nF: 1, lastE: null, lastH: null, glow: [] };
+  function add() { const E = samp(); S.ph.push({ f: 0.1 + 0.8*Math.random(), y: 0, E, b: binOf(E), hit: false, t: 0 }); }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      S.spawn += dt*8;
+      while (S.spawn > 1) { S.spawn--; add(); }
+      for (const p of S.ph) {
+        if (!p.hit) { p.y += dt*0.62; if (p.y >= 1) { p.y = 1; p.hit = true; S.acc += p.E; if (p.b >= 0) S.hist[p.b]++; S.glow.push({ f: p.f, t: 0, E: p.E }); } }
+        else p.t += dt;
+      }
+      S.ph = S.ph.filter(p => p.t < 0.75);
+      S.glow.forEach(g => g.t += dt); S.glow = S.glow.filter(g => g.t < 0.6);
+      S.tF += dt;
+      if (S.tF > FR) { S.lastE = S.acc + gauss()*90; S.lastH = S.hist.slice(); S.acc = 0; S.hist = [0,0,0,0]; S.tF = 0; S.nF++; }
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const fg = tok('--fg'), mut = tok('--muted'), rule = tok('--rule'), acc = tok('--accent'), soft = tok('--accent-soft');
+      const narrow = w < 520;
+      const gap = narrow ? 14 : 28, pw = (w - gap)/2;
+      const top = 44, det = h*0.48, detH = 14, meterY = det + detH + (narrow ? 26 : 34), meterH = h - meterY - 26;
+      const col = b => b < 0 ? mut : tok(BINC[b]);
+      ['Energieintegrierend (EID)', 'Photonenzählend (PCD)'].forEach((t, k) => {
+        const x0 = k*(pw+gap);
+        ctx.fillStyle = fg; ctx.font = `600 ${narrow?13:15}px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(t, x0, 18);
+        ctx.fillStyle = mut; ctx.font = `${narrow?11:12}px ${DISP}`;
+        ctx.fillText(k === 0 ? 'misst Σ E pro Frame' : 'zählt jedes Photon, sortiert nach E', x0, 34);
+        // Detektor
+        if (k === 0) {
+          ctx.fillStyle = soft; ctx.fillRect(x0, det, pw, detH*0.65);
+          ctx.fillStyle = rgba(fg, 0.75); ctx.fillRect(x0, det + detH*0.65, pw, detH*0.35);
+        } else {
+          ctx.fillStyle = soft; ctx.fillRect(x0, det, pw, detH);
+          ctx.fillStyle = rgba(fg, 0.75);
+          const n = narrow ? 10 : 16;
+          for (let i = 0; i < n; i++) ctx.fillRect(x0 + i*pw/n + 1, det + detH - 3, pw/n - 2, 3);
+        }
+      });
+      // Photonen
+      for (const p of S.ph) {
+        for (let k = 0; k < 2; k++) {
+          const x0 = k*(pw+gap); const px = x0 + p.f*pw;
+          if (!p.hit) {
+            const y = top + p.y*(det - top);
+            ctx.strokeStyle = rgba(col(p.b) || mut, 0.35); ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(px, y - 14); ctx.lineTo(px, y); ctx.stroke();
+            ctx.fillStyle = col(p.b); ctx.beginPath(); ctx.arc(px, y, 3.6, 0, 7); ctx.fill();
+          } else if (k === 1 && p.b >= 0) {
+            const bw = pw/4; const tx = x0 + bw*p.b + bw/2, ty = meterY;
+            const s = Math.min(1, p.t/0.5); const e = s*s*(3-2*s);
+            const x = px + (tx - px)*e, y = det + detH + (ty - det - detH)*e;
+            ctx.globalAlpha = 1 - Math.max(0, (p.t-0.5)/0.25);
+            ctx.fillStyle = col(p.b); ctx.beginPath(); ctx.arc(x, y, 3.4, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+          }
+        }
+      }
+      // EID-Glühen: Licht breitet sich im Szintillator aus
+      for (const g of S.glow) {
+        const px = g.f*pw; const a = 1 - g.t/0.6;
+        const grd = ctx.createRadialGradient(px, det+4, 0, px, det+4, 26);
+        grd.addColorStop(0, rgba(acc, 0.55*a)); grd.addColorStop(1, rgba(acc, 0));
+        ctx.fillStyle = grd; ctx.fillRect(px-26, det, 52, detH);
+        const x1 = pw + gap + g.f*pw;
+        ctx.fillStyle = rgba(acc, a); ctx.fillRect(x1-2, det+detH-5, 4, 5);
+      }
+      // EID-Messwert
+      const fullE = 8*FR*72;
+      const cur = S.acc;
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left';
+      ctx.fillText(`Frame ${S.nF}: Ladung integriert`, 0, meterY - 8);
+      ctx.strokeStyle = rule; ctx.strokeRect(0.5, meterY + 0.5, pw - 1, Math.min(26, meterH*0.4));
+      ctx.fillStyle = acc; ctx.fillRect(1, meterY+1, Math.min(1, cur/fullE)*(pw-2), Math.min(26, meterH*0.4) - 1);
+      const ly = meterY + Math.min(26, meterH*0.4) + 20;
+      ctx.fillStyle = fg; ctx.font = `12px ${MONO}`;
+      if (S.lastE !== null) ctx.fillText(`letzter Frame: ${nf(S.lastE/1000,2)} MeV`, 0, ly);
+      ctx.fillStyle = mut; ctx.fillText(`+ Elektronikrauschen`, 0, ly + 17);
+      if (!narrow) ctx.fillText(`keine Information über einzelne E`, 0, ly + 34);
+      // PCD-Histogramm
+      const x0 = pw + gap, bw = pw/4, hmax = Math.max(10, ...S.hist, ...(S.lastH || [0])) ;
+      const labels = ['20–35','35–50','50–65','≥65'];
+      for (let b = 0; b < 4; b++) {
+        const bx = x0 + b*bw + 4, bwi = bw - 8;
+        const hh = (meterH - 22) * S.hist[b] / (hmax*1.1);
+        if (S.lastH) { const lh = (meterH - 22) * S.lastH[b] / (hmax*1.1); ctx.strokeStyle = rgba(tok(BINC[b]), 0.6); ctx.setLineDash([3,3]); ctx.strokeRect(bx+0.5, meterY + meterH - 22 - lh, bwi-1, lh); ctx.setLineDash([]); }
+        ctx.fillStyle = tok(BINC[b]); ctx.fillRect(bx, meterY + meterH - 22 - hh, bwi, hh);
+        ctx.fillStyle = fg; ctx.font = `12px ${MONO}`; ctx.textAlign = 'center';
+        ctx.fillText(String(S.hist[b]), bx + bwi/2, meterY + meterH - 26 - hh);
+        ctx.fillStyle = mut; ctx.font = `${narrow?9:10.5}px ${MONO}`; ctx.fillText(labels[b], bx + bwi/2, meterY + meterH - 6);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`;
+      ctx.fillText(`Zähler je Bin (keV), gestrichelt: letzter Frame`, x0, meterY - 8);
+    }
+  });
+  for (let i = 0; i < 260; i++) m.step(1/60);
+  playBtn($('#concept-play'), m);
+  m.draw();
+})();
+</script>

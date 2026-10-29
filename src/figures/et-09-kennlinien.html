@@ -1,0 +1,62 @@
+<!-- title: Kennlinien
+     lib: et -->
+<figure class="fig">
+<canvas aria-label="Kennlinien: entweder Strom-Spannungs-Kennlinie einer Diode oder Ausgangskennlinienfeld eines MOSFET." class="c-kl" id="cv-kl" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="kl-m">Bauteil</label></div><select id="kl-m"><option value="d">Diode</option><option value="m">MOSFET</option><option value="b">Bipolartransistor</option></select></div>
+<div class="ctrl" id="kl-t-w"><div class="lab"><label for="kl-t">Temperatur</label><output id="kl-t-o"></output></div><input id="kl-t" max="120" min="-20" step="1" type="range" value="25"/></div>
+<div class="ctrl" hidden="" id="kl-b-w"><div class="lab"><label for="kl-b">Basisstrom I_B</label><output id="kl-b-o"></output></div><input id="kl-b" max="50" min="5" step="1" type="range" value="25"/></div>
+<div class="ctrl" hidden="" id="kl-g-w"><div class="lab"><label for="kl-g">Gate-Spannung U_GS</label><output id="kl-g-o"></output></div><input id="kl-g" max="4" min="1" step="0.05" type="range" value="2.5"/></div>
+</div>
+<div class="readout" id="kl-read"></div>
+<figcaption><b>Abb. 9</b> Diode: Strom über Spannung, mit Temperatureinfluss (der Sättigungsstrom verdoppelt sich etwa alle 10 K, deshalb sinkt die Durchlassspannung mit der Temperatur um rund 2 mV/K). MOSFET: Drainstrom über \(U_{DS}\) für mehrere Gate-Spannungen. Die hervorgehobene Kurve gehört zur eingestellten \(U_{GS}\). Im linearen Bereich am Anfang entspricht ihre Steigung dem Kehrwert des Kanalwiderstands, rechts der Grenze ist der Strom fast konstant. Bipolartransistor: Kollektorstrom über \(U_{CE}\) für mehrere Basisströme, mit Stromverstärkung \(B\) = 200. Modellwerte MOSFET: \(U_{th}\) = 1 V, \(k\) = 2 mA/V².</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 9: Kennlinien ---------- */
+(() => {
+  const c = $('#cv-kl'), iM = $('#kl-m'), iT = $('#kl-t'), iG = $('#kl-g'), iBb = $('#kl-b');
+  const KM = 2e-3, VTH = 1;
+  const idm = (vgs, vds) => vgs <= VTH ? 0 : (vds < vgs - VTH ? KM * ((vgs - VTH) * vds - vds * vds / 2) : KM / 2 * (vgs - VTH) ** 2);
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c), mode = iM.value;
+    $('#kl-t-w').hidden = mode !== 'd'; $('#kl-g-w').hidden = mode !== 'm'; $('#kl-b-w').hidden = mode !== 'b';
+    if (mode === 'd') {
+      const TC = +iT.value, T = TC + 273.15, UT = 1.380649e-23 * T / 1.602e-19, n = 1.5, Is = 1e-12 * Math.pow(2, (TC - 25) / 10);
+      $('#kl-t-o').textContent = `${TC} °C`;
+      const f = frame(ctx, 0, 0, w, h, { x0: -1, x1: 1, y0: -2, y1: 20, xt: [-1, -0.5, 0, 0.5, 1], yt: [0, 5, 10, 15, 20], xf: v => nf(v, 1), yf: v => String(v), xl: 'Spannung U (V)', yl: 'Strom I (mA)', l: 48 });
+      clipBox(ctx, f);
+      ctx.fillStyle = rgba(tok('--elec'), 0.06); ctx.fillRect(f.bx, f.by, f.X(0) - f.bx, f.bh);
+      const curve = (Isx, UTx, col, lw, dash) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.beginPath(); for (let k = 0; k <= 400; k++) { const U = -1 + 2 * k / 400, I = Isx * (Math.exp(U / (n * UTx)) - 1) * 1e3; const y = f.Y(Math.min(25, I)); k ? ctx.lineTo(f.X(U), y) : ctx.moveTo(f.X(U), y); } ctx.stroke(); ctx.setLineDash([]); };
+      curve(1e-12, 1.380649e-23 * 298.15 / 1.602e-19, tok('--muted'), 1.4, [4, 3]);
+      curve(Is, UT, tok('--accent'), 2.4);
+      ctx.restore();
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('Sperrrichtung', f.bx + 8, f.by + 16); ctx.textAlign = 'right'; ctx.fillText('Durchlassrichtung', f.bx + f.bw - 8, f.by + 16);
+      ctx.font = `11px ${MONO}`; ctx.fillText('- - 25 °C', f.bx + f.bw - 8, f.by + 32);
+      const U1 = n * UT * Math.log(1e-3 / Is + 1), U10 = n * UT * Math.log(1e-2 / Is + 1);
+      $('#kl-read').innerHTML = `<span class="k">U_T = kT/e =</span> ${nf(UT * 1000, 1)} mV  <span class="k">·</span>  <span class="k">Durchlassspannung bei 1 mA:</span> ${nf(U1, 3)} V, bei 10 mA: ${nf(U10, 3)} V  <span class="k">·</span>  <span class="k">Sperrstrom I_S:</span> ${SI(Is, 'A')}`;
+    } else if (mode === 'b') {
+      const ib0 = +iBb.value * 1e-6, Bv = 200, VA = 60; $('#kl-b-o').textContent = `${iBb.value} µA`;
+      const icb = (ib, v) => Bv * ib * (1 - Math.exp(-v / 0.12)) * (1 + v / VA) * 1e3;
+      const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 10, y0: 0, y1: 12, xt: [0, 2, 4, 6, 8, 10], yt: [0, 2, 4, 6, 8, 10, 12], yf: v => String(v), xl: 'Kollektor-Emitter-Spannung U_CE (V)', yl: 'Kollektorstrom I_C (mA)', l: 48 });
+      clipBox(ctx, f);
+      for (let ib = 10e-6; ib <= 50.1e-6; ib += 10e-6) { ctx.strokeStyle = rgba(tok('--fg'), 0.3); ctx.lineWidth = 1.2; ctx.beginPath(); for (let k = 0; k <= 200; k++) { const v = 10 * k / 200, y = icb(ib, v); k ? ctx.lineTo(f.X(v), f.Y(y)) : ctx.moveTo(f.X(v), f.Y(y)); } ctx.stroke(); ctx.fillStyle = tok('--muted'); ctx.font = `10.5px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText(`${Math.round(ib * 1e6)} µA`, f.bx + f.bw - 4, f.Y(icb(ib, 10)) - 3); }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.6; ctx.beginPath(); for (let k = 0; k <= 200; k++) { const v = 10 * k / 200, y = icb(ib0, v); k ? ctx.lineTo(f.X(v), f.Y(y)) : ctx.moveTo(f.X(v), f.Y(y)); } ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('I_C ≈ B · I_B, fast unabhängig von U_CE', f.bx + 8, f.by + 16);
+      $('#kl-read').innerHTML = `<span class="k">Basisstrom</span> ${iBb.value} µA <span class="k">→ Kollektorstrom ≈ B · I_B =</span> ${nf(Bv * ib0 * 1e3, 1)} mA  <span class="k">·</span>  <span class="k">Stromverstärkung B =</span> ${Bv}  <span class="k">·</span>  <span class="k">U_BE ≈ 0,7 V (wie eine Diode)</span>`;
+    } else {
+      const g0 = +iG.value; $('#kl-g-o').textContent = `${nf(g0, 2)} V`;
+      const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: 5, y0: 0, y1: 10.5, xt: [0, 1, 2, 3, 4, 5], yt: [0, 2, 4, 6, 8, 10], yf: v => String(v), xl: 'Drain-Source-Spannung U_DS (V)', yl: 'Drainstrom I_D (mA)', l: 48 });
+      clipBox(ctx, f);
+      ctx.strokeStyle = tok('--muted'); ctx.setLineDash([3, 4]); ctx.beginPath(); for (let k = 0; k <= 100; k++) { const vds = 4 * k / 100, y = KM / 2 * vds * vds * 1e3; k ? ctx.lineTo(f.X(vds), f.Y(y)) : ctx.moveTo(f.X(vds), f.Y(y)); } ctx.stroke(); ctx.setLineDash([]);
+      for (let vg = 1.5; vg <= 4.01; vg += 0.5) { ctx.strokeStyle = rgba(tok('--fg'), 0.3); ctx.lineWidth = 1.2; ctx.beginPath(); for (let k = 0; k <= 200; k++) { const vds = 5 * k / 200, y = idm(vg, vds) * 1e3; k ? ctx.lineTo(f.X(vds), f.Y(y)) : ctx.moveTo(f.X(vds), f.Y(y)); } ctx.stroke(); ctx.fillStyle = tok('--muted'); ctx.font = `10.5px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText(`${nf(vg, 1)} V`, f.bx + f.bw - 4, f.Y(idm(vg, 5) * 1e3) - 3); }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.6; ctx.beginPath(); for (let k = 0; k <= 200; k++) { const vds = 5 * k / 200, y = idm(g0, vds) * 1e3; k ? ctx.lineTo(f.X(vds), f.Y(y)) : ctx.moveTo(f.X(vds), f.Y(y)); } ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('linear: wie ein Widerstand', f.bx + 8, f.by + 16); ctx.fillText('- - Grenze U_DS = U_GS − U_th', f.bx + 8, f.by + 32);
+      const ron = g0 > VTH ? 1 / (KM * (g0 - VTH)) : Infinity;
+      $('#kl-read').innerHTML = `<span class="k">Kanalwiderstand bei kleinem U_DS:</span> ${isFinite(ron) ? SI(ron, 'Ω') : 'sperrt (U_GS < U_th)'}  <span class="k">·</span>  <span class="k">Sättigungsstrom:</span> ${SI(idm(g0, 5), 'A')}  <span class="k">·</span>  <span class="k">Grenze bei U_DS =</span> ${nf(Math.max(0, g0 - VTH), 2)} V`;
+    }
+  }});
+  [iM, iT, iG, iBb].forEach(e => e.addEventListener('input', () => m.draw())); m.draw();
+})();
+</script>

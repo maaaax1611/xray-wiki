@@ -1,0 +1,49 @@
+<!-- title: Kaczmarz-Verfahren in 2D
+     lib: rk -->
+<figure class="fig">
+<canvas aria-label="Kaczmarz-Verfahren in zwei Dimensionen: ein Punkt springt abwechselnd senkrecht auf zwei Geraden und nähert sich ihrem Schnittpunkt." class="c-kz" id="cv-kz" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="kz-a">Winkel zwischen den Geraden</label><output id="kz-a-o"></output></div><input id="kz-a" max="90" min="5" step="1" type="range" value="35"/></div>
+<button class="btn" id="kz-go" type="button">Neuer Startpunkt</button>
+</div>
+<div class="readout" id="kz-read"></div>
+<figcaption><b>Abb. 9</b> Zwei Gleichungen mit zwei Unbekannten sind zwei Geraden, die Lösung ist ihr Schnittpunkt. Kaczmarz projiziert die Schätzung abwechselnd senkrecht auf die Geraden. Stehen sie fast parallel (ähnliche Strahlen), wird der Zickzack lang, und die Konvergenz ist langsam. Daher werden Projektionen in der Praxis in einer Reihenfolge abgearbeitet, in der aufeinanderfolgende Winkel möglichst verschieden sind.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 9: Kaczmarz ---------- */
+(() => {
+  const c = $('#cv-kz'), ia = $('#kz-a');
+  let path = [], tStep = 0, hold = 0, k = 0;
+  const n1 = [0, 1];
+  const n2 = () => { const a = +ia.value * Math.PI / 180; return [-Math.sin(a), Math.cos(a)]; };
+  function start() {
+    const a = Math.random() * 2 * Math.PI; path = [[3.2 * Math.cos(a), 2.3 * Math.sin(a)]]; k = 0; hold = 0; tStep = 0;
+    $('#kz-a-o').textContent = `${ia.value}°`; read();
+  }
+  function stepK() { const [x, y] = path[path.length - 1], n = k % 2 ? n2() : n1, d = x * n[0] + y * n[1]; path.push([x - d * n[0], y - d * n[1]]); k++; read(); }
+  function read() { const [x, y] = path[path.length - 1]; $('#kz-read').innerHTML = `<span class="k">Schritte:</span> ${k}  <span class="k">·</span>  <span class="k">Abstand zur Lösung:</span> ${nf(Math.hypot(x, y), 4)}  <span class="k">·</span>  <span class="k">Faktor pro Doppelschritt:</span> cos²(${ia.value}°) = ${nf(Math.cos(+ia.value * Math.PI / 180) ** 2, 3)}`; }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      const [x, y] = path[path.length - 1], done = Math.hypot(x, y) < 0.01 || k >= 60;
+      if (done) { hold += dt; if (hold > 1.6) start(); return; }
+      tStep += dt; if (tStep > 0.45) { tStep = 0; stepK(); }
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const V = 4, sc = Math.min(w / (2 * V * 1.1), h / (2 * 3 * 1.05)), cx = w / 2, cy = h / 2, P = (x, y) => [cx + x * sc, cy - y * sc];
+      ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1;
+      for (let g = -4; g <= 4; g++) { ctx.beginPath(); ctx.moveTo(...P(g, -3)); ctx.lineTo(...P(g, 3)); ctx.stroke(); }
+      for (let g = -3; g <= 3; g++) { ctx.beginPath(); ctx.moveTo(...P(-4, g)); ctx.lineTo(...P(4, g)); ctx.stroke(); }
+      const line = (n, col, lbl) => { const d = [-n[1], n[0]]; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(...P(-6 * d[0], -6 * d[1])); ctx.lineTo(...P(6 * d[0], 6 * d[1])); ctx.stroke(); const tp = P(3.6 * d[0], 3.6 * d[1]); ctx.fillStyle = col; ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(lbl, tp[0] + 4, tp[1] - 6); };
+      line(n1, tok('--bin1'), 'Gleichung 1'); line(n2(), tok('--bin2'), 'Gleichung 2');
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.6; ctx.beginPath(); path.forEach((p, i) => i ? ctx.lineTo(...P(...p)) : ctx.moveTo(...P(...p))); ctx.stroke();
+      path.forEach((p, i) => { ctx.fillStyle = i === path.length - 1 ? tok('--accent') : rgba(tok('--accent'), 0.5); ctx.beginPath(); ctx.arc(...P(...p), i === 0 ? 5 : 3, 0, 7); ctx.fill(); });
+      ctx.fillStyle = tok('--fg'); ctx.beginPath(); ctx.arc(...P(0, 0), 4, 0, 7); ctx.fill();
+      ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('Lösung', ...P(0.12, -0.3));
+      const s0 = P(...path[0]); ctx.fillStyle = tok('--muted'); ctx.fillText('Start', s0[0] + 8, s0[1] - 6);
+    }
+  });
+  ia.addEventListener('input', () => { start(); m.draw(); }); $('#kz-go').addEventListener('click', () => { start(); m.draw(); });
+  start(); for (let i = 0; i < 6; i++) stepK(); if (reduceMotion) for (let i = 0; i < 20; i++) stepK(); m.draw();
+})();
+</script>

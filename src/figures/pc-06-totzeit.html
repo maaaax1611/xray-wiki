@@ -1,0 +1,41 @@
+<!-- title: Totzeitmodelle
+     lib: pc -->
+<figure class="fig">
+<canvas aria-label="Gemessene gegen wahre Zählrate für ideales, nicht-paralysierbares und paralysierbares Totzeitmodell, doppelt-logarithmisch." class="c-dead" id="cv-dead" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="dt-tau">Totzeit τ</label><output id="dt-tau-o"></output></div><input id="dt-tau" max="100" min="2" step="1" type="range" value="20"/></div>
+</div>
+<figcaption><b>Abb. 6</b> Gemessene gegen wahre Rate. Der Punkt markiert das Maximum des paralysierbaren Modells bei \(n = 1/\tau\). Rechts davon ist die Kennlinie nicht mehr eindeutig invertierbar.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 6: Totzeit ---------- */
+(() => {
+  const c = $('#cv-dead'), it = $('#dt-tau');
+  const m = reg({ el: c, draw() {
+    const tau = +it.value*1e-9;
+    $('#dt-tau-o').textContent = `${it.value} ns`;
+    const { ctx, w } = fit(c); const h = c.getBoundingClientRect().height;
+    const xt = [1e5,1e6,1e7,1e8,1e9,1e10];
+    const f = frame(ctx, w, h, { x0: 1e5, x1: 1e10, y0: 1e5, y1: 1e10, xlog: true, ylog: true, xt, yt: xt, xf: pow10, yf: pow10, xl: 'wahre Rate n (s⁻¹)', yl: 'gemessene Rate m (s⁻¹)', l: 54 });
+    clipBox(ctx, f);
+    const curve = (fn, col, dash, lw) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash); ctx.beginPath(); for (let k = 0; k <= 300; k++) { const n = Math.pow(10, 5 + 5*k/300), v = Math.max(1e5*0.5, fn(n)); k ? ctx.lineTo(f.X(n), f.Y(v)) : ctx.moveTo(f.X(n), f.Y(v)); } ctx.stroke(); ctx.setLineDash([]); };
+    curve(n => n, tok('--muted'), [4,4], 1.3);
+    curve(n => n/(1+n*tau), tok('--bin1'), [], 2.2);
+    curve(n => n*Math.exp(-n*tau), tok('--hole'), [], 2.2);
+    const nm = 1/tau, mm = 1/(Math.E*tau);
+    ctx.fillStyle = tok('--hole'); ctx.beginPath(); ctx.arc(f.X(nm), f.Y(mm), 4.5, 0, 7); ctx.fill();
+    ctx.strokeStyle = rgba(tok('--muted'), 0.6); ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(1/tau)); ctx.lineTo(f.bx+f.bw, f.Y(1/tau)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left';
+    const lx = f.bx + 12; let ly = f.by + 16;
+    [['ideal m = n', '--muted'], ['nicht-paralysierbar', '--bin1'], ['paralysierbar', '--hole']].forEach(([t, cc]) => { ctx.fillStyle = tok(cc); ctx.fillRect(lx, ly-8, 14, 3); ctx.fillStyle = tok('--fg'); ctx.fillText(t, lx + 20, ly - 3); ly += 18; });
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`;
+    ctx.fillText(`1/τ = ${nf(1/tau/1e6,0)} Mcps`, Math.min(f.X(1e5)+12, f.bx+f.bw-130), f.Y(1/tau)-6);
+    ctx.fillStyle = tok('--hole'); ctx.textAlign = 'left';
+    const tx = Math.min(f.X(nm) + 8, f.bx + f.bw - 120);
+    ctx.fillText(`Max. ${nf(mm/1e6,1)} Mcps`, tx, f.Y(mm) + 18);
+  }});
+  it.addEventListener('input', () => m.draw());
+  m.draw();
+})();
+</script>

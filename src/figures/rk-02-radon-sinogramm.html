@@ -1,0 +1,71 @@
+<!-- title: Radon-Transformation und Sinogramm
+     lib: rk -->
+<figure class="fig">
+<canvas aria-label="Links ein Objektfeld mit zwei verschiebbaren Punkten und rotierender Strahlrichtung. Rechts das Sinogramm, in dem jeder Punkt eine Sinuskurve beschreibt." class="c-radon" id="cv-radon" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="rd-th">Winkel θ</label><output id="rd-th-o"></output></div><input id="rd-th" max="179" min="0" step="1" type="range" value="30"/></div>
+<button class="btn" id="rd-play" type="button">Pause</button>
+</div>
+<div class="readout" id="rd-read"></div>
+<figcaption><b>Abb. 2</b> Die beiden Punkte links lassen sich mit Maus oder Finger verschieben. Die Strahlen laufen senkrecht zur Detektorlinie, am Detektor entsteht für jeden Punkt eine Spitze bei \(s = x_0\cos\theta + y_0\sin\theta\). Rechts das Sinogramm: horizontal der Winkel, vertikal die Detektorposition. Zieh einen Punkt in die Mitte und beobachte, wie seine Kurve flach wird.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 2: Radon-Punkte ---------- */
+(() => {
+  const c = $('#cv-radon'), ith = $('#rd-th');
+  const pts = [{ x: 0.45, y: 0.3, c: '--accent' }, { x: -0.5, y: -0.25, c: '--bin2' }];
+  let th = 30 * Math.PI / 180, drag = null, geo = null;
+  function L(w, h) { const narrow = w < 560; if (narrow) { const s = Math.min(w, h * 0.5); return { a: [(w - s) / 2, 0, s, s], b: [0, s + 6, w, h - s - 6] }; } const s = Math.min(h, w * 0.45); return { a: [0, (h - s) / 2, s, s], b: [s + 16, 0, w - s - 16, h] }; }
+  function read() {
+    const d = th * 180 / Math.PI; $('#rd-th-o').textContent = `${nf(d, 0)}°`;
+    $('#rd-read').innerHTML = pts.map((p, k) => { const s = p.x * Math.cos(th) + p.y * Math.sin(th); const r = Math.hypot(p.x, p.y), phi = Math.atan2(p.y, p.x) * 180 / Math.PI; return `<span style="color:var(${p.c})">●</span> <span class="k">Punkt ${k + 1}: (${nf(p.x, 2)}, ${nf(p.y, 2)}), r₀ = ${nf(r, 2)}, φ₀ = ${nf(phi, 0)}° →</span> s = ${nf(s, 2)}`; }).join('<br>');
+  }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) { if (drag) return; th = (th + dt * 0.5) % Math.PI; ith.value = Math.round(th * 180 / Math.PI); read(); },
+    draw() {
+      const { ctx, w, h } = fit(c); const Ly = L(w, h); const [ax, ay, as] = Ly.a;
+      const fg = tok('--fg'), mut = tok('--muted');
+      const V = 1.75, sc = as / (2 * V), cx = ax + as / 2, cy = ay + as / 2;
+      geo = { cx, cy, sc, ax, ay, as };
+      const P = (x, y) => [cx + x * sc, cy - y * sc];
+      ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, sc, 0, 7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...P(-1.1, 0)); ctx.lineTo(...P(1.1, 0)); ctx.moveTo(...P(0, -1.1)); ctx.lineTo(...P(0, 1.1)); ctx.strokeStyle = tok('--grid'); ctx.stroke();
+      const n = [Math.cos(th), Math.sin(th)], r = [-Math.sin(th), Math.cos(th)];
+      ctx.strokeStyle = rgba(mut, 0.25);
+      for (let s = -1.2; s <= 1.21; s += 0.2) { ctx.beginPath(); ctx.moveTo(...P(s * n[0] - 1.35 * r[0], s * n[1] - 1.35 * r[1])); ctx.lineTo(...P(s * n[0] + 1.3 * r[0], s * n[1] + 1.3 * r[1])); ctx.stroke(); }
+      // Detektor + Achse s
+      ctx.strokeStyle = fg; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(...P(-1.3 * n[0] + 1.35 * r[0], -1.3 * n[1] + 1.35 * r[1])); ctx.lineTo(...P(1.3 * n[0] + 1.35 * r[0], 1.3 * n[1] + 1.35 * r[1])); ctx.stroke();
+      ctx.lineWidth = 1;
+      // Normale (theta) Pfeil
+      ctx.strokeStyle = mut; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(...P(0, 0)); ctx.lineTo(...P(1.15 * n[0], 1.15 * n[1])); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; const tp = P(1.28 * n[0] - 0.12 * r[0], 1.28 * n[1] - 0.12 * r[1]); ctx.fillText('θ', tp[0], tp[1]);
+      ctx.beginPath(); ctx.strokeStyle = mut; ctx.arc(cx, cy, 0.25 * sc, 0, -th, true); ctx.stroke();
+      pts.forEach(p => {
+        const s = p.x * n[0] + p.y * n[1], col = tok(p.c);
+        ctx.strokeStyle = rgba(col, 0.75); ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(...P(p.x, p.y)); ctx.lineTo(...P(s * n[0] + 1.35 * r[0], s * n[1] + 1.35 * r[1])); ctx.stroke(); ctx.setLineDash([]);
+        const b0 = P(s * n[0] + 1.38 * r[0], s * n[1] + 1.38 * r[1]), b1 = P(s * n[0] + 1.62 * r[0], s * n[1] + 1.62 * r[1]);
+        ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(...b0); ctx.lineTo(...b1); ctx.stroke(); ctx.lineWidth = 1;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(...P(p.x, p.y), 7, 0, 7); ctx.fill();
+        ctx.strokeStyle = tok('--surface'); ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+      });
+      ctx.fillStyle = mut; ctx.font = `11px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('Punkte verschiebbar', ax + 4, ay + as - 6);
+      // Sinogramm
+      const [bx, by, bw, bh] = Ly.b;
+      const f = frame(ctx, bx, by, bw, bh, { x0: 0, x1: 180, y0: -1.1, y1: 1.1, xt: [0, 45, 90, 135, 180], yt: [-1, -0.5, 0, 0.5, 1], xf: v => v + '°', yf: v => nf(v, 1), xl: 'Winkel θ', yl: 'Detektorposition s', l: 46 });
+      clipBox(ctx, f);
+      pts.forEach(p => { ctx.strokeStyle = tok(p.c); ctx.lineWidth = 2.4; ctx.beginPath(); for (let d = 0; d <= 180; d += 1) { const t = d * Math.PI / 180, s = p.x * Math.cos(t) + p.y * Math.sin(t); d ? ctx.lineTo(f.X(d), f.Y(s)) : ctx.moveTo(f.X(d), f.Y(s)); } ctx.stroke(); });
+      const dd = th * 180 / Math.PI; ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(dd), f.by); ctx.lineTo(f.X(dd), f.by + f.bh); ctx.stroke();
+      pts.forEach(p => { const s = p.x * Math.cos(th) + p.y * Math.sin(th); ctx.fillStyle = tok(p.c); ctx.beginPath(); ctx.arc(f.X(dd), f.Y(s), 5, 0, 7); ctx.fill(); });
+      ctx.restore();
+    }
+  });
+  const toObj = e => { const r = c.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; return [(x - geo.cx) / geo.sc, -(y - geo.cy) / geo.sc]; };
+  c.addEventListener('pointerdown', e => { if (!geo) return; const [x, y] = toObj(e); let best = null, bd = 0.25; pts.forEach(p => { const d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p; } }); if (best) { drag = best; c.setPointerCapture(e.pointerId); c.style.cursor = 'grabbing'; } });
+  c.addEventListener('pointermove', e => { if (!geo) return; const [x, y] = toObj(e); if (drag) { const r = Math.hypot(x, y), k = r > 0.95 ? 0.95 / r : 1; drag.x = x * k; drag.y = y * k; read(); m.draw(); } else c.style.cursor = pts.some(p => Math.hypot(p.x - x, p.y - y) < 0.25) ? 'grab' : 'default'; });
+  const up = () => { drag = null; c.style.cursor = 'default'; };
+  c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+  ith.addEventListener('input', () => { th = +ith.value * Math.PI / 180; if (m.playing) { m.playing = false; $('#rd-play').textContent = 'Abspielen'; } read(); m.draw(); });
+  playBtn($('#rd-play'), m); read(); m.draw();
+})();
+</script>

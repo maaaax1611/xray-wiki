@@ -1,0 +1,120 @@
+<!-- title: Projektion, Sinogramm, Rekonstruktion
+     lib: gl -->
+<figure class="fig">
+<div class="three">
+<div><div class="lbl">Objekt und Projektion</div><canvas aria-label="Schnittbild eines vereinfachten Thorax mit rotierender Strahlrichtung und dem gemessenen Projektionsprofil." class="c-sq" id="cv-ph" role="img"></canvas></div>
+<div><div class="lbl">Sinogramm (Zeilen = Winkel)</div><canvas aria-label="Sinogramm, das sich Zeile für Zeile aufbaut." class="c-sq" id="cv-sino" role="img"></canvas></div>
+<div><div class="lbl">Rekonstruktion</div><canvas aria-label="Rekonstruiertes Bild, das sich mit jeder Projektion aufbaut." class="c-sq" id="cv-rec" role="img"></canvas></div>
+</div>
+<div class="ctrls">
+<label class="chk"><input checked="" id="ct-f" type="checkbox"/> Filter vor der Rückprojektion</label>
+<button class="btn" id="ct-play" type="button">Pause</button>
+<button class="btn" id="ct-reset" type="button">Von vorn</button>
+</div>
+<div class="readout" id="ct-read"></div>
+<figcaption><b>Abb. 9</b> Vereinfachtes Thorax-Phantom (Körper, zwei Lungenflügel, Herz, Wirbelkörper, kontrastierte Aorta) mit Werten für μ in 1/cm bei etwa 60 keV. Links dreht sich die Strahlrichtung, am Rand erscheint das gemessene Profil \(p(s)\). Mitte: Das Sinogramm wächst um eine Zeile pro Winkel. Rechts: Mit jeder Projektion kommt eine Rückprojektion hinzu. Schalte den Filter aus, um zu sehen, warum er nötig ist.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 9: CT ---------- */
+(() => {
+  const cp = $('#cv-ph'), cs = $('#cv-sino'), cr = $('#cv-rec'), iF = $('#ct-f');
+  const PH = [[0, 0, 14, 10, 0, 0.2], [-6, 1.5, 3.6, 5.2, 10, -0.15], [6, 1.5, 3.6, 5.2, -10, -0.15], [0.3, 0.6, 3.0, 2.4, 30, 0.02], [0, -6.8, 1.8, 1.6, 0, 0.4], [2.7, -4.0, 1.0, 1.0, 0, 0.15]];
+  const NG = 128, NA = 180, NS = 128, HW = 16, ds = 2 * HW / NS;
+  const Xc = new Float64Array(NG), Yc = new Float64Array(NG);
+  for (let i = 0; i < NG; i++) { Xc[i] = -HW + (i + 0.5) * 2 * HW / NG; Yc[i] = HW - (i + 0.5) * 2 * HW / NG; }
+  const img = new Float64Array(NG * NG);
+  for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) {
+    let v = 0; const x = Xc[i], y = Yc[j];
+    for (const [x0, y0, A, B, ad, m] of PH) { const a = ad * Math.PI / 180, dx = x - x0, dy = y - y0; const xr = dx * Math.cos(a) + dy * Math.sin(a), yr = -dx * Math.sin(a) + dy * Math.cos(a); if ((xr / A) ** 2 + (yr / B) ** 2 <= 1) v += m; }
+    img[j * NG + i] = v;
+  }
+  const sino = new Float64Array(NA * NS), sinoF = new Float64Array(NA * NS);
+  let pmax = 0;
+  for (let k = 0; k < NA; k++) {
+    const th = k * Math.PI / NA, ct = Math.cos(th), st = Math.sin(th);
+    for (let n = 0; n < NS; n++) {
+      const s = -HW + (n + 0.5) * ds; let p = 0;
+      for (const [x0, y0, A, B, ad, m] of PH) { const a = ad * Math.PI / 180, sp = s - (x0 * ct + y0 * st); const a2 = A * A * Math.cos(th - a) ** 2 + B * B * Math.sin(th - a) ** 2; if (sp * sp < a2) p += m * 2 * A * B * Math.sqrt(a2 - sp * sp) / a2; }
+      sino[k * NS + n] = p; pmax = Math.max(pmax, p);
+    }
+    for (let n = 0; n < NS; n++) {
+      let q = 0;
+      for (let l = 0; l < NS; l++) { const d = n - l; let hk = 0; if (d === 0) hk = 1 / (4 * ds * ds); else if (d % 2) hk = -1 / (Math.PI * Math.PI * d * d * ds * ds); q += sino[k * NS + l] * hk; }
+      sinoF[k * NS + n] = q * ds;
+    }
+  }
+  const recF = new Float64Array(NG * NG), recU = new Float64Array(NG * NG);
+  let K = 0, hold = 0;
+  function bp(k) {
+    const th = k * Math.PI / NA, ct = Math.cos(th), st = Math.sin(th), w = Math.PI / NA;
+    for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) {
+      const s = Xc[i] * ct + Yc[j] * st, u = (s + HW) / ds - 0.5, n0 = Math.floor(u), fr = u - n0;
+      if (n0 < 0 || n0 >= NS - 1) continue;
+      const o = k * NS + n0;
+      recF[j * NG + i] += w * (sinoF[o] * (1 - fr) + sinoF[o + 1] * fr);
+      recU[j * NG + i] += w * (sino[o] * (1 - fr) + sino[o + 1] * fr);
+    }
+  }
+  function reset() { recF.fill(0); recU.fill(0); K = 0; hold = 0; }
+  const toImg = (arr, nx, ny, lo, hi, rows) => {
+    const id = new ImageData(nx, ny);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const o = (j * nx + i) * 4; let v = 0;
+      if (rows === undefined || j < rows) v = Math.max(0, Math.min(1, (arr[j * nx + i] - lo) / (hi - lo)));
+      const g = Math.round(v * 255); id.data[o] = g; id.data[o + 1] = g; id.data[o + 2] = g; id.data[o + 3] = 255;
+    }
+    const off = document.createElement('canvas'); off.width = nx; off.height = ny; off.getContext('2d').putImageData(id, 0, 0); return off;
+  };
+  const phImg = toImg(img, NG, NG, 0, 0.65);
+  const mP = reg({ el: cp, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (K < NA) { const n = Math.max(1, Math.round(dt * 30)); for (let i = 0; i < n && K < NA; i++) { bp(K); K++; } }
+      else { hold += dt; if (hold > 2.5) reset(); }
+      mS.draw(); mR.draw(); read();
+    },
+    draw() {
+      const { ctx, w, h } = fit(cp);
+      const V = 24, sc = Math.min(w, h) / (2 * V), cx = w / 2, cy = h / 2;
+      const P = (x, y) => [cx + x * sc, cy - y * sc];
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(phImg, cx - HW * sc, cy - HW * sc, 2 * HW * sc, 2 * HW * sc);
+      const k = Math.min(K, NA - 1), th = k * Math.PI / NA, n = [Math.cos(th), Math.sin(th)], r = [-Math.sin(th), Math.cos(th)];
+      // Strahlen
+      ctx.strokeStyle = 'rgba(120,160,255,0.28)'; ctx.lineWidth = 1;
+      for (let s = -15; s <= 15; s += 3) { const a = P(s * n[0] - 18 * r[0], s * n[1] - 18 * r[1]), b = P(s * n[0] + 17 * r[0], s * n[1] + 17 * r[1]); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); }
+      // Detektor
+      const d1 = P(-16 * n[0] + 17 * r[0], -16 * n[1] + 17 * r[1]), d2 = P(16 * n[0] + 17 * r[0], 16 * n[1] + 17 * r[1]);
+      ctx.strokeStyle = '#ddd'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(...d1); ctx.lineTo(...d2); ctx.stroke();
+      // Profil
+      ctx.strokeStyle = '#f5b83d'; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i < NS; i++) { const s = -HW + (i + 0.5) * ds, p = sino[k * NS + i] / pmax * 6; const pt = P(s * n[0] + (17.6 + p) * r[0], s * n[1] + (17.6 + p) * r[1]); i ? ctx.lineTo(...pt) : ctx.moveTo(...pt); }
+      ctx.stroke();
+      ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`θ = ${k}°`, 8, 16);
+    }
+  });
+  const mS = reg({ el: cs, draw() {
+    const { ctx, w, h } = fit(cs);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    const im = toImg(sino, NS, NA, 0, pmax, K); ctx.imageSmoothingEnabled = true; ctx.drawImage(im, 0, 0, w, h);
+    if (K < NA) { ctx.strokeStyle = '#f5b83d'; ctx.lineWidth = 1.5; const y = K / NA * h; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('s →', 8, h - 8); ctx.fillText('θ ↓', 8, 16);
+  }});
+  const mR = reg({ el: cr, draw() {
+    const { ctx, w, h } = fit(cr);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    let im;
+    if (iF.checked) im = toImg(recF, NG, NG, 0, 0.65);
+    else { let lo = Infinity, hi = -Infinity; for (const v of recU) { if (v < lo) lo = v; if (v > hi) hi = v; } im = toImg(recU, NG, NG, lo, hi > lo ? hi : lo + 1); }
+    const V = 24, sc = Math.min(w, h) / (2 * V); ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(im, w / 2 - HW * sc, h / 2 - HW * sc, 2 * HW * sc, 2 * HW * sc);
+    ctx.fillStyle = '#ccc'; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(iF.checked ? 'gefiltert' : 'ungefiltert', 8, 16);
+  }});
+  function read() { $('#ct-read').innerHTML = `<span class="k">Projektionen:</span> ${K} / ${NA}  <span class="k">·</span>  <span class="k">Winkel:</span> 0° bis ${Math.max(0, K - 1)}°  <span class="k">·</span>  <span class="k">Bild:</span> ${NG} × ${NG} Pixel, Fenster μ = 0 … 0,65 1/cm`; }
+  iF.addEventListener('input', () => mR.draw());
+  playBtn($('#ct-play'), mP);
+  $('#ct-reset').addEventListener('click', () => { reset(); mP.draw(); mS.draw(); mR.draw(); read(); });
+  if (reduceMotion) { while (K < NA) { bp(K); K++; } }
+  else { for (let i = 0; i < 40; i++) { bp(K); K++; } }
+  read(); mP.draw(); mS.draw(); mR.draw();
+})();
+</script>

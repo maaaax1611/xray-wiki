@@ -147,207 +147,95 @@
  ],
  "widgets": [
   {
-   "slug": "gl-00-messkette",
-   "page": "roentgen",
-   "title": "Die Messkette im CT",
-   "interactive": false,
-   "height": 340
-  },
-  {
-   "slug": "gl-01-em-spektrum",
-   "page": "roentgen",
-   "title": "Elektromagnetisches Spektrum",
-   "interactive": true,
-   "height": 600
-  },
-  {
-   "slug": "gl-02-roentgenroehre",
-   "page": "roentgen",
-   "title": "Röntgenröhre und Spektrum",
-   "interactive": true,
-   "height": 620
-  },
-  {
-   "slug": "gl-03-photoeffekt-compton",
-   "page": "roentgen",
-   "title": "Photoeffekt und Compton-Streuung",
-   "interactive": false,
-   "height": 440
-  },
-  {
-   "slug": "gl-04-schwaechung",
-   "page": "roentgen",
-   "title": "Schwächung in Materie",
-   "interactive": true,
-   "height": 680
-  },
-  {
-   "slug": "gl-05-baendermodell",
-   "page": "roentgen",
-   "title": "Bändermodell",
-   "interactive": false,
-   "height": 460
-  },
-  {
-   "slug": "gl-06-paarerzeugung",
-   "page": "roentgen",
-   "title": "Elektron-Loch-Paarerzeugung",
-   "interactive": true,
-   "height": 600
-  },
-  {
-   "slug": "gl-07-drift-signal",
-   "page": "roentgen",
-   "title": "Drift und Signalentstehung",
-   "interactive": true,
-   "height": 760
-  },
-  {
-   "slug": "gl-08-integrieren-zaehlen",
-   "page": "roentgen",
-   "title": "Integrieren oder zählen",
-   "interactive": true,
-   "height": 600
-  },
-  {
-   "slug": "gl-09-ct-rekonstruktion",
-   "page": "roentgen",
-   "title": "Projektion, Sinogramm, Rekonstruktion",
-   "interactive": true,
-   "height": 580
-  },
-  {
-   "slug": "rk-00-ablauf",
-   "page": "rekonstruktion",
-   "title": "Ablauf der gefilterten Rückprojektion",
-   "interactive": false,
-   "height": 360
-  },
-  {
-   "slug": "rk-01-fourier-reihe",
-   "page": "rekonstruktion",
-   "title": "Fourier-Reihe einer Rechteckwelle",
-   "interactive": true,
-   "height": 560
-  },
-  {
-   "slug": "rk-02-radon-sinogramm",
-   "page": "rekonstruktion",
-   "title": "Radon-Transformation und Sinogramm",
-   "interactive": true,
-   "height": 680
-  },
-  {
-   "slug": "rk-03-rueckprojektion-punkt",
-   "page": "rekonstruktion",
-   "title": "Rückprojektion eines Punktes",
+   "slug": "et-01-spannungsteiler",
+   "page": "e-technik",
+   "title": "Spannungsteiler",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "rk-04-fourier-slice",
-   "page": "rekonstruktion",
-   "title": "Fourier-Slice-Theorem",
+   "slug": "et-02-e-feld",
+   "page": "e-technik",
+   "title": "Elektrisches Feld",
    "interactive": true,
-   "height": 560
+   "height": 640
   },
   {
-   "slug": "rk-05-polare-abtastung",
-   "page": "rekonstruktion",
-   "title": "Polare Abtastung und Rampenfilter",
+   "slug": "et-03-lorentzkraft",
+   "page": "e-technik",
+   "title": "Lorentzkraft",
    "interactive": true,
-   "height": 500
+   "height": 640
   },
   {
-   "slug": "rk-06-fbp-labor",
-   "page": "rekonstruktion",
-   "title": "FBP-Labor",
+   "slug": "et-04-induktion",
+   "page": "e-technik",
+   "title": "Induktion",
    "interactive": true,
-   "height": 720
+   "height": 640
   },
   {
-   "slug": "rk-07-geometrien",
-   "page": "rekonstruktion",
-   "title": "Parallel-, Fächer- und Kegelstrahl",
+   "slug": "et-05-em-welle",
+   "page": "e-technik",
+   "title": "Elektromagnetische Welle",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "et-06-plattenkondensator",
+   "page": "e-technik",
+   "title": "Plattenkondensator",
    "interactive": false,
-   "height": 400
+   "height": 640
   },
   {
-   "slug": "rk-08-gleichungssystem",
-   "page": "rekonstruktion",
-   "title": "Rekonstruktion als Gleichungssystem",
+   "slug": "et-07-dotierung-im-siliziumgitter-vereinfacht",
+   "page": "e-technik",
+   "title": "Dotierung im Siliziumgitter",
    "interactive": false,
-   "height": 360
+   "height": 640
   },
   {
-   "slug": "rk-09-kaczmarz",
-   "page": "rekonstruktion",
-   "title": "Kaczmarz-Verfahren in 2D",
+   "slug": "et-08-pn-uebergang",
+   "page": "e-technik",
+   "title": "pn-Übergang",
    "interactive": true,
-   "height": 720
+   "height": 640
   },
   {
-   "slug": "rk-10-sart",
-   "page": "rekonstruktion",
-   "title": "SART gegen FBP",
+   "slug": "et-09-kennlinien",
+   "page": "e-technik",
+   "title": "Kennlinien",
    "interactive": true,
-   "height": 660
+   "height": 640
   },
   {
-   "slug": "pc-01-zaehlen-vs-integrieren",
-   "page": "photon-counting",
-   "title": "Zählen statt integrieren",
+   "slug": "et-10-rc-glied",
+   "page": "e-technik",
+   "title": "RC-Glied",
    "interactive": true,
-   "height": 580
+   "height": 640
   },
   {
-   "slug": "pc-02-direkte-konversion",
-   "page": "photon-counting",
-   "title": "Indirekte und direkte Konversion",
-   "interactive": false,
-   "height": 520
-  },
-  {
-   "slug": "pc-03-gewichtungspotential",
-   "page": "photon-counting",
-   "title": "Gewichtungspotential und Small-Pixel-Effekt",
+   "slug": "et-11-bode",
+   "page": "e-technik",
+   "title": "Bode-Diagramm",
    "interactive": true,
-   "height": 540
+   "height": 640
   },
   {
-   "slug": "pc-04-asic-signalkette",
-   "page": "photon-counting",
-   "title": "Signalkette im ASIC",
-   "interactive": false,
-   "height": 440
-  },
-  {
-   "slug": "pc-05-pulse-pileup",
-   "page": "photon-counting",
-   "title": "Pulse, Schwellen und Pile-up",
+   "slug": "et-12-operationsverstaerker",
+   "page": "e-technik",
+   "title": "Operationsverstärker",
    "interactive": true,
-   "height": 780
+   "height": 640
   },
   {
-   "slug": "pc-06-totzeit",
-   "page": "photon-counting",
-   "title": "Totzeitmodelle",
+   "slug": "et-13-rauschen",
+   "page": "e-technik",
+   "title": "Rauschen",
    "interactive": true,
-   "height": 620
-  },
-  {
-   "slug": "pc-07-charge-sharing",
-   "page": "photon-counting",
-   "title": "Charge Sharing und K-Fluoreszenz",
-   "interactive": true,
-   "height": 700
-  },
-  {
-   "slug": "pc-08-spektrum-bins",
-   "page": "photon-counting",
-   "title": "Spektrum und Energie-Bins und Schwächungskoeffizienten",
-   "interactive": true,
-   "height": 1440
+   "height": 640
   },
   {
    "slug": "la-01-vektoren",
@@ -432,6 +320,209 @@
    "title": "PCA",
    "interactive": true,
    "height": 640
+  },
+  {
+   "slug": "pc-01-zaehlen-vs-integrieren",
+   "page": "photon-counting",
+   "title": "Zählen statt integrieren",
+   "interactive": true,
+   "height": 580
+  },
+  {
+   "slug": "pc-02-direkte-konversion",
+   "page": "photon-counting",
+   "title": "Indirekte und direkte Konversion",
+   "interactive": false,
+   "height": 520
+  },
+  {
+   "slug": "pc-03-gewichtungspotential",
+   "page": "photon-counting",
+   "title": "Gewichtungspotential und Small-Pixel-Effekt",
+   "interactive": true,
+   "height": 540
+  },
+  {
+   "slug": "pc-04-asic-signalkette",
+   "page": "photon-counting",
+   "title": "Signalkette im ASIC",
+   "interactive": false,
+   "height": 440
+  },
+  {
+   "slug": "pc-05-pulse-pileup",
+   "page": "photon-counting",
+   "title": "Pulse, Schwellen und Pile-up",
+   "interactive": true,
+   "height": 780
+  },
+  {
+   "slug": "pc-06-totzeit",
+   "page": "photon-counting",
+   "title": "Totzeitmodelle",
+   "interactive": true,
+   "height": 620
+  },
+  {
+   "slug": "pc-07-charge-sharing",
+   "page": "photon-counting",
+   "title": "Charge Sharing und K-Fluoreszenz",
+   "interactive": true,
+   "height": 700
+  },
+  {
+   "slug": "pc-08-spektrum-bins",
+   "page": "photon-counting",
+   "title": "Spektrum und Energie-Bins und Schwächungskoeffizienten",
+   "interactive": true,
+   "height": 1440
+  },
+  {
+   "slug": "rk-00-ablauf",
+   "page": "rekonstruktion",
+   "title": "Ablauf der gefilterten Rückprojektion",
+   "interactive": false,
+   "height": 360
+  },
+  {
+   "slug": "rk-01-fourier-reihe",
+   "page": "rekonstruktion",
+   "title": "Fourier-Reihe einer Rechteckwelle",
+   "interactive": true,
+   "height": 560
+  },
+  {
+   "slug": "rk-02-radon-sinogramm",
+   "page": "rekonstruktion",
+   "title": "Radon-Transformation und Sinogramm",
+   "interactive": true,
+   "height": 680
+  },
+  {
+   "slug": "rk-03-rueckprojektion-punkt",
+   "page": "rekonstruktion",
+   "title": "Rückprojektion eines Punktes",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "rk-04-fourier-slice",
+   "page": "rekonstruktion",
+   "title": "Fourier-Slice-Theorem",
+   "interactive": true,
+   "height": 560
+  },
+  {
+   "slug": "rk-05-polare-abtastung",
+   "page": "rekonstruktion",
+   "title": "Polare Abtastung und Rampenfilter",
+   "interactive": false,
+   "height": 500
+  },
+  {
+   "slug": "rk-06-fbp-labor",
+   "page": "rekonstruktion",
+   "title": "FBP-Labor",
+   "interactive": true,
+   "height": 720
+  },
+  {
+   "slug": "rk-07-geometrien",
+   "page": "rekonstruktion",
+   "title": "Parallel-, Fächer- und Kegelstrahl",
+   "interactive": false,
+   "height": 400
+  },
+  {
+   "slug": "rk-08-gleichungssystem",
+   "page": "rekonstruktion",
+   "title": "Rekonstruktion als Gleichungssystem",
+   "interactive": false,
+   "height": 360
+  },
+  {
+   "slug": "rk-09-kaczmarz",
+   "page": "rekonstruktion",
+   "title": "Kaczmarz-Verfahren in 2D",
+   "interactive": true,
+   "height": 720
+  },
+  {
+   "slug": "rk-10-sart",
+   "page": "rekonstruktion",
+   "title": "SART gegen FBP",
+   "interactive": true,
+   "height": 660
+  },
+  {
+   "slug": "gl-00-messkette",
+   "page": "roentgen",
+   "title": "Die Messkette im CT",
+   "interactive": false,
+   "height": 340
+  },
+  {
+   "slug": "gl-01-em-spektrum",
+   "page": "roentgen",
+   "title": "Elektromagnetisches Spektrum",
+   "interactive": true,
+   "height": 600
+  },
+  {
+   "slug": "gl-02-roentgenroehre",
+   "page": "roentgen",
+   "title": "Röntgenröhre und Spektrum",
+   "interactive": true,
+   "height": 620
+  },
+  {
+   "slug": "gl-03-photoeffekt-compton",
+   "page": "roentgen",
+   "title": "Photoeffekt und Compton-Streuung",
+   "interactive": false,
+   "height": 440
+  },
+  {
+   "slug": "gl-04-schwaechung",
+   "page": "roentgen",
+   "title": "Schwächung in Materie",
+   "interactive": true,
+   "height": 680
+  },
+  {
+   "slug": "gl-05-baendermodell",
+   "page": "roentgen",
+   "title": "Bändermodell",
+   "interactive": false,
+   "height": 460
+  },
+  {
+   "slug": "gl-06-paarerzeugung",
+   "page": "roentgen",
+   "title": "Elektron-Loch-Paarerzeugung",
+   "interactive": true,
+   "height": 600
+  },
+  {
+   "slug": "gl-07-drift-signal",
+   "page": "roentgen",
+   "title": "Drift und Signalentstehung",
+   "interactive": true,
+   "height": 760
+  },
+  {
+   "slug": "gl-08-integrieren-zaehlen",
+   "page": "roentgen",
+   "title": "Integrieren oder zählen",
+   "interactive": true,
+   "height": 600
+  },
+  {
+   "slug": "gl-09-ct-rekonstruktion",
+   "page": "roentgen",
+   "title": "Projektion, Sinogramm, Rekonstruktion",
+   "interactive": true,
+   "height": 580
   }
  ]
 }

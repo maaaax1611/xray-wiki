@@ -1,0 +1,92 @@
+<!-- title: Schwächung in Materie
+     lib: gl -->
+<figure class="fig">
+<canvas aria-label="Animation: Photonen fliegen von links durch eine Materialschicht. Manche werden absorbiert, manche gestreut. Daneben die Kurve des exponentiellen Abfalls." class="c-att" id="cv-att" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 160px"><div class="lab"><label for="at-mat">Material</label></div>
+<select id="at-mat"><option value="w">Wasser (≈ Weichteil)</option><option value="b">Knochen</option><option value="a">Aluminium</option></select></div>
+<div class="ctrl"><div class="lab"><label for="at-e">Photonenenergie</label><output id="at-e-o"></output></div><input id="at-e" max="140" min="20" step="1" type="range" value="60"/></div>
+<div class="ctrl"><div class="lab"><label for="at-d">Dicke</label><output id="at-d-o"></output></div><input id="at-d" max="20" min="0" step="0.5" type="range" value="6"/></div>
+</div>
+<div class="readout" id="at-read"></div>
+<figcaption><b>Abb. 4</b> Links fliegen monoenergetische Photonen durch eine Schicht. Ein kurzer Blitz bedeutet Photoeffekt (Photon verschwindet), ein Knick bedeutet Compton-Streuung (Photon fliegt grau in neue Richtung weiter und zählt nicht mehr als ungestört). Rechts der Anteil ungestörter Photonen über der Dicke, mit Theorie und gezähltem Ergebnis. Schwächungsdaten genähert nach NIST.</figcaption>
+</figure>
+<script>
+/* ---------- Abb. 4: Schwächung ---------- */
+(() => {
+  const c = $('#cv-att'), im = $('#at-mat'), ie = $('#at-e'), id = $('#at-d');
+  const MAT = { w: { t: WATER, rho: 1.0, ne: 3.343e23, n: 'Wasser' }, b: { t: BONE, rho: 1.92, ne: 3.10e23, n: 'Knochen' }, a: { t: AL, rho: 2.7, ne: 2.90e23, n: 'Aluminium' } };
+  let P = [], N0 = 0, Nt = 0, spawn = 0, flashes = [];
+  const DMAX = 20;
+  function par() { const M = MAT[im.value], E = +ie.value; const mm = mu(M.t, E); const sc = Math.min(mm * 0.98, kleinNishina(E) * M.ne); return { M, E, mu: mm * M.rho, fPhoto: Math.max(0, (mm - sc) / mm), d: +id.value }; }
+  function reset() { P = []; N0 = 0; Nt = 0; flashes = []; const q = par(); $('#at-e-o').textContent = `${q.E} keV`; $('#at-d-o').textContent = `${nf(q.d, 1)} cm`; read(); }
+  function read() {
+    const q = par(), T = Math.exp(-q.mu * q.d);
+    $('#at-read').innerHTML = `<span class="k">μ/ρ:</span> ${nf(q.mu / q.M.rho, 3)} cm²/g  <span class="k">·</span>  <span class="k">μ:</span> ${nf(q.mu, 3)} 1/cm  <span class="k">·</span>  <span class="k">Halbwertsdicke:</span> ${nf(Math.LN2 / q.mu, 2)} cm<br><span class="k">ungestört durch, Theorie:</span> ${nf(T * 100, T < 0.01 ? 2 : 1)} %  <span class="k">·</span>  <span class="k">gezählt:</span> ${N0 ? nf(Nt / N0 * 100, 1) + ' % (' + Nt + '/' + N0 + ')' : '–'}  <span class="k">·</span>  <span class="k">Anteil Photoeffekt an Wechselwirkungen ≈</span> ${nf(q.fPhoto * 100, 0)} %`;
+  }
+  function lay(w, h) { const narrow = w < 560; return narrow ? { a: [0, 0, w, h * 0.5], p: [0, h * 0.52, w, h * 0.48] } : { a: [0, 0, w * 0.55, h], p: [w * 0.57, 0, w * 0.43, h] }; }
+  let geo = null;
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) {
+      if (!geo) return;
+      const q = par(), { x0, x1, y0, y1, sx0, sw } = geo, cmPerPx = DMAX / sw, slabEnd = sx0 + q.d / DMAX * sw;
+      spawn += dt * 45;
+      while (spawn > 1) { spawn--; P.push({ x: x0, y: y0 + 8 + Math.random() * (y1 - y0 - 16), dx: 1, dy: 0, sc: false }); }
+      const v = (x1 - x0) / 1.4;
+      for (const p of P) {
+        const ds = v * dt;
+        p.x += p.dx * ds; p.y += p.dy * ds;
+        if (!p.sc && !p.dead && p.x > sx0 && p.x < slabEnd) {
+          if (Math.random() < 1 - Math.exp(-q.mu * ds * cmPerPx)) {
+            N0++; if (Math.random() < q.fPhoto) { p.dead = true; flashes.push({ x: p.x, y: p.y, t: 0 }); }
+            else { p.sc = true; const a = (Math.random() * 2 - 1) * Math.PI; p.dx = Math.cos(a); p.dy = Math.sin(a); }
+          }
+        }
+        if (!p.dead && !p.sc && p.x >= x1 - 2) { Nt++; N0++; p.dead = true; }
+        if (p.x < x0 - 5 || p.x > x1 + 5 || p.y < y0 || p.y > y1) p.dead = true;
+      }
+      P = P.filter(p => !p.dead);
+      flashes.forEach(f => f.t += dt); flashes = flashes.filter(f => f.t < 0.4);
+      if (N0 > 3000) { N0 = Math.round(N0 / 2); Nt = Math.round(Nt / 2); }
+      read();
+    },
+    draw() {
+      const { ctx, w, h } = fit(c);
+      const q = par(), L = lay(w, h), [ax, ay, aw, ah] = L.a;
+      const fg = tok('--fg'), mut = tok('--muted'), acc = tok('--accent');
+      const x0 = ax + 10, x1 = ax + aw - 18, y0 = ay + 18, y1 = ay + ah - 22, sx0 = x0 + (x1 - x0) * 0.14, sw = (x1 - x0) * 0.72;
+      geo = { x0, x1, y0, y1, sx0, sw };
+      const slabW = q.d / DMAX * sw;
+      ctx.fillStyle = q.M === MAT.w ? rgba(tok('--elec'), 0.18) : q.M === MAT.b ? rgba(tok('--bin2'), 0.25) : rgba(mut, 0.3);
+      ctx.fillRect(sx0, y0, slabW, y1 - y0);
+      ctx.strokeStyle = tok('--rule'); ctx.strokeRect(sx0 + 0.5, y0 + 0.5, slabW, y1 - y0 - 1);
+      ctx.fillStyle = fg; ctx.fillRect(x1, y0, 5, y1 - y0);
+      ctx.font = `11px ${DISP}`; ctx.fillStyle = mut; ctx.textAlign = 'left';
+      ctx.fillText('Quelle', x0, y0 - 5); ctx.textAlign = 'right'; ctx.fillText('Detektor', x1 + 5, y0 - 5);
+      ctx.textAlign = 'center'; ctx.fillStyle = fg; ctx.fillText(`${q.M.n}, ${nf(q.d, 1)} cm`, sx0 + Math.max(slabW, 60) / 2, y1 + 15);
+      for (const p of P) {
+        ctx.fillStyle = p.sc ? rgba(mut, 0.7) : acc;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, 7); ctx.fill();
+      }
+      for (const f of flashes) { const a = 1 - f.t / 0.4; ctx.strokeStyle = rgba(tok('--hole'), a); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(f.x, f.y, 2 + 8 * f.t / 0.4, 0, 7); ctx.stroke(); }
+      ctx.lineWidth = 1;
+      // Kurve
+      const [px, py, pw, ph] = L.p;
+      const f = frame(ctx, px, py, pw, ph, { x0: 0, x1: DMAX, y0: 0, y1: 1, xt: [0, 5, 10, 15, 20], yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v * 100, 0) + '%', xl: 'Dicke (cm)', yl: 'ungestört durch', l: 48, t: 10 });
+      clipBox(ctx, f);
+      ctx.strokeStyle = acc; ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let k = 0; k <= 200; k++) { const x = DMAX * k / 200, y = Math.exp(-q.mu * x); k ? ctx.lineTo(f.X(x), f.Y(y)) : ctx.moveTo(f.X(x), f.Y(y)); } ctx.stroke();
+      const hv = Math.LN2 / q.mu;
+      if (hv < DMAX) { ctx.strokeStyle = mut; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f.X(0), f.Y(0.5)); ctx.lineTo(f.X(hv), f.Y(0.5)); ctx.lineTo(f.X(hv), f.Y(0)); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(f.X(q.d), f.Y(Math.exp(-q.mu * q.d)), 4.5, 0, 7); ctx.fill();
+      if (N0 > 30) { ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 2; const yy = f.Y(Nt / N0); ctx.beginPath(); ctx.moveTo(f.X(q.d) - 8, yy); ctx.lineTo(f.X(q.d) + 8, yy); ctx.stroke(); }
+      ctx.restore();
+      ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillStyle = mut; ctx.fillText('— Theorie  ● eingestellt  ', f.bx + f.bw, f.by + 10);
+      ctx.fillStyle = tok('--hole'); ctx.fillText('— gezählt  ', f.bx + f.bw, f.by + 24);
+      if (hv < DMAX) { ctx.fillStyle = mut; ctx.textAlign = 'left'; ctx.fillText(`x½ = ${nf(hv, 1)} cm`, f.X(hv) + 4, f.Y(0.5) - 4); }
+    }
+  });
+  [im, ie, id].forEach(e => e.addEventListener('input', () => { reset(); m.draw(); }));
+  reset(); m.draw();
+})();
+</script>

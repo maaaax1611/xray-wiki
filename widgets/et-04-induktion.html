@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Induktion</title>
+<!-- Erzeugt von build.py aus src/figures/et-04-induktion.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/et.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Animation: ein Stabmagnet schwingt durch eine Spule. Darunter der magnetische Fluss und die induzierte Spannung über der Zeit, daneben ein Zeigermessgerät." class="c-ind" id="cv-ind" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="ind-f">Bewegungsfrequenz</label><output id="ind-f-o"></output></div><input id="ind-f" max="2" min="0.1" step="0.05" type="range" value="0.5"/></div>
+<div class="ctrl"><div class="lab"><label for="ind-n">Windungen N</label><output id="ind-n-o"></output></div><input id="ind-n" max="500" min="10" step="10" type="range" value="200"/></div>
+<label class="chk"><input id="ind-flip" type="checkbox"/> Magnet umdrehen</label>
+<button class="btn" id="ind-play" type="button">Pause</button>
+</div>
+<figcaption><b>Abb. 4</b> Ein Magnet schwingt durch eine Spule. Der Fluss durch die Spule ist am größten, wenn der Magnet in der Mitte steckt. Die Spannung ist aber genau dort null, weil sich der Fluss in diesem Moment nicht ändert. Am größten ist sie beim schnellen Hinein- und Hinausfahren. Doppelte Frequenz ergibt doppelte Spannung, umgedrehter Magnet das umgekehrte Vorzeichen.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/et.js"></script>
+<script>
+/* ---------- Abb. 5: Induktion ---------- */
+(() => {
+  const c = $('#cv-ind'), iF = $('#ind-f'), iN = $('#ind-n'), iFl = $('#ind-flip');
+  const A0 = 3.2, PHI0 = 0.3 * Math.PI * 0.01 * 0.01; // Wb, a = 1 cm
+  let t = 0; const hist = [];
+  const phi = x => PHI0 / Math.pow(1 + x * x, 1.5);
+  const dphi = x => PHI0 * -3 * x / Math.pow(1 + x * x, 2.5);
+  function state(tt) { const f = +iF.value, w = 2 * Math.PI * f, x = A0 * Math.sin(w * tt), vx = A0 * w * Math.cos(w * tt), s = iFl.checked ? -1 : 1, N = +iN.value; return { x, P: s * N * phi(x), U: -s * N * dphi(x) * vx }; }
+  const m = reg({ el: c, anim: true, playing: !reduceMotion,
+    step(dt) { t += dt; const s = state(t); hist.push([t, s.P, s.U]); while (hist.length && hist[0][0] < t - 4) hist.shift(); },
+    draw() {
+      const { ctx, w, h } = fit(c); const narrow = w < 560;
+      const s = state(t), f = +iF.value, N = +iN.value, Umax = N * PHI0 * A0 * 2 * Math.PI * f * 0.86;
+      // oben: Szene
+      const sh = narrow ? h * 0.42 : h * 0.5, cx = w * (narrow ? 0.5 : 0.36), cy = sh * 0.52, unit = Math.min(w * (narrow ? 0.1 : 0.06), sh * 0.2);
+      const fg = tok('--fg'), mut = tok('--muted');
+      // Spule hinten
+      ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2.2;
+      for (let k = -4; k <= 4; k++) { ctx.beginPath(); ctx.ellipse(cx + k * unit * 0.22, cy, unit * 0.32, unit * 1.1, 0, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke(); }
+      // Magnet
+      const mx = cx + s.x * unit, mw = unit * 2.4, mh = unit * 0.7, flip = iFl.checked;
+      ctx.fillStyle = tok(flip ? '--elec' : '--hole'); ctx.fillRect(mx - mw / 2, cy - mh / 2, mw / 2, mh);
+      ctx.fillStyle = tok(flip ? '--hole' : '--elec'); ctx.fillRect(mx, cy - mh / 2, mw / 2, mh);
+      ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.round(unit * 0.42)}px ${DISP}`; ctx.textAlign = 'center';
+      ctx.fillText(flip ? 'S' : 'N', mx - mw / 4, cy + unit * 0.15); ctx.fillText(flip ? 'N' : 'S', mx + mw / 4, cy + unit * 0.15);
+      // Spule vorne
+      ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2.2;
+      for (let k = -4; k <= 4; k++) { ctx.beginPath(); ctx.ellipse(cx + k * unit * 0.22, cy, unit * 0.32, unit * 1.1, 0, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke(); }
+      // Anschlussdrähte zum Messgerät
+      const gx = narrow ? w * 0.84 : w * 0.78, gy = cy, gr = Math.min(unit * 1.5, sh * 0.42);
+      ctx.strokeStyle = mut; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(cx + 4 * unit * 0.22, cy + unit * 1.1); ctx.lineTo(cx + 4 * unit * 0.22, cy + unit * 1.45); ctx.lineTo(gx - gr * 0.5, cy + unit * 1.45); ctx.lineTo(gx - gr * 0.5, gy + gr * 0.3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - 4 * unit * 0.22, cy + unit * 1.1); ctx.lineTo(cx - 4 * unit * 0.22, cy + unit * 1.6); ctx.lineTo(gx + gr * 0.5, cy + unit * 1.6); ctx.lineTo(gx + gr * 0.5, gy + gr * 0.3); ctx.stroke();
+      // Messgerät
+      ctx.fillStyle = tok('--surface'); ctx.strokeStyle = fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(gx, gy, gr, Math.PI, 2 * Math.PI); ctx.lineTo(gx + gr, gy + gr * 0.3); ctx.lineTo(gx - gr, gy + gr * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
+      for (let k = -4; k <= 4; k++) { const a = -Math.PI / 2 + k * 0.28; ctx.strokeStyle = mut; ctx.beginPath(); ctx.moveTo(gx + Math.cos(a) * gr * 0.82, gy + Math.sin(a) * gr * 0.82); ctx.lineTo(gx + Math.cos(a) * gr * 0.95, gy + Math.sin(a) * gr * 0.95); ctx.stroke(); }
+      const ang = -Math.PI / 2 + Math.max(-1.2, Math.min(1.2, s.U / Umax * 1.12));
+      ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(gx, gy + gr * 0.1); ctx.lineTo(gx + Math.cos(ang) * gr * 0.85, gy + Math.sin(ang) * gr * 0.85); ctx.stroke();
+      ctx.fillStyle = fg; ctx.font = `12px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(SI(s.U, 'V'), gx, gy + gr * 0.3 + 16);
+      ctx.lineWidth = 1;
+      // unten: Plots
+      const py = sh, ph = h - sh, half = ph / 2;
+      const span = Math.max(1e-9, N * PHI0), uspan = Math.max(1e-9, Umax);
+      const plot = (y0, hh, idx, sc, col, lbl, unitS, last) => {
+        const ff = frame(ctx, 0, y0, w, hh, { x0: t - 4, x1: t, y0: -sc * 1.15, y1: sc * 1.15, xt: [], yt: [-sc, 0, sc], yf: v => v === 0 ? '0' : SI(v, unitS, 1), l: 64, t: 16, b: last ? 22 : 6 });
+        ctx.font = `600 12px ${DISP}`; ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText(lbl, ff.bx + 6, y0 + 12);
+        clipBox(ctx, ff); ctx.strokeStyle = tok(col); ctx.lineWidth = 2; ctx.beginPath(); hist.forEach((r, i) => { const X = ff.X(r[0]), Y = ff.Y(r[idx]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); ctx.stroke(); ctx.restore();
+        if (last) { ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText('letzte 4 s', ff.bx + ff.bw, ff.by + ff.bh + 15); }
+      };
+      plot(py, half, 1, span, '--bin2', 'Fluss N·Φ durch die Spule', 'Wb');
+      plot(py + half, half, 2, uspan, '--hole', 'Induzierte Spannung U = −N dΦ/dt', 'V', true);
+      $('#ind-f-o').textContent = `${nf(f, 2)} Hz`; $('#ind-n-o').textContent = String(N);
+    }
+  });
+  playBtn($('#ind-play'), m);
+  [iF, iN, iFl].forEach(e => e.addEventListener('input', () => { hist.length = 0; m.draw(); }));
+  for (let i = 0; i < 200; i++) m.step(0.02); m.draw();
+})();
+</script>
+</body>
+</html>
