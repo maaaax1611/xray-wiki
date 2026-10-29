@@ -191,7 +191,7 @@ r = \frac{m v}{|q| B}, \qquad T = \frac{2\pi m}{|q| B}
 <div class="ctrl"><div class="lab"><label for="lz-e">Elektrisches Feld E (nach oben)</label><output id="lz-e-o"></output></div><input id="lz-e" max="20" min="-20" step="0.25" type="range" value="0"/></div>
 </div>
 <div class="readout" id="lz-read"></div>
-<figcaption><b>Abb. 3</b> Ein Teilchen fliegt von links in ein homogenes Magnetfeld, das in die Bildebene hineinzeigt (Kreuze). Die Bahn ist ein Kreis mit Radius \(r = mv/(|q|B)\), die Zeit ist stark verlangsamt. Mit einem elektrischen Feld lässt sich die Ablenkung aufheben: Stell E so ein, dass \(|E| = vB\) ist. Abstände in mm.</figcaption>
+<figcaption><b>Abb. 3</b> Ein Teilchen fliegt von links in ein homogenes Magnetfeld, das rechts der gestrichelten Linie in die Bildebene hineinzeigt (Kreuze). Im Feld läuft es auf einem Kreisbogen mit Radius \(r = mv/(|q|B)\), nach einem Halbkreis verlässt es das Feld wieder. Die Zeit ist stark verlangsamt, der gestrichelte Kreis zeigt die volle Kreisbahn. Mit einem elektrischen Feld lässt sich die Ablenkung aufheben: Stell E so ein, dass \(|E| = vB\) ist und die elektrische Kraft der magnetischen entgegenwirkt. Abstände in mm.</figcaption>
 </figure>
 <div class="merke">
 <div class="eyebrow">Merke</div>
@@ -1038,63 +1038,76 @@ H_{\text{TP}} = \frac{Z_C}{R + Z_C} = \frac{1}{1 + j\omega RC} \qquad\qquad H_{\
 })();
 </script>
 <script>
-/* ---------- Abb. 4: Lorentzkraft ---------- */
+/* ---------- Lorentzkraft ---------- */
 (() => {
   const c = $('#cv-lz'), iq = $('#lz-q'), iv = $('#lz-v'), ib = $('#lz-b'), ie = $('#lz-e');
-  const ME = 9.109e-31, QE = 1.602e-19, VW = 120, VH = 70; // mm
+  const ME = 9.109e-31, QE = 1.602e-19, VW = 120, VH = 70, XF = 25; // mm; Feld ab x = XF
   let S = null;
-  function P() { return { q: +iq.value * QE, v: +iv.value * 1e6, B: +ib.value * 1e-3, E: +ie.value * 1e3 }; }
+  const P = () => ({ q: +iq.value * QE, v: +iv.value * 1e6, B: +ib.value * 1e-3, E: +ie.value * 1e3 });
+  const radius = p => p.B > 0 ? ME * p.v / (Math.abs(p.q) * p.B) * 1000 : Infinity; // mm
   function start() {
-    const p = P(); S = { x: 0.005, y: VH / 2 * 1e-3, vx: p.v, vy: 0, trail: [], len: 0, done: 0 };
-    const T = p.B > 0 ? 2 * Math.PI * ME / (Math.abs(p.q) * p.B) : 1e9, tCross = VW * 1e-3 / p.v;
-    S.speed = Math.min(T, tCross * 2) / 3.2; S.dt = Math.min(T, tCross) / 600;
+    const p = P(), r = radius(p), down = p.q < 0;
+    // Startpunkt so wählen, dass der Halbkreis möglichst ganz im Bild liegt
+    const y0 = isFinite(r) && r < VH / 2 - 4 ? (down ? VH / 2 + r : VH / 2 - r) : (down ? VH - 6 : 6);
+    S = { x: 0, y: y0, vx: p.v, vy: 0, trail: [[0, y0]], done: 0, y0 };
+    // Zeitmaßstab: der Weg durchs Bild soll etwa 3 s dauern
+    const path = isFinite(r) ? XF + Math.PI * Math.min(r, VW) + XF : VW;
+    S.speed = path * 1e-3 / p.v / 3; S.dt = Math.min(2 * Math.PI * ME / (Math.abs(p.q) * Math.max(p.B, 1e-6)), path * 1e-3 / p.v) / 800;
     $('#lz-v-o').textContent = `${nf(+iv.value, 1)}·10⁶ m/s`; $('#lz-b-o').textContent = `${nf(+ib.value, 2)} mT`; $('#lz-e-o').textContent = `${nf(+ie.value, 2)} kV/m`;
-    const r = p.B > 0 ? ME * p.v / (Math.abs(p.q) * p.B) : Infinity;
-    $('#lz-read').innerHTML = `<span class="k">Radius r = mv/(|q|B):</span> ${isFinite(r) ? nf(r * 1000, 1) + ' mm' : '∞'}  <span class="k">·</span>  <span class="k">Umlaufzeit T:</span> ${p.B > 0 ? SI(T, 's') : '–'}  <span class="k">·</span>  <span class="k">Wien-Bedingung |E| = vB:</span> ${nf(p.v * p.B / 1000, 2)} kV/m` + (Math.abs(Math.abs(p.E) - p.v * p.B) < 0.03 * p.v * p.B + 200 && p.B > 0 && p.E * p.q > 0 === false ? '' : '');
+    const T = 2 * Math.PI * ME / (Math.abs(p.q) * p.B), wien = p.v * p.B / 1000, need = (down ? -1 : 1) * wien;
+    $('#lz-read').innerHTML = `<span class="k">Radius r = mv/(|q|B):</span> ${isFinite(r) ? nf(r, 1) + ' mm' : '∞'}  <span class="k">·</span>  <span class="k">Umlaufzeit T:</span> ${p.B > 0 ? SI(T, 's') : '–'}  <span class="k">·</span>  <span class="k">Wien-Bedingung:</span> E = ${nf(need, 2)} kV/m` +
+      (p.B > 0 && Math.abs(+ie.value - need) < 0.05 * wien + 0.02 ? '  <b>· Kräfte heben sich auf</b>' : '');
   }
   function stepPhys(dtReal) {
     const p = P(), qm = p.q / ME; let t = dtReal * S.speed;
-    while (t > 0) {
+    while (t > 0 && !S.done) {
       const dt = Math.min(S.dt, t); t -= dt;
-      // Boris: B entlang -z (in die Seite)
-      const Bz = -p.B, Ex = 0, Ey = p.E;
-      let vx = S.vx + qm * Ex * dt / 2, vy = S.vy + qm * Ey * dt / 2;
-      const tz = qm * Bz * dt / 2, sz = 2 * tz / (1 + tz * tz);
+      const inField = S.x >= XF;
+      const Bz = inField ? -p.B : 0, Ey = inField ? p.E : 0; // B zeigt in die Seite (−z)
+      let vx = S.vx, vy = S.vy + qm * Ey * dt / 2;
+      const tz = qm * Bz * dt / 2, sz = 2 * tz / (1 + tz * tz);   // Boris-Schritt
       const vpx = vx + vy * tz, vpy = vy - vx * tz;
-      vx += vpy * sz; vy -= vpx * sz;
-      vx += qm * Ex * dt / 2; vy += qm * Ey * dt / 2;
-      const nx = S.x + vx * dt, ny = S.y + vy * dt; S.len += Math.hypot(nx - S.x, ny - S.y);
-      S.x = nx; S.y = ny; S.vx = vx; S.vy = vy;
+      vx += vpy * sz; vy -= vpx * sz; vy += qm * Ey * dt / 2;
+      S.x += vx * dt * 1000; S.y += vy * dt * 1000; // mm
+      S.vx = vx; S.vy = vy;
+      if (S.x < -2 || S.x > VW + 2 || S.y < -2 || S.y > VH + 2) S.done = 0.001;
     }
-    S.trail.push([S.x * 1000, S.y * 1000]); if (S.trail.length > 2000) S.trail.shift();
+    S.trail.push([S.x, S.y]);
   }
   const m = reg({ el: c, anim: true, playing: !reduceMotion,
     step(dt) {
-      if (S.done > 0) { S.done += dt; if (S.done > 1.2) start(); return; }
+      if (S.done) { S.done += dt; if (S.done > 1.5) start(); return; }
       stepPhys(dt);
-      const x = S.x * 1000, y = S.y * 1000, p = P(), r = p.B > 0 ? ME * p.v / (Math.abs(p.q) * p.B) : Infinity;
-      if (x < -5 || x > VW + 5 || y < -5 || y > VH + 5 || S.len > 2.2 * 2 * Math.PI * Math.min(r, 1)) S.done = 0.001;
     },
     draw() {
       if (!S) return;
       const { ctx, w, h } = fit(c); const sc = Math.min(w / VW, h / VH), ox = (w - VW * sc) / 2, oy = (h - VH * sc) / 2;
       const P2 = (x, y) => [ox + x * sc, oy + (VH - y) * sc];
-      ctx.fillStyle = rgba(tok('--accent'), 0.04); ctx.fillRect(ox, oy, VW * sc, VH * sc);
-      const p = P();
-      if (p.B > 0) { ctx.strokeStyle = rgba(tok('--muted'), 0.45); ctx.lineWidth = 1; const g = 10 * sc;
-        for (let x = 5; x < VW; x += 10) for (let y = 5; y < VH; y += 10) { const [sx, sy] = P2(x, y), d = 3; ctx.beginPath(); ctx.moveTo(sx - d, sy - d); ctx.lineTo(sx + d, sy + d); ctx.moveTo(sx + d, sy - d); ctx.lineTo(sx - d, sy + d); ctx.stroke(); } }
+      const p = P(), r = radius(p);
+      ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, VW * sc, VH * sc); ctx.clip();
+      const [fx] = P2(XF, 0);
+      ctx.fillStyle = rgba(tok('--accent'), 0.06); ctx.fillRect(fx, oy, ox + VW * sc - fx, VH * sc);
+      ctx.strokeStyle = rgba(tok('--muted'), 0.7); ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(fx, oy); ctx.lineTo(fx, oy + VH * sc); ctx.stroke(); ctx.setLineDash([]);
+      if (p.B > 0) { ctx.strokeStyle = rgba(tok('--muted'), 0.45); ctx.lineWidth = 1;
+        for (let x = XF + 5; x < VW; x += 10) for (let y = 5; y < VH; y += 10) { const [sx, sy] = P2(x, y), d = 3; ctx.beginPath(); ctx.moveTo(sx - d, sy - d); ctx.lineTo(sx + d, sy + d); ctx.moveTo(sx + d, sy - d); ctx.lineTo(sx - d, sy + d); ctx.stroke(); } }
       if (p.E !== 0) { ctx.strokeStyle = rgba(tok('--hole'), 0.35); ctx.fillStyle = rgba(tok('--hole'), 0.35); const up = p.E > 0 ? 1 : -1;
-        for (let x = 10; x < VW; x += 20) { const [sx, s0] = P2(x, VH / 2 - 25 * up), [, s1] = P2(x, VH / 2 + 25 * up); ctx.beginPath(); ctx.moveTo(sx, s0); ctx.lineTo(sx, s1); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx, s1); ctx.lineTo(sx - 4, s1 + 7 * up); ctx.lineTo(sx + 4, s1 + 7 * up); ctx.fill(); } }
-      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2; ctx.beginPath(); S.trail.forEach(([x, y], i) => i ? ctx.lineTo(...P2(x, y)) : ctx.moveTo(...P2(x, y))); ctx.stroke();
-      const [sx, sy] = P2(S.x * 1000, S.y * 1000);
-      ctx.fillStyle = tok(p.q < 0 ? '--elec' : '--hole'); ctx.beginPath(); ctx.arc(sx, sy, 6, 0, 7); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.font = `700 11px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(p.q < 0 ? '−' : '+', sx, sy + 4);
-      ctx.strokeStyle = tok('--rule'); ctx.strokeRect(ox + 0.5, oy + 0.5, VW * sc - 1, VH * sc - 1);
+        for (let x = XF + 10; x < VW; x += 20) { const [sx, s0] = P2(x, VH / 2 - 25 * up), [, s1] = P2(x, VH / 2 + 25 * up); ctx.beginPath(); ctx.moveTo(sx, s0); ctx.lineTo(sx, s1); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx, s1); ctx.lineTo(sx - 4, s1 + 7 * up); ctx.lineTo(sx + 4, s1 + 7 * up); ctx.fill(); } }
+      // volle Kreisbahn als Orientierung (nur ohne E-Feld exakt)
+      if (isFinite(r) && p.E === 0) { const [cx, cy] = P2(XF, S.y0 + (p.q < 0 ? -r : r)); ctx.strokeStyle = rgba(tok('--accent'), 0.3); ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.arc(cx, cy, r * sc, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath(); S.trail.forEach(([x, y], i) => i ? ctx.lineTo(...P2(x, y)) : ctx.moveTo(...P2(x, y))); ctx.stroke();
+      if (!S.done) { const [sx, sy] = P2(S.x, S.y);
+        ctx.fillStyle = tok(p.q < 0 ? '--elec' : '--hole'); ctx.beginPath(); ctx.arc(sx, sy, 6, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = `700 11px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(p.q < 0 ? '−' : '+', sx, sy + 4); }
+      ctx.restore();
+      ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(ox + 0.5, oy + 0.5, VW * sc - 1, VH * sc - 1);
       ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`${VW} mm × ${VH} mm`, ox + 6, oy + VH * sc - 6);
+      ctx.textAlign = 'left'; ctx.fillText('Feld', fx + 6, oy + 14);
     }
   });
   [iq, iv, ib, ie].forEach(e => e.addEventListener('input', () => { start(); m.draw(); }));
-  start(); if (reduceMotion) { for (let i = 0; i < 200; i++) stepPhys(0.02); } else { for (let i = 0; i < 20; i++) stepPhys(0.02); } m.draw();
+  start();
+  if (reduceMotion) { while (!S.done) stepPhys(0.05); } else { for (let i = 0; i < 15; i++) stepPhys(0.02); }
+  m.draw();
 })();
 </script>
 <script>
