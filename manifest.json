@@ -40,14 +40,18 @@
    "category": "grundlagen",
    "path": "grundlagen/lineare-algebra.html",
    "title": "Lineare Algebra",
-   "desc": "Vektoren, Matrizen, Gleichungssysteme, Eigenwerte, SVD und Projektionen.",
+   "desc": "Vektoren, Matrizen als Abbildungen, Basiswechsel, Gleichungssysteme, Kondition, kleinste Quadrate, Eigenwerte, QR und SVD.",
    "tags": [
     "Mathematik",
     "Matrizen",
+    "Gleichungssysteme",
+    "Kondition",
+    "Least Squares",
     "Eigenwerte",
-    "SVD"
-   ],
-   "status": "geplant"
+    "SVD",
+    "PCA",
+    "QR"
+   ]
   },
   {
    "id": "wahrscheinlichkeit",
@@ -76,6 +80,23 @@
     "Faltung",
     "Abtastung",
     "Spektrum"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "vektoranalysis",
+   "category": "grundlagen",
+   "path": "grundlagen/vektoranalysis.html",
+   "title": "Vektoranalysis und Optimierung",
+   "desc": "Gradienten, Jacobi- und Hesse-Matrix, Kettenregel und Backpropagation, Taylor-Entwicklung, Gradientenverfahren, Lagrange und Konvexität.",
+   "tags": [
+    "Mathematik",
+    "Gradient",
+    "Jacobi",
+    "Backpropagation",
+    "Optimierung",
+    "Konvex",
+    "Lagrange"
    ],
    "status": "geplant"
   },

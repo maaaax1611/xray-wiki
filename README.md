@@ -9,6 +9,7 @@ index.html            Startseite: Themengebiete, Suche, Widget-Liste (aus manife
 assets/               wiki.css, wiki.js für die Startseite
 grundlagen/           Fachübergreifendes Basiswissen
   e-technik.html        E-Technik kompakt
+  lineare-algebra.html  Lineare Algebra
 physik/               Röntgenphysik, Detektoren, CT
   roentgen.html         Vom Photon zum Bild
   rekonstruktion.html   Vom Sinogramm zum Schnittbild
@@ -18,7 +19,7 @@ widgets/              Einzelne Abbildungen zum Einbetten (Pfade bleiben stabil)
 manifest.json         Themengebiete, Seiten, Widgets
 ```
 
-Geplant in `grundlagen/`: Lineare Algebra, Wahrscheinlichkeit und Statistik, Fourier und Signale.
+Geplant in `grundlagen/`: Wahrscheinlichkeit und Statistik, Fourier und Signale, Vektoranalysis und Optimierung.
 
 ### Neue Seite hinzufügen
 
