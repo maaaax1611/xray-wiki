@@ -4,40 +4,26 @@ Persönliches Nachschlagewerk mit interaktiven Seiten, nach Themengebieten geord
 
 ## Struktur
 
+Die Website wird mit [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) aus `docs/` gebaut.
+
 ```
-index.html            Startseite: Themengebiete, Suche, Widget-Liste (aus manifest.json)
-assets/               wiki.css, wiki.js für die Startseite
-grundlagen/           Fachübergreifendes Basiswissen
-  e-technik.html        E-Technik kompakt
-  lineare-algebra.html  Lineare Algebra
-physik/               Röntgenphysik, Detektoren, CT
-  roentgen.html         Vom Photon zum Bild
-  rekonstruktion.html   Vom Sinogramm zum Schnittbild
-  photon-counting.html  Photonen zählen im CT
-ml/                   Machine Learning (noch leer)
-widgets/              Einzelne Abbildungen zum Einbetten (Pfade bleiben stabil)
-manifest.json         Themengebiete, Seiten, Widgets
+mkdocs.yml            Navigation, Theme, Erweiterungen
+docs/
+  index.md            Startseite
+  grundlagen/         Grundlagen (Markdown; E-Technik noch als HTML)
+  physik/             Physik (noch als HTML-Seiten)
+  widgets/            Interaktive Abbildungen, einzeln einbettbar (Pfade stabil)
+  widgets.md          Übersicht aller Widgets
+  stylesheets/, javascripts/   Farben, MathJax, automatische Widget-Höhe
 ```
 
-Geplant in `grundlagen/`: Wahrscheinlichkeit und Statistik, Fourier und Signale, Vektoranalysis und Optimierung.
+Seiten sind Markdown mit Formeln in `$…$` bzw. `$$…$$`, Kästen als Obsidian-Callouts (`> [!abstract] Merke`) und Abbildungen als `<iframe class="xw-widget" src="../widgets/….html">`. Dieselben Dateien lassen sich in Obsidian öffnen.
 
-### Neue Seite hinzufügen
+Lokal ansehen: `pip install -r requirements.txt`, dann `mkdocs serve`.
 
-1. HTML-Datei im passenden Ordner anlegen.
-2. Eintrag in `manifest.json` unter `pages` ergänzen (`id`, `category`, `path`, `title`, `desc`, `tags`). Mit `"status": "geplant"` erscheint die Seite ausgegraut.
-3. Neues Themengebiet: Eintrag unter `categories` und gleichnamigen Ordner anlegen.
+## Veröffentlichen
 
-Die alten Adressen `grundlagen.html`, `rekonstruktion.html` und `photon-counting.html` im Root leiten auf die neuen Pfade weiter.
-
-Die Startseite lädt `manifest.json` per `fetch`. Lokal deshalb über einen Webserver öffnen, z. B. `python -m http.server`.
-
-## Veröffentlichen mit GitHub Pages
-
-1. Neues Repository anlegen (z. B. `xray-wiki`) und den Inhalt dieses Ordners hochladen.
-2. *Settings → Pages → Build and deployment*: Source **Deploy from a branch**, Branch **main**, Ordner **/ (root)**.
-3. Nach ca. einer Minute ist die Seite unter `https://<user>.github.io/xray-wiki/` erreichbar.
-
-Die Datei `.nojekyll` sorgt dafür, dass GitHub die Dateien unverändert ausliefert.
+Die GitHub Action in `.github/workflows/pages.yml` baut bei jedem Push auf `main` die Seite. Dafür unter *Settings → Pages → Build and deployment* die Quelle auf **GitHub Actions** stellen.
 
 ## In Obsidian einbetten
 
