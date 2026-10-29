@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vektoren</title>
+<!-- Erzeugt von build.py aus src/figures/la-01-vektoren.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Zwei verschiebbare Vektoren u und v mit Winkel, Skalarprodukt und Projektion von v auf u." class="c-pl" id="cv-vec" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<label class="chk"><input autocomplete="off" checked="" id="vec-proj" type="checkbox"/> Projektion zeigen</label>
+<label class="chk"><input autocomplete="off" id="vec-sum" type="checkbox"/> Summe u + v zeigen</label>
+</div>
+<div class="readout" id="vec-read"></div>
+<figcaption><b>Abb. 1</b> Zwei Vektoren, die Spitzen lassen sich ziehen. Gestrichelt ist die Projektion von \(\mathbf v\) auf \(\mathbf u\) und der senkrechte Rest. Dreh \(\mathbf v\) so, dass er senkrecht auf \(\mathbf u\) steht: Das Skalarprodukt wird null, die Projektion verschwindet.</figcaption>
+</figure>
+</main>
+<script src="../assets/core.js"></script>
+<script src="../assets/la.js"></script>
+<script>
+/* ---------- Vektoren ---------- */
+(() => {
+  const c = $('#cv-vec'), iP = $('#vec-proj'), iS = $('#vec-sum');
+  const u = [2.5, 0.5], v = [1, 2];
+  let P = null;
+  const m = reg({ el: c, draw() {
+    P = plane(c, 3.2, 0.6, 0.6); grid(P);
+    const A = tok('--accent'), G = tok('--bin2'), Mu = tok('--muted'), T = tok('--bin1');
+    const dot_ = u[0] * v[0] + u[1] * v[1], nu = Math.hypot(...u), nv = Math.hypot(...v);
+    if (iS.checked) { line(P, u[0], u[1], u[0] + v[0], u[1] + v[1], Mu, 1.2, [4, 4]); line(P, v[0], v[1], u[0] + v[0], u[1] + v[1], Mu, 1.2, [4, 4]); arrow(P, 0, 0, u[0] + v[0], u[1] + v[1], Mu, 2); label(P, u[0] + v[0], u[1] + v[1], 'u + v', Mu); }
+    if (iP.checked && nu > 0.05) {
+      const k = dot_ / (nu * nu), px = k * u[0], py = k * u[1];
+      line(P, -10 * u[0] / nu, -10 * u[1] / nu, 10 * u[0] / nu, 10 * u[1] / nu, rgba(A, 0.25), 1);
+      line(P, v[0], v[1], px, py, T, 1.4, [5, 4]);
+      arrow(P, 0, 0, px, py, T, 4);
+      label(P, px, py, 'Projektion', T, 8, 18, `13px ${DISP}`);
+    }
+    // Winkelbogen
+    const a1 = Math.atan2(u[1], u[0]), a2 = Math.atan2(v[1], v[0]);
+    let da = a2 - a1; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+    const [ox, oy] = P.S(0, 0); P.ctx.strokeStyle = Mu; P.ctx.lineWidth = 1.2; P.ctx.beginPath(); P.ctx.arc(ox, oy, 26, -a1, -a1 - da, da > 0); P.ctx.stroke();
+    P.ctx.fillStyle = Mu; P.ctx.font = `13px ${DISP}`; P.ctx.textAlign = 'center'; P.ctx.fillText('θ', ox + 40 * Math.cos(a1 + da / 2), oy - 40 * Math.sin(a1 + da / 2) + 4);
+    arrow(P, 0, 0, u[0], u[1], A); arrow(P, 0, 0, v[0], v[1], G);
+    handle(P, u[0], u[1], A); handle(P, v[0], v[1], G);
+    label(P, u[0], u[1], 'u', A, 10, -10, `700 16px ${DISP}`); label(P, v[0], v[1], 'v', G, 10, -10, `700 16px ${DISP}`);
+    const th = Math.acos(Math.max(-1, Math.min(1, dot_ / (nu * nv || 1)))) * 180 / Math.PI;
+    $('#vec-read').innerHTML = `<span class="k">u =</span> (${nf(u[0], 1)}; ${nf(u[1], 1)})  <span class="k">v =</span> (${nf(v[0], 1)}; ${nf(v[1], 1)})  <span class="k">‖u‖ =</span> ${nf(nu, 2)}  <span class="k">‖v‖ =</span> ${nf(nv, 2)}<br><span class="k">uᵀv =</span> ${nf(u[0], 1)}·${nf(v[0], 1)} + ${nf(u[1], 1)}·${nf(v[1], 1)} = <b>${nf(dot_, 2)}</b>  <span class="k">θ =</span> ${nf(th, 1)}°  <span class="k">cos θ =</span> ${nf(dot_ / (nu * nv || 1), 3)}`;
+  } });
+  draggable(c, [{ get: () => u, set: (x, y) => { u[0] = x; u[1] = y; } }, { get: () => v, set: (x, y) => { v[0] = x; v[1] = y; } }], () => P, () => m.draw());
+  [iP, iS].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

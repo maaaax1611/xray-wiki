@@ -1,0 +1,4 @@
+markdown>=3.5
+pymdown-extensions>=10
+pyyaml>=6
+beautifulsoup4>=4.12

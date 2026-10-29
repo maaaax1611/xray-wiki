@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gram-Schmidt</title>
+<!-- Erzeugt von build.py aus src/figures/la-09-gram-schmidt.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Gram-Schmidt in 2D: aus zwei verschiebbaren Vektoren a1 und a2 entstehen die orthonormalen Vektoren q1 und q2." class="c-pl" id="cv-gs" role="img" tabindex="0"></canvas>
+<div class="readout" id="gs-read"></div>
+<figcaption><b>Abb. 9</b> Gram-Schmidt in zwei Dimensionen. \(\mathbf q_1\) ist \(\mathbf a_1\) normiert. Von \(\mathbf a_2\) wird der Anteil in Richtung \(\mathbf q_1\) abgezogen (gestrichelt), der Rest \(\mathbf u_2\) wird zu \(\mathbf q_2\) normiert. Die Koeffizienten bilden die obere Dreiecksmatrix \(R\). Zieh \(\mathbf a_2\) nah an \(\mathbf a_1\): \(\mathbf u_2\) wird winzig, \(r_{22}\) geht gegen null.</figcaption>
+</figure>
+</main>
+<script src="../assets/core.js"></script>
+<script src="../assets/la.js"></script>
+<script>
+/* ---------- Gram-Schmidt ---------- */
+(() => {
+  const c = $('#cv-gs');
+  const a1 = [2.2, 0.8], a2 = [1.2, 2.0];
+  let P = null;
+  const m = reg({ el: c, draw() {
+    P = plane(c, 3.0, 0.7, 0.7); grid(P);
+    const Ac = tok('--accent'), G = tok('--bin2'), T = tok('--bin1'), Mu = tok('--muted'), Hc = tok('--hole');
+    const r11 = Math.hypot(...a1), q1 = r11 > 1e-9 ? [a1[0] / r11, a1[1] / r11] : [1, 0];
+    const r12 = q1[0] * a2[0] + q1[1] * a2[1], pr = [r12 * q1[0], r12 * q1[1]], u2 = [a2[0] - pr[0], a2[1] - pr[1]];
+    const r22 = Math.hypot(...u2), q2 = r22 > 1e-9 ? [u2[0] / r22, u2[1] / r22] : [-q1[1], q1[0]];
+    line(P, -10 * q1[0], -10 * q1[1], 10 * q1[0], 10 * q1[1], rgba(Ac, 0.25), 1);
+    arrow(P, 0, 0, ...pr, Mu, 2, [5, 4]); line(P, ...pr, ...a2, Mu, 1.2, [3, 3]);
+    arrow(P, 0, 0, ...u2, Hc, 2.4); label(P, ...u2, 'u₂', Hc, -8, -8);
+    // rechter Winkel
+    if (r22 > 0.15 && Math.abs(r12) > 0.15) { const sz = 0.18, sg = Math.sign(r12); poly(P, [[pr[0] - sg * sz * q1[0], pr[1] - sg * sz * q1[1]], [pr[0] - sg * sz * q1[0] + sz * q2[0], pr[1] - sg * sz * q1[1] + sz * q2[1]], [pr[0] + sz * q2[0], pr[1] + sz * q2[1]]]); P.ctx.strokeStyle = Mu; P.ctx.lineWidth = 1; P.ctx.stroke(); }
+    arrow(P, 0, 0, ...a1, rgba(Ac, 0.55), 2); arrow(P, 0, 0, ...a2, rgba(G, 0.7), 2);
+    arrow(P, 0, 0, ...q1, T, 4); arrow(P, 0, 0, ...q2, T, 4);
+    label(P, ...q1, 'q₁', T, 6, 18); label(P, ...q2, 'q₂', T, -8, -6);
+    handle(P, ...a1, Ac); handle(P, ...a2, G);
+    label(P, ...a1, 'a₁', Ac, 10, -10, `700 16px ${DISP}`); label(P, ...a2, 'a₂', G, 10, -10, `700 16px ${DISP}`);
+    label(P, ...pr, `(q₁ᵀa₂) q₁`, Mu, 4, 20, `13px ${DISP}`);
+    $('#gs-read').innerHTML = `<span class="k">r₁₁ = ‖a₁‖ =</span> ${nf(r11, 2)}  <span class="k">r₁₂ = q₁ᵀa₂ =</span> ${nf(r12, 2)}  <span class="k">r₂₂ = ‖u₂‖ =</span> ${nf(r22, 2)}${r22 < 0.2 ? ' (fast abhängig)' : ''}<br><span class="k">A = QR:</span> ${fmtM([a1[0], a2[0], a1[1], a2[1]])} = ${fmtM([q1[0], q2[0], q1[1], q2[1]])} · ${fmtM([r11, r12, 0, r22])}  <span class="k">q₁ᵀq₂ =</span> ${nf(q1[0] * q2[0] + q1[1] * q2[1], 3)}`;
+  } });
+  draggable(c, [{ get: () => a1, set: (x, y) => { a1[0] = x; a1[1] = y; } }, { get: () => a2, set: (x, y) => { a2[0] = x; a2[1] = y; } }], () => P, () => m.draw());
+})();
+</script>
+</body>
+</html>

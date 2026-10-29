@@ -1,0 +1,36 @@
+<!-- title: Determinante
+     lib: la -->
+<figure class="fig">
+<canvas aria-label="Zwei verschiebbare Spaltenvektoren spannen ein Parallelogramm auf. Seine vorzeichenbehaftete Fläche ist die Determinante." class="c-pl" id="cv-det" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<button class="btn" id="det-dep" type="button">Spalte 2 abhängig machen</button>
+<button class="btn" id="det-reset" type="button">Zurücksetzen</button>
+</div>
+<div class="readout" id="det-read"></div>
+<figcaption><b>Abb.</b> Die Spalten \(\mathbf a_1\) und \(\mathbf a_2\) lassen sich ziehen. Die Fläche des Parallelogramms ist \(|\det A|\). Blau heißt positive Orientierung, rot negative: Zieh \(\mathbf a_2\) auf die andere Seite von \(\mathbf a_1\), dann wechselt das Vorzeichen. Liegen beide auf einer Linie, ist die Fläche null.</figcaption>
+</figure>
+<script>
+/* ---------- Determinante ---------- */
+(() => {
+  const c = $('#cv-det');
+  const a1 = [2, 0.5], a2 = [0.6, 1.8];
+  let P = null;
+  const m = reg({ el: c, draw() {
+    P = plane(c, 3.2, 0.6, 0.6); grid(P);
+    const A = tok('--accent'), G = tok('--bin2'), H = tok('--hole');
+    const d = a1[0] * a2[1] - a1[1] * a2[0], col = d >= 0 ? A : H;
+    poly(P, [[0, 0], a1, [a1[0] + a2[0], a1[1] + a2[1]], a2], true); P.ctx.fillStyle = rgba(col, 0.22); P.ctx.fill(); P.ctx.strokeStyle = rgba(col, 0.7); P.ctx.lineWidth = 1.2; P.ctx.stroke();
+    // Einheitsquadrat als Vergleich
+    poly(P, [[0, 0], [1, 0], [1, 1], [0, 1]], true); P.ctx.strokeStyle = tok('--muted'); P.ctx.setLineDash([4, 4]); P.ctx.stroke(); P.ctx.setLineDash([]);
+    arrow(P, 0, 0, ...a1, A, 3); arrow(P, 0, 0, ...a2, G, 3);
+    handle(P, ...a1, A); handle(P, ...a2, G);
+    label(P, ...a1, 'a₁', A, 10, -10, `700 16px ${DISP}`); label(P, ...a2, 'a₂', G, 10, -10, `700 16px ${DISP}`);
+    const cx = (a1[0] + a2[0]) / 2, cy = (a1[1] + a2[1]) / 2;
+    label(P, cx, cy, `det = ${nf(d, 2)}`, col, 0, 5, `600 15px ${DISP}`);
+    $('#det-read').innerHTML = `<span class="k">A = [a₁ a₂] =</span> ${fmtM([a1[0], a2[0], a1[1], a2[1]])}  <span class="k">det A = a₁₁a₂₂ − a₁₂a₂₁ =</span> ${nf(a1[0], 1)}·${nf(a2[1], 1)} − ${nf(a2[0], 1)}·${nf(a1[1], 1)} = <b>${nf(d, 2)}</b><br><span class="k">Fläche</span> ${nf(Math.abs(d), 2)} × Einheitsquadrat (gestrichelt)  <span class="k">Orientierung:</span> ${Math.abs(d) < 0.005 ? 'keine, Spalten abhängig' : d > 0 ? 'erhalten' : 'gespiegelt'}`;
+  } });
+  draggable(c, [{ get: () => a1, set: (x, y) => { a1[0] = x; a1[1] = y; } }, { get: () => a2, set: (x, y) => { a2[0] = x; a2[1] = y; } }], () => P, () => m.draw());
+  $('#det-dep').addEventListener('click', () => { a2[0] = Math.round(-0.6 * a1[0] * 10) / 10; a2[1] = Math.round(-0.6 * a1[1] * 10) / 10; if (Math.abs(a2[0]) + Math.abs(a2[1]) < 0.3) { a2[0] = 0.6 * a1[0]; a2[1] = 0.6 * a1[1]; } m.draw(); });
+  $('#det-reset').addEventListener('click', () => { a1.splice(0, 2, 2, 0.5); a2.splice(0, 2, 0.6, 1.8); m.draw(); });
+})();
+</script>

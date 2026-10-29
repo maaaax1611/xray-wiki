@@ -1,0 +1,40 @@
+<!-- title: Eigenvektoren
+     lib: la -->
+<figure class="fig">
+<canvas aria-label="Ein umlaufender Einheitsvektor x und sein Bild Ax. Wo beide parallel sind, liegt ein Eigenvektor; die Eigenrichtungen sind eingezeichnet." class="c-pl" id="cv-eig" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="eig-pre">Beispiel</label></div><select autocomplete="off" id="eig-pre"></select></div>
+<button class="btn" id="eig-play" type="button">Pause</button>
+</div>
+<div class="ctrls mat" id="eig-m"></div>
+<div class="readout" id="eig-read"></div>
+<figcaption><b>Abb.</b> Der Vektor \(\mathbf x\) (grau) läuft auf dem Einheitskreis um, \(A\mathbf x\) (blau) läuft auf der Ellipse mit. Meist zeigen beide in verschiedene Richtungen. Wo sie auf einer Linie liegen, ist \(\mathbf x\) ein Eigenvektor, und die Länge von \(A\mathbf x\) ist \(|\lambda|\). Stell eine Drehung ein: \(A\mathbf x\) eilt \(\mathbf x\) immer voraus, es gibt keine reellen Eigenvektoren.</figcaption>
+</figure>
+<script>
+/* ---------- Eigenvektoren ---------- */
+(() => {
+  const c = $('#cv-eig'); let ctl;
+  const m = reg({ el: c, anim: true, playing: !reduceMotion, t: 0.3, step(dt) { this.t += dt * 0.45; }, draw() {
+    const M = ctl.get(), P = plane(c, 2.9); grid(P);
+    const Ac = tok('--accent'), Mu = tok('--muted'), T = tok('--bin1'), Fg = tok('--fg');
+    const E = eig2(M);
+    if (!E.complex) E.v.forEach(v => line(P, -10 * v[0], -10 * v[1], 10 * v[0], 10 * v[1], rgba(T, 0.75), 1.6, [7, 5]));
+    const circ = [], ell = [];
+    for (let i = 0; i <= 120; i++) { const a = i / 120 * 2 * Math.PI; circ.push([Math.cos(a), Math.sin(a)]); ell.push(mul(M, Math.cos(a), Math.sin(a))); }
+    poly(P, circ, true); P.ctx.strokeStyle = rgba(Mu, 0.6); P.ctx.lineWidth = 1.2; P.ctx.stroke();
+    poly(P, ell, true); P.ctx.strokeStyle = rgba(Ac, 0.6); P.ctx.lineWidth = 1.4; P.ctx.stroke();
+    const x = [Math.cos(this.t), Math.sin(this.t)], y = mul(M, ...x), ny = Math.hypot(...y);
+    const par = ny > 1e-6 && Math.abs(x[0] * y[1] - x[1] * y[0]) / ny < 0.04;
+    arrow(P, 0, 0, ...y, par ? T : Ac, 3); arrow(P, 0, 0, ...x, Mu, 2.4);
+    label(P, ...x, 'x', Mu); label(P, ...y, par ? `Ax = ${nf((x[0] * y[0] + x[1] * y[1]), 2)}·x` : 'Ax', par ? T : Ac);
+    let ev;
+    if (E.complex) ev = `λ = ${nf(E.re, 2)} ± ${nf(E.im, 2)}i (komplex, keine reelle Eigenrichtung)`;
+    else if (Math.abs(E.l[0] - E.l[1]) < 1e-6 && Math.abs(E.v[0][0] * E.v[1][1] - E.v[0][1] * E.v[1][0]) < 1e-6) ev = `λ = <b>${nf(E.l[0], 2)}</b> (doppelt), aber nur eine Eigenrichtung v = (${nf(E.v[0][0], 2)}; ${nf(E.v[0][1], 2)}): nicht diagonalisierbar`;
+    else ev = `λ₁ = <b>${nf(E.l[0], 2)}</b>, v₁ = (${nf(E.v[0][0], 2)}; ${nf(E.v[0][1], 2)})  <span class="k">·</span>  λ₂ = <b>${nf(E.l[1], 2)}</b>, v₂ = (${nf(E.v[1][0], 2)}; ${nf(E.v[1][1], 2)})`;
+    $('#eig-read').innerHTML = `<span class="k">A =</span> ${fmtM(M)}  <span class="k">tr A =</span> ${nf(M[0] + M[3], 2)}  <span class="k">det A =</span> ${nf(det2(M), 2)}${Math.abs(M[1] - M[2]) < 1e-9 ? '  (symmetrisch: Eigenvektoren stehen senkrecht)' : ''}<br>${ev}`;
+  } });
+  ctl = matCtl($('#eig-m'), $('#eig-pre'), 'Symmetrisch', () => m.draw());
+  const btn = $('#eig-play'); btn.textContent = m.playing ? 'Pause' : 'Abspielen';
+  btn.addEventListener('click', () => { m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+})();
+</script>

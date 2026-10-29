@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCA</title>
+<!-- Erzeugt von build.py aus src/figures/la-12-pca.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Eine korrelierte Punktwolke mit eingezeichneten Hauptachsen und optional der Projektion auf die erste Hauptkomponente." class="c-pl" id="cv-pca" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="pca-r">Streckung</label><output id="pca-r-o"></output></div><input autocomplete="off" id="pca-r" max="8" min="1" step="0.1" type="range" value="3"/></div>
+<div class="ctrl"><div class="lab"><label for="pca-a">Drehung</label><output id="pca-a-o"></output></div><input autocomplete="off" id="pca-a" max="180" min="0" step="1" type="range" value="30"/></div>
+<label class="chk"><input autocomplete="off" id="pca-p" type="checkbox"/> auf PC 1 projizieren</label>
+<button class="btn" id="pca-re" type="button">Neu würfeln</button>
+</div>
+<div class="readout" id="pca-read"></div>
+<figcaption><b>Abb. 12</b> 300 Punkte aus einer gestreckten, gedrehten Normalverteilung. Die Pfeile sind die aus den Daten geschätzten Hauptachsen, ihre Länge ist die Standardabweichung \(\sqrt{\lambda_i}\). Projiziert man auf PC 1, wird aus 2D eine Dimension, und der Anteil der erklärten Varianz sagt, wie viel dabei verloren geht.</figcaption>
+</figure>
+</main>
+<script src="../assets/core.js"></script>
+<script src="../assets/la.js"></script>
+<script>
+/* ---------- PCA ---------- */
+(() => {
+  const c = $('#cv-pca'), iR = $('#pca-r'), iA = $('#pca-a'), iP = $('#pca-p');
+  let Z = [];
+  const roll = () => { Z = Array.from({ length: 300 }, () => [gauss(), gauss()]); };
+  seed = 5; roll();
+  const m = reg({ el: c, draw() {
+    const r = +iR.value, a = +iA.value * Math.PI / 180;
+    $('#pca-r-o').textContent = nf(r, 1) + ' : 1'; $('#pca-a-o').textContent = nf(+iA.value, 0) + '°';
+    const R = rot(a), sc = 0.42, mu0 = [0.3, 0.2];
+    const pts = Z.map(([u, v]) => { const [x, y] = mul(R, u * sc * Math.sqrt(r), v * sc / Math.sqrt(r)); return [mu0[0] + x, mu0[1] + y]; });
+    const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    let cxx = 0, cyy = 0, cxy = 0; pts.forEach(([x, y]) => { cxx += (x - mx) ** 2; cyy += (y - my) ** 2; cxy += (x - mx) * (y - my); });
+    const N1 = pts.length - 1; cxx /= N1; cyy /= N1; cxy /= N1;
+    const E = eig2([cxx, cxy, cxy, cyy]);
+    const P = plane(c, 2.8, 0.3, 0.2); grid(P);
+    const Ac = tok('--accent'), G = tok('--bin2'), Mu = tok('--muted'), T = tok('--bin1');
+    const v1 = E.v[0], v2 = E.v[1], l1 = E.l[0], l2 = E.l[1];
+    if (iP.checked) {
+      line(P, mx - 10 * v1[0], my - 10 * v1[1], mx + 10 * v1[0], my + 10 * v1[1], rgba(Ac, 0.4), 1);
+      pts.forEach(([x, y]) => { const t = (x - mx) * v1[0] + (y - my) * v1[1]; const px = mx + t * v1[0], py = my + t * v1[1]; line(P, x, y, px, py, rgba(Mu, 0.18), 1); });
+      pts.forEach(([x, y]) => { const t = (x - mx) * v1[0] + (y - my) * v1[1]; dot(P, mx + t * v1[0], my + t * v1[1], rgba(T, 0.8), 2.2); });
+    }
+    pts.forEach(([x, y]) => dot(P, x, y, rgba(Mu, iP.checked ? 0.3 : 0.6), 2.2));
+    // 2σ-Ellipse
+    const ell = []; for (let i = 0; i <= 120; i++) { const t = i / 120 * 2 * Math.PI, c1 = 2 * Math.sqrt(l1) * Math.cos(t), c2 = 2 * Math.sqrt(l2) * Math.sin(t); ell.push([mx + c1 * v1[0] + c2 * v2[0], my + c1 * v1[1] + c2 * v2[1]]); }
+    poly(P, ell, true); P.ctx.strokeStyle = rgba(tok('--fg'), 0.5); P.ctx.setLineDash([5, 5]); P.ctx.lineWidth = 1.2; P.ctx.stroke(); P.ctx.setLineDash([]);
+    arrow(P, mx, my, mx + Math.sqrt(l1) * v1[0], my + Math.sqrt(l1) * v1[1], Ac, 3.2);
+    arrow(P, mx, my, mx + Math.sqrt(l2) * v2[0], my + Math.sqrt(l2) * v2[1], G, 3.2);
+    label(P, mx + Math.sqrt(l1) * v1[0], my + Math.sqrt(l1) * v1[1], 'PC 1', Ac); label(P, mx + Math.sqrt(l2) * v2[0], my + Math.sqrt(l2) * v2[1], 'PC 2', G);
+    let ang = Math.atan2(v1[1], v1[0]) * 180 / Math.PI; ang = ((ang % 180) + 180) % 180;
+    $('#pca-read').innerHTML = `<span class="k">Kovarianz C =</span> ${fmtM([cxx, cxy, cxy, cyy])}  <span class="k">λ₁ =</span> ${nf(l1, 3)}  <span class="k">λ₂ =</span> ${nf(l2, 3)}<br><span class="k">PC 1 geschätzt bei</span> ${nf(ang, 1)}° (wahr ${nf(+iA.value % 180, 0)}°)  <span class="k">erklärte Varianz PC 1:</span> <b>${nf(100 * l1 / (l1 + l2), 1)} %</b>`;
+  } });
+  [iR, iA, iP].forEach(e => e.addEventListener('input', () => m.draw()));
+  $('#pca-re').addEventListener('click', () => { seed = Math.floor(Math.random() * 1e6) + 1; roll(); m.draw(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gradientenabstieg</title>
+<!-- Erzeugt von build.py aus src/figures/la-07-gradientenabstieg.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Höhenlinien einer quadratischen Fehlerfunktion mit dem Pfad des Gradientenabstiegs vom Startpunkt zum Minimum." class="c-pl" id="cv-gd" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="gd-k">Kondition κ(AᵀA)</label><output id="gd-k-o"></output></div><input autocomplete="off" id="gd-k" max="30" min="1" step="0.5" type="range" value="8"/></div>
+<div class="ctrl"><div class="lab"><label for="gd-e">Schrittweite η·λ_max</label><output id="gd-e-o"></output></div><input autocomplete="off" id="gd-e" max="2.1" min="0.05" step="0.01" type="range" value="0.9"/></div>
+<label class="chk"><input autocomplete="off" id="gd-cg" type="checkbox"/> CG zum Vergleich</label>
+</div>
+<div class="readout" id="gd-read"></div>
+<figcaption><b>Abb. 7</b> Höhenlinien von \(f(\mathbf x) = \tfrac12\|A\mathbf x - \mathbf b\|^2\), ein Klick setzt den Startpunkt. Bei κ = 1 sind die Höhenlinien Kreise, der Gradient zeigt direkt zum Minimum. Je größer κ, desto länglicher das Tal und desto mehr Zickzack. Über \(\eta\lambda_{\max} = 2\) divergiert das Verfahren. CG braucht in 2D immer genau zwei Schritte.</figcaption>
+</figure>
+</main>
+<script src="../assets/core.js"></script>
+<script src="../assets/la.js"></script>
+<script>
+/* ---------- Gradientenabstieg ---------- */
+(() => {
+  const c = $('#cv-gd'), iK = $('#gd-k'), iE = $('#gd-e'), iC = $('#gd-cg');
+  const xs = [0.4, 0.1], al = 32 * Math.PI / 180;
+  let st = [-2.4, 1.6], P = null;
+  const m = reg({ el: c, draw() {
+    const k = +iK.value, e = +iE.value, eta = e / k;
+    $('#gd-k-o').textContent = nf(k, 1); $('#gd-e-o').textContent = nf(e, 2);
+    const R = rot(al), Rt = rot(-al), H = mm(mm(R, [1, 0, 0, k]), Rt);
+    P = plane(c, 2.8, 0, 0); grid(P);
+    const Ac = tok('--accent'), Mu = tok('--muted'), G = tok('--bin2'), Hc = tok('--hole');
+    // Höhenlinien
+    for (let lv = 1; lv <= 9; lv++) {
+      const cval = 0.03 * lv * lv * k, ra = Math.sqrt(2 * cval / 1), rb = Math.sqrt(2 * cval / k), pts = [];
+      for (let i = 0; i <= 120; i++) { const t = i / 120 * 2 * Math.PI; const [x, y] = mul(R, ra * Math.cos(t), rb * Math.sin(t)); pts.push([xs[0] + x, xs[1] + y]); }
+      poly(P, pts, true); P.ctx.strokeStyle = rgba(Mu, 0.55); P.ctx.lineWidth = 1; P.ctx.stroke();
+    }
+    // Pfad
+    const path = [st.slice()]; let x = st.slice(), it = 0, div = false;
+    const f = p => { const dx = p[0] - xs[0], dy = p[1] - xs[1]; const [hx, hy] = mul(H, dx, dy); return 0.5 * (dx * hx + dy * hy); };
+    const f0 = f(st);
+    while (it < 500) {
+      const g = mul(H, x[0] - xs[0], x[1] - xs[1]);
+      if (Math.hypot(...g) < 1e-3) break;
+      x = [x[0] - eta * g[0], x[1] - eta * g[1]]; it++; path.push(x.slice());
+      if (Math.hypot(x[0] - xs[0], x[1] - xs[1]) > 50) { div = true; break; }
+    }
+    poly(P, path.slice(0, 200)); P.ctx.strokeStyle = div ? Hc : Ac; P.ctx.lineWidth = 2; P.ctx.stroke();
+    path.slice(0, 60).forEach(p => dot(P, ...p, div ? Hc : Ac, 2.6));
+    if (iC.checked) { // CG auf H x = H xs
+      let xc = st.slice(), r = mul(H, xs[0] - xc[0], xs[1] - xc[1]), pd = r.slice(); const cp = [xc.slice()];
+      for (let i = 0; i < 2; i++) { const Hp = mul(H, ...pd), rr = r[0] * r[0] + r[1] * r[1]; if (rr < 1e-20) break; const a = rr / (pd[0] * Hp[0] + pd[1] * Hp[1]); xc = [xc[0] + a * pd[0], xc[1] + a * pd[1]]; const rn = [r[0] - a * Hp[0], r[1] - a * Hp[1]]; const bt = (rn[0] * rn[0] + rn[1] * rn[1]) / rr; pd = [rn[0] + bt * pd[0], rn[1] + bt * pd[1]]; r = rn; cp.push(xc.slice()); }
+      poly(P, cp); P.ctx.strokeStyle = G; P.ctx.lineWidth = 2.6; P.ctx.stroke(); cp.forEach(p => dot(P, ...p, G, 4));
+    }
+    dot(P, ...xs, tok('--fg'), 5); handle(P, ...st, Ac);
+    const rho = Math.max(Math.abs(1 - eta), Math.abs(1 - eta * k));
+    $('#gd-read').innerHTML = `<span class="k">Eigenwerte von AᵀA:</span> 1 und ${nf(k, 1)}  <span class="k">η =</span> ${nf(eta, 3)}  <span class="k">Kontraktion pro Schritt max|1 − ηλᵢ| =</span> ${nf(rho, 3)}<br>` +
+      (div ? `<b>divergiert</b>: ηλ_max = ${nf(e, 2)} &gt; 2` : it >= 500 ? `nach 500 Schritten noch nicht konvergiert` : `<span class="k">Schritte bis ‖∇f‖ &lt; 10⁻³:</span> <b>${it}</b>`) + (iC.checked ? `  <span class="k">CG:</span> 2 Schritte` : '') + `  <span class="k">optimal wäre η = 2/(λ_min + λ_max) =</span> ${nf(2 / (1 + k), 3)}`;
+    void f0;
+  } });
+  draggable(c, [{ get: () => st, set: (x, y) => { st = [x, y]; } }], () => P, () => m.draw(), (x, y) => { st = [x, y]; m.draw(); });
+  [iK, iE, iC].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!-- title: Kleinste Quadrate
+     lib: la -->
+<figure class="fig">
+<canvas aria-label="Verrauschte Messpunkte mit einer angepassten Polynomkurve und den senkrechten Residuen. Grad und Regularisierung sind einstellbar." class="c-pl" id="cv-ls" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="ls-d">Polynomgrad d</label><output id="ls-d-o"></output></div><input autocomplete="off" id="ls-d" max="11" min="0" step="1" type="range" value="1"/></div>
+<div class="ctrl"><div class="lab"><label for="ls-l">Regularisierung λ</label><output id="ls-l-o"></output></div><input autocomplete="off" id="ls-l" max="1" min="-8" step="0.1" type="range" value="-8"/></div>
+<div class="ctrl"><div class="lab"><label for="ls-n">Rauschen</label><output id="ls-n-o"></output></div><input autocomplete="off" id="ls-n" max="0.5" min="0" step="0.01" type="range" value="0.15"/></div>
+<button class="btn" id="ls-re" type="button">Neu würfeln</button>
+</div>
+<div class="readout" id="ls-read"></div>
+<figcaption><b>Abb.</b> Zwölf Messpunkte einer glatten Kurve (gestrichelt) mit Rauschen. Die Kurve ist die Lösung der kleinsten Quadrate, die senkrechten Striche sind die Residuen. Bei Grad 11 geht das Polynom durch alle Punkte, das Residuum ist null, aber die Kurve schwingt wild: Überanpassung, und \(\kappa(A)\) explodiert. Eine kleine Regularisierung λ zähmt sie wieder.</figcaption>
+</figure>
+<script>
+/* ---------- Kleinste Quadrate ---------- */
+(() => {
+  const c = $('#cv-ls'), iD = $('#ls-d'), iL = $('#ls-l'), iN = $('#ls-n');
+  const truth = x => 0.55 * Math.sin(2.6 * x) + 0.25 * x + 0.1;
+  const N = 12, X = Array.from({ length: N }, (_, i) => -1 + 2 * i / (N - 1));
+  let E = [];
+  const roll = () => { seed = Math.floor(Math.random() * 1e6) + 1; E = X.map(() => gauss()); };
+  seed = 7; E = X.map(() => gauss());
+  const m = reg({ el: c, draw() {
+    const d = +iD.value, lam = Math.pow(10, +iL.value), sg = +iN.value;
+    $('#ls-d-o').textContent = d; $('#ls-l-o').textContent = +iL.value <= -7.95 ? '0' : ex(lam, 1); $('#ls-n-o').textContent = nf(sg, 2);
+    const lamEff = +iL.value <= -7.95 ? 0 : lam;
+    const Y = X.map((x, i) => truth(x) + sg * E[i]);
+    const A = X.map(x => Array.from({ length: d + 1 }, (_, j) => Math.pow(x, j)));
+    const n = d + 1, AtA = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => A.reduce((s, r) => s + r[i] * r[j], 0) + (i === j ? lamEff : 0)));
+    const Atb = Array.from({ length: n }, (_, i) => A.reduce((s, r, k) => s + r[i] * Y[k], 0));
+    const cf = solve(AtA, Atb);
+    const f = x => cf.reduce((s, cc, j) => s + cc * Math.pow(x, j), 0);
+    const flat = new Float64Array(n * n); for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) flat[i * n + j] = A.reduce((s, r) => s + r[i] * r[j], 0);
+    const ev = jacobiEig(flat, n).val, kap = Math.sqrt(Math.max(...ev) / Math.max(1e-300, Math.min(...ev)));
+    const { ctx, w, h } = fit(c);
+    const fr = frame(ctx, 0, 0, w, h, { x0: -1.1, x1: 1.1, y0: -1.5, y1: 1.5, xt: [-1, -0.5, 0, 0.5, 1], yt: [-1, 0, 1], xf: v => nf(v, 1), yf: v => nf(v, 0), l: 34, b: 26 });
+    ctx.save(); ctx.beginPath(); ctx.rect(fr.bx, fr.by, fr.bw, fr.bh); ctx.clip();
+    const Mu = tok('--muted'), Ac = tok('--accent'), H = tok('--hole'), Fg = tok('--fg');
+    ctx.strokeStyle = Mu; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.4; ctx.beginPath();
+    for (let i = 0; i <= 200; i++) { const x = -1.1 + 2.2 * i / 200; i ? ctx.lineTo(fr.X(x), fr.Y(truth(x))) : ctx.moveTo(fr.X(x), fr.Y(truth(x))); } ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = H; ctx.lineWidth = 1.6;
+    X.forEach((x, i) => { ctx.beginPath(); ctx.moveTo(fr.X(x), fr.Y(Y[i])); ctx.lineTo(fr.X(x), fr.Y(f(x))); ctx.stroke(); });
+    ctx.strokeStyle = Ac; ctx.lineWidth = 2.6; ctx.beginPath();
+    for (let i = 0; i <= 400; i++) { const x = -1.1 + 2.2 * i / 400, y = Math.max(-50, Math.min(50, f(x))); i ? ctx.lineTo(fr.X(x), fr.Y(y)) : ctx.moveTo(fr.X(x), fr.Y(y)); } ctx.stroke();
+    X.forEach((x, i) => { ctx.fillStyle = tok('--surface'); ctx.strokeStyle = Fg; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(fr.X(x), fr.Y(Y[i]), 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); });
+    ctx.restore();
+    const rss = X.reduce((s, x, i) => s + (f(x) - Y[i]) ** 2, 0);
+    let te = 0; for (let i = 0; i <= 200; i++) { const x = -1 + 2 * i / 200; te += (f(x) - truth(x)) ** 2; } te = Math.sqrt(te / 201);
+    $('#ls-read').innerHTML = `<span class="k">A:</span> ${N} × ${n}  <span class="k">κ(A) =</span> ${ex(kap, 1)}  <span class="k">Residuum ‖Ax − b‖ =</span> ${nf(Math.sqrt(rss), 3)}  <span class="k">‖c‖ =</span> ${ex(Math.hypot(...cf), 1)}<br><span class="k">Abweichung von der wahren Kurve (RMS):</span> <b>${nf(te, 3)}</b>  <span class="k">Koeffizienten c₀…c${String(d).replace(/\d/g, x => '₀₁₂₃₄₅₆₇₈₉'[x])}:</span> ${cf.slice(0, 6).map(v => nf(v, 2)).join('; ')}${d > 5 ? '; …' : ''}`;
+  } });
+  [iD, iL, iN].forEach(e => e.addEventListener('input', () => m.draw()));
+  $('#ls-re').addEventListener('click', () => { roll(); m.draw(); });
+})();
+</script>

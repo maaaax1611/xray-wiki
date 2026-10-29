@@ -1,0 +1,14 @@
+# Prüft bei jedem Push, ob die HTML-Seiten zu den Markdown-Quellen passen.
+# Schlägt fehl, wenn nach einer Änderung in src/ vergessen wurde, "python build.py" laufen zu lassen.
+name: Build-Check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: python build.py
+      - run: git diff --exit-code || (echo "::error::Seiten sind nicht aktuell. Bitte lokal 'python build.py' ausführen und committen." && exit 1)

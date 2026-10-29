@@ -5,25 +5,29 @@ Persönliches Nachschlagewerk mit interaktiven Seiten, nach Themengebieten geord
 ## Struktur
 
 ```
-index.html            Startseite: Themengebiete, Suche, Widget-Liste (aus manifest.json)
-assets/               wiki.css, wiki.js für die Startseite
-grundlagen/           Fachübergreifendes Basiswissen
-  e-technik.html        E-Technik kompakt
-  lineare-algebra.html  Lineare Algebra
-physik/               Röntgenphysik, Detektoren, CT
-  roentgen.html         Vom Photon zum Bild
-  rekonstruktion.html   Vom Sinogramm zum Schnittbild
-  photon-counting.html  Photonen zählen im CT
-ml/                   Machine Learning (noch leer)
-widgets/              Einzelne Abbildungen zum Einbetten (Pfade bleiben stabil)
-manifest.json         Themengebiete, Seiten, Widgets
+src/                     Quellen (hier wird bearbeitet)
+  pages/<gebiet>/*.md      Seiteninhalt in Markdown
+  figures/*.html           Abbildungen: Markup + Skript, je eine Datei
+  lib/                     page.css, core.js, gemeinsame Bibliotheken (la.js)
+  template.html            HTML-Gerüst
+build.py                 baut aus src/ die fertigen Seiten
+index.html, assets/      Startseite (liest manifest.json)
+grundlagen/, physik/     fertige Seiten (Lineare Algebra wird gebaut, die übrigen sind noch handgeschrieben)
+widgets/                 Abbildungen einzeln zum Einbetten (Pfade bleiben stabil)
+manifest.json            Themengebiete, Seiten, Widgets
 ```
 
-Geplant in `grundlagen/`: Wahrscheinlichkeit und Statistik, Fourier und Signale, Vektoranalysis und Optimierung.
+### Seite bearbeiten
+
+1. Markdown in `src/pages/` ändern.
+2. `pip install -r requirements.txt` (einmalig), dann `python build.py`.
+3. Quellen und erzeugte Dateien zusammen committen. Eine GitHub Action prüft, ob beides zusammenpasst.
+
+In Markdown stehen Formeln in `$…$` und `$$…$$`. Kästen schreibt man wie Obsidian-Callouts (`> [!abstract] Merke`), Abbildungen mit `::: widget la-04-determinante`. Abschnitte bekommen Attribute für das Inhaltsverzeichnis: `## Titel {#id group="Gruppe" toc="Kurztitel"}`, Anhänge `{#id appendix="A"}`. Details stehen oben in `build.py`.
 
 ### Neue Seite hinzufügen
 
-1. HTML-Datei im passenden Ordner anlegen.
+1. Markdown-Datei unter `src/pages/<gebiet>/` anlegen und `python build.py` ausführen.
 2. Eintrag in `manifest.json` unter `pages` ergänzen (`id`, `category`, `path`, `title`, `desc`, `tags`). Mit `"status": "geplant"` erscheint die Seite ausgegraut.
 3. Neues Themengebiet: Eintrag unter `categories` und gleichnamigen Ordner anlegen.
 

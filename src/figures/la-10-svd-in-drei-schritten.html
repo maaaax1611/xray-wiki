@@ -1,0 +1,45 @@
+<!-- title: SVD in drei Schritten
+     lib: la -->
+<figure class="fig">
+<canvas aria-label="Der Einheitskreis wird in drei Schritten durch V transponiert, Sigma und U in die Ellipse A mal Einheitskreis überführt." class="c-pl" id="cv-svd" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="svd-pre">Beispiel</label></div><select autocomplete="off" id="svd-pre"></select></div>
+<div class="ctrl"><div class="lab"><label for="svd-t">Schritt</label><output id="svd-t-o"></output></div><input autocomplete="off" id="svd-t" max="3" min="0" step="0.01" type="range" value="0"/></div>
+<button class="btn" id="svd-play" type="button">Abspielen</button>
+</div>
+<div class="ctrls mat" id="svd-m"></div>
+<div class="readout" id="svd-read"></div>
+<figcaption><b>Abb.</b> Die SVD als drei Schritte. Von 0 bis 1 dreht \(V^\top\) die rechten Singulärvektoren (Pfeile) auf die Achsen. Von 1 bis 2 streckt \(\Sigma\) entlang der Achsen. Von 2 bis 3 dreht \(U\) in die Endlage. Das Ergebnis ist dieselbe Ellipse wie in Abbildung 2. Bei einer negativen Determinante steckt in einem der Schritte eine Spiegelung.</figcaption>
+</figure>
+<script>
+/* ---------- SVD in drei Schritten ---------- */
+(() => {
+  const c = $('#cv-svd'), iT = $('#svd-t'), btn = $('#svd-play'); let ctl;
+  const ease = s => s * s * (3 - 2 * s);
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { let t = +iT.value + dt * 0.6; if (t >= 3) { t = 3; this.playing = false; btn.textContent = 'Abspielen'; } iT.value = t; }, draw() {
+    const A = ctl.get(), t = +iT.value, S = svd2(A);
+    $('#svd-t-o').textContent = t < 0.005 ? 'Einheitskreis' : t <= 1 ? 'Vᵀ (drehen)' : t <= 2 ? 'Σ (strecken)' : 'U (drehen)';
+    // U = Rot(psi)·F mit F = diag(1, ±1)
+    const fl = S.u[0][0] * S.u[1][1] - S.u[0][1] * S.u[1][0] < 0 ? -1 : 1, psi = Math.atan2(S.u[0][1], S.u[0][0]);
+    const s1 = ease(Math.min(1, Math.max(0, t))), s2 = ease(Math.min(1, Math.max(0, t - 1))), s3 = ease(Math.min(1, Math.max(0, t - 2)));
+    const Vt = rot(-S.phi * s1), Sg = [1 + (S.s[0] - 1) * s2, 0, 0, 1 + (fl * S.s[1] - 1) * s2], Ur = rot(psi * s3);
+    const M = mm(Ur, mm(Sg, Vt));
+    const P = plane(c, 3.0); grid(P);
+    const Ac = tok('--accent'), G = tok('--bin2'), Mu = tok('--muted'), Fg = tok('--fg');
+    const fin = [], cur = [];
+    for (let i = 0; i <= 120; i++) { const a = i / 120 * 2 * Math.PI; fin.push(mul(A, Math.cos(a), Math.sin(a))); cur.push(mul(M, Math.cos(a), Math.sin(a))); }
+    poly(P, fin, true); P.ctx.strokeStyle = rgba(Mu, 0.7); P.ctx.setLineDash([5, 5]); P.ctx.lineWidth = 1.2; P.ctx.stroke(); P.ctx.setLineDash([]);
+    poly(P, cur, true); P.ctx.fillStyle = rgba(Ac, 0.08); P.ctx.fill(); P.ctx.strokeStyle = Fg; P.ctx.lineWidth = 1.8; P.ctx.stroke();
+    const p1 = mul(M, ...S.v[0]), p2 = mul(M, ...S.v[1]);
+    arrow(P, 0, 0, ...p1, Ac, 3); arrow(P, 0, 0, ...p2, G, 3);
+    const lab = t < 1 ? ['v₁', 'v₂'] : t < 2.995 ? ['', ''] : ['σ₁u₁', 'σ₂u₂'];
+    if (lab[0]) { label(P, ...p1, lab[0], Ac); label(P, ...p2, lab[1], G); }
+    // Markierung eines Punkts, damit Drehungen sichtbar sind
+    dot(P, ...mul(M, 1, 0), tok('--hole'), 4.5);
+    $('#svd-read').innerHTML = `<span class="k">A =</span> ${fmtM(A)}  <span class="k">σ₁ =</span> <b>${nf(S.s[0], 3)}</b>  <span class="k">σ₂ =</span> <b>${nf(S.s[1], 3)}</b>  <span class="k">κ =</span> ${S.s[1] < 1e-6 ? '∞ (Rang 1)' : nf(S.s[0] / S.s[1], 2)}<br><span class="k">V: Drehung um</span> ${nf(S.phi * 180 / Math.PI, 1)}°  <span class="k">U: Drehung um</span> ${nf(psi * 180 / Math.PI, 1)}°${fl < 0 ? ' mit Spiegelung (det A &lt; 0)' : ''}  <span class="k">σ₁σ₂ = |det A| =</span> ${nf(S.s[0] * S.s[1], 3)}`;
+  } });
+  ctl = matCtl($('#svd-m'), $('#svd-pre'), 'Allgemein', () => m.draw());
+  iT.addEventListener('input', () => { m.playing = false; btn.textContent = 'Abspielen'; m.draw(); });
+  btn.addEventListener('click', () => { if (+iT.value >= 2.999) iT.value = 0; m.playing = !m.playing; btn.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+})();
+</script>

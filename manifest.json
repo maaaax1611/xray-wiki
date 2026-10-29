@@ -348,6 +348,90 @@
    "title": "Spektrum und Energie-Bins und Schwächungskoeffizienten",
    "interactive": true,
    "height": 1440
+  },
+  {
+   "slug": "la-01-vektoren",
+   "page": "lineare-algebra",
+   "title": "Vektoren",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-02-matrix-als-abbildung",
+   "page": "lineare-algebra",
+   "title": "Matrix als Abbildung",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-03-basiswechsel",
+   "page": "lineare-algebra",
+   "title": "Basiswechsel",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-04-determinante",
+   "page": "lineare-algebra",
+   "title": "Determinante",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-05-gleichungssystem-und-kondition",
+   "page": "lineare-algebra",
+   "title": "Gleichungssystem und Kondition",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-06-kleinste-quadrate",
+   "page": "lineare-algebra",
+   "title": "Kleinste Quadrate",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-07-gradientenabstieg",
+   "page": "lineare-algebra",
+   "title": "Gradientenabstieg",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-08-eigenvektoren",
+   "page": "lineare-algebra",
+   "title": "Eigenvektoren",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-09-gram-schmidt",
+   "page": "lineare-algebra",
+   "title": "Gram-Schmidt",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-10-svd-in-drei-schritten",
+   "page": "lineare-algebra",
+   "title": "SVD in drei Schritten",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-11-bildkompression-mit-svd",
+   "page": "lineare-algebra",
+   "title": "Bildkompression mit SVD",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "la-12-pca",
+   "page": "lineare-algebra",
+   "title": "PCA",
+   "interactive": true,
+   "height": 640
   }
  ]
 }

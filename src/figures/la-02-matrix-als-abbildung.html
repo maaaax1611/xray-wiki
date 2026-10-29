@@ -1,0 +1,48 @@
+<!-- title: Matrix als Abbildung
+     lib: la -->
+<figure class="fig">
+<canvas aria-label="Ein Gitter, der Einheitskreis und eine Buchstabenform werden von einer einstellbaren 2×2-Matrix verformt. Die Bilder der Basisvektoren sind farbig." class="c-pl" id="cv-map" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="map-pre">Beispiel</label></div><select autocomplete="off" id="map-pre"></select></div>
+<div class="ctrl"><div class="lab"><label for="map-t">Übergang von I zu A</label><output id="map-t-o"></output></div><input autocomplete="off" id="map-t" max="1" min="0" step="0.01" type="range" value="1"/></div>
+</div>
+<div class="ctrls mat" id="map-m"></div>
+<div class="readout" id="map-read"></div>
+<figcaption><b>Abb.</b> Eine 2×2-Matrix verformt die Ebene. Blau ist das Bild von \(\mathbf e_1\) (erste Spalte), gelb das von \(\mathbf e_2\) (zweite Spalte). Aus dem Einheitskreis wird eine Ellipse, aus dem Quadrat ein Parallelogramm. Mit dem Schieber „Übergang“ siehst du, wie sich die Ebene von der Einheitsmatrix aus verformt.</figcaption>
+</figure>
+<script>
+/* ---------- Matrix als Abbildung ---------- */
+(() => {
+  const c = $('#cv-map'), it = $('#map-t');
+  let ctl;
+  const F = [[-0.3, -0.5], [-0.3, 0.7], [0.4, 0.7], [-0.3, 0.7], [-0.3, 0.15], [0.25, 0.15]];
+  const m = reg({ el: c, draw() {
+    const A0 = ctl.get(), t = +it.value, M = [1 + t * (A0[0] - 1), t * A0[1], t * A0[2], 1 + t * (A0[3] - 1)];
+    $('#map-t-o').textContent = nf(t * 100, 0) + ' %';
+    const P = plane(c, 3.4); grid(P);
+    const Ac = tok('--accent'), G = tok('--bin2'), Mu = tok('--muted'), Fg = tok('--fg');
+    const { ctx } = P;
+    // verformtes Gitter
+    ctx.strokeStyle = rgba(Ac, 0.35); ctx.lineWidth = 1;
+    for (let k = -8; k <= 8; k++) {
+      poly(P, [mul(M, k, -8), mul(M, k, 8)]); ctx.stroke();
+      poly(P, [mul(M, -8, k), mul(M, 8, k)]); ctx.stroke();
+    }
+    // Einheitsquadrat -> Parallelogramm
+    const dt = det2(M);
+    poly(P, [[0, 0], mul(M, 1, 0), mul(M, 1, 1), mul(M, 0, 1)], true); ctx.fillStyle = rgba(dt >= 0 ? Ac : tok('--hole'), 0.16); ctx.fill();
+    // Einheitskreis -> Ellipse
+    const circ = []; for (let i = 0; i <= 96; i++) { const a = i / 96 * 2 * Math.PI; circ.push(mul(M, Math.cos(a), Math.sin(a))); }
+    poly(P, circ, true); ctx.strokeStyle = Fg; ctx.lineWidth = 1.6; ctx.stroke();
+    // Buchstabe F zur Orientierung
+    poly(P, F.map(([x, y]) => mul(M, x, y))); ctx.strokeStyle = tok('--hole'); ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke();
+    const e1 = mul(M, 1, 0), e2 = mul(M, 0, 1);
+    arrow(P, 0, 0, ...e1, Ac, 3); arrow(P, 0, 0, ...e2, G, 3);
+    label(P, ...e1, 'Ae₁', Ac); label(P, ...e2, 'Ae₂', G);
+    const s = svd2(M);
+    $('#map-read').innerHTML = `<span class="k">A =</span> ${fmtM(M)}  <span class="k">Spalte 1 = Ae₁ =</span> (${nf(e1[0], 2)}; ${nf(e1[1], 2)})  <span class="k">Spalte 2 = Ae₂ =</span> (${nf(e2[0], 2)}; ${nf(e2[1], 2)})<br><span class="k">det A =</span> ${nf(dt, 3)}${Math.abs(dt) < 1e-3 ? ' (Ebene wird auf eine Gerade gedrückt)' : dt < 0 ? ' (Orientierung umgekehrt, das F ist gespiegelt)' : ''}  <span class="k">Halbachsen der Ellipse:</span> ${nf(s.s[0], 2)} und ${nf(s.s[1], 2)}`;
+  } });
+  ctl = matCtl($('#map-m'), $('#map-pre'), 'Scherung', () => m.draw());
+  it.addEventListener('input', () => m.draw());
+})();
+</script>

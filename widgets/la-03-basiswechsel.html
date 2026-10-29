@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basiswechsel</title>
+<!-- Erzeugt von build.py aus src/figures/la-03-basiswechsel.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+<canvas aria-label="Ein Punkt x mit seinen Koordinaten in der Standardbasis und in einer verschiebbaren zweiten Basis b1, b2, deren Gitter eingezeichnet ist." class="c-pl" id="cv-bw" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<button class="btn" id="bw-on" type="button">Orthonormalbasis</button>
+<button class="btn" id="bw-reset" type="button">Zurücksetzen</button>
+</div>
+<div class="readout" id="bw-read"></div>
+<figcaption><b>Abb. 3</b> Der Punkt \(\mathbf x\) (schwarz) und eine zweite Basis \(\mathbf b_1\), \(\mathbf b_2\) mit ihrem schiefen Gitter. Alle drei lassen sich ziehen. Die Koordinaten \(\mathbf c = B^{-1}\mathbf x\) sagen, wie viele Schritte entlang \(\mathbf b_1\) und \(\mathbf b_2\) man bis \(\mathbf x\) braucht (gestrichelt). Der Punkt bleibt derselbe, nur seine Beschreibung ändert sich.</figcaption>
+</figure>
+</main>
+<script src="../assets/core.js"></script>
+<script src="../assets/la.js"></script>
+<script>
+/* ---------- Basiswechsel ---------- */
+(() => {
+  const c = $('#cv-bw');
+  const b1 = [1.4, 0.4], b2 = [0.5, 1.2], x = [2.3, 1.9];
+  let P = null;
+  const m = reg({ el: c, draw() {
+    P = plane(c, 3.2, 0.9, 0.7); grid(P);
+    const Ac = tok('--accent'), G = tok('--bin2'), Mu = tok('--muted'), Fg = tok('--fg'), H = tok('--hole');
+    const D = b1[0] * b2[1] - b1[1] * b2[0];
+    const { ctx } = P;
+    if (Math.abs(D) > 0.02) {
+      ctx.strokeStyle = rgba(Ac, 0.3); ctx.lineWidth = 1;
+      for (let k = -10; k <= 10; k++) {
+        poly(P, [[k * b1[0] - 12 * b2[0], k * b1[1] - 12 * b2[1]], [k * b1[0] + 12 * b2[0], k * b1[1] + 12 * b2[1]]]); ctx.stroke();
+        poly(P, [[k * b2[0] - 12 * b1[0], k * b2[1] - 12 * b1[1]], [k * b2[0] + 12 * b1[0], k * b2[1] + 12 * b1[1]]]); ctx.stroke();
+      }
+      const c1 = (x[0] * b2[1] - x[1] * b2[0]) / D, c2 = (b1[0] * x[1] - b1[1] * x[0]) / D;
+      const p1 = [c1 * b1[0], c1 * b1[1]];
+      line(P, 0, 0, ...p1, Ac, 2, [6, 4]); line(P, ...p1, ...x, G, 2, [6, 4]);
+      label(P, p1[0] / 2, p1[1] / 2, `${nf(c1, 2)}·b₁`, Ac, 6, 18, `13px ${DISP}`);
+      label(P, (p1[0] + x[0]) / 2, (p1[1] + x[1]) / 2, `${nf(c2, 2)}·b₂`, G, 8, 4, `13px ${DISP}`);
+      // Standardkoordinaten
+      line(P, x[0], 0, x[0], x[1], rgba(Mu, 0.8), 1, [2, 3]); line(P, 0, x[1], x[0], x[1], rgba(Mu, 0.8), 1, [2, 3]);
+      const nb1 = Math.hypot(...b1), nb2 = Math.hypot(...b2), on = Math.abs(nb1 - 1) < 0.06 && Math.abs(nb2 - 1) < 0.06 && Math.abs(b1[0] * b2[0] + b1[1] * b2[1]) < 0.06;
+      $('#bw-read').innerHTML = `<span class="k">B = [b₁ b₂] =</span> ${fmtM([b1[0], b2[0], b1[1], b2[1]])}  <span class="k">det B =</span> ${nf(D, 2)}${on ? '  (orthonormal: B⁻¹ = Bᵀ)' : ''}<br><span class="k">Standardkoordinaten x =</span> (${nf(x[0], 2)}; ${nf(x[1], 2)})  <span class="k">neue Koordinaten c = B⁻¹x =</span> <b>(${nf(c1, 2)}; ${nf(c2, 2)})</b>` + (on ? `  <span class="k">= (b₁ᵀx; b₂ᵀx)</span>` : '');
+    } else {
+      $('#bw-read').innerHTML = `<span class="k">det B =</span> ${nf(D, 3)}: b₁ und b₂ sind (fast) abhängig und bilden keine Basis. Nicht jeder Punkt lässt sich darstellen.`;
+      line(P, -10 * b1[0], -10 * b1[1], 10 * b1[0], 10 * b1[1], rgba(H, 0.6), 1.4);
+    }
+    arrow(P, 0, 0, ...b1, Ac, 3); arrow(P, 0, 0, ...b2, G, 3);
+    handle(P, ...b1, Ac); handle(P, ...b2, G);
+    label(P, ...b1, 'b₁', Ac, 10, 16, `700 16px ${DISP}`); label(P, ...b2, 'b₂', G, -10, -8, `700 16px ${DISP}`);
+    dot(P, ...x, Fg, 5); handle(P, ...x, Fg); label(P, ...x, 'x', Fg, 10, -10, `700 16px ${DISP}`);
+  } });
+  draggable(c, [{ get: () => b1, set: (a, b) => { b1[0] = a; b1[1] = b; } }, { get: () => b2, set: (a, b) => { b2[0] = a; b2[1] = b; } }, { get: () => x, set: (a, b) => { x[0] = a; x[1] = b; } }], () => P, () => m.draw());
+  $('#bw-on').addEventListener('click', () => { const t = 25 * Math.PI / 180; b1.splice(0, 2, Math.cos(t), Math.sin(t)); b2.splice(0, 2, -Math.sin(t), Math.cos(t)); m.draw(); });
+  $('#bw-reset').addEventListener('click', () => { b1.splice(0, 2, 1.4, 0.4); b2.splice(0, 2, 0.5, 1.2); x.splice(0, 2, 2.3, 1.9); m.draw(); });
+})();
+</script>
+</body>
+</html>
