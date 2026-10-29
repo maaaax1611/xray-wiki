@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embeddings und Ähnlichkeit</title>
+<!-- Erzeugt von build.py aus src/figures/tr-02-embeddings.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-emb" class="c-tr" tabindex="0" role="img" aria-label="Wörter als Punkte in einer Ebene. Ein Klick auf ein Wort zeigt seine ähnlichsten Nachbarn nach Kosinus-Ähnlichkeit."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 200px"><div class="lab"><label for="emb-w">Wort</label></div><select id="emb-w" autocomplete="off"></select></div>
+    <label class="chk"><input id="emb-pl" type="checkbox" autocomplete="off"> Plural-Richtung zeigen</label>
+  </div>
+  <div class="readout" id="emb-read"></div>
+  <figcaption><b>Abb. 2</b> Ein ausgedachter, zweidimensionaler Embedding-Raum. Echte Embeddings haben hunderte bis tausende Dimensionen, das Prinzip ist dasselbe: Wörter mit ähnlicher Bedeutung liegen in ähnlicher Richtung, und die Kosinus-Ähnlichkeit misst den Winkel zwischen ihnen. Mit „Plural-Richtung“ sieht man, dass der Schritt vom Singular zum Plural für alle Nomen ungefähr derselbe Vektor ist. Ein Klick auf einen Punkt wählt das Wort.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- Embeddings ---------- */
+(() => {
+  const c = $('#cv-emb'), sel = $('#emb-w'), iP = $('#emb-pl');
+  const PL = [0.7, -0.25];
+  const base = { Katze: [2.3, 1.1], Hund: [2.6, 0.1], Maus: [1.7, 1.8], Tisch: [-1.2, 2.4], Stuhl: [-2.0, 1.7], Matte: [-0.1, 2.6] };
+  const W = {};
+  for (const [w, v] of Object.entries(base)) { W[w] = v; }
+  Object.assign(W, { Katzen: [2.4 + PL[0], 1.3 + PL[1]], Hunde: [2.7 + PL[0], 0.9 + PL[1]], Tische: [-0.6 + PL[0], 2.5 + PL[1]], Matten: [-0.2 + PL[0], 2.7 + PL[1]],
+    sitzt: [-1.9, -1.0], liegt: [-2.5, -0.3], läuft: [-1.2, -1.7], schläft: [-2.9, 0.4],
+    eins: [0.5, -2.5], zwei: [1.3, -2.4], drei: [2.0, -2.0] });
+  const pairs = [['Katze', 'Katzen'], ['Hund', 'Hunde'], ['Tisch', 'Tische'], ['Matte', 'Matten']];
+  const names = Object.keys(W);
+  sel.innerHTML = names.map(n => `<option>${n}</option>`).join(''); sel.value = 'Katze';
+  const cos = (a, b) => dotv(a, b) / Math.hypot(...a) / Math.hypot(...b);
+  let view = null;
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c), R = 3.4, s = Math.min(w, h) / (2 * R), cx = w / 2, cy = h / 2;
+    const S = (x, y) => [cx + x * s, cy - y * s]; view = { S, s, cx, cy };
+    ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1;
+    for (let k = -3; k <= 3; k++) { let [a, b] = S(k, -R * 2), [a2, b2] = S(k, R * 2); ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); [a, b] = S(-R * 3, k); [a2, b2] = S(R * 3, k); ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); }
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1.4; const [ox, oy] = S(0, 0); ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    const cur = sel.value, v0 = W[cur];
+    const sims = names.filter(n => n !== cur).map(n => [n, cos(v0, W[n])]).sort((a, b) => b[1] - a[1]);
+    // Richtung des gewählten Wortes
+    const [ex_, ey_] = S(v0[0] * 1.6, v0[1] * 1.6); ctx.strokeStyle = rgba(tok('--accent'), 0.25); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ex_, ey_); ctx.stroke(); ctx.setLineDash([]);
+    sims.slice(0, 3).forEach(([n]) => { const [a, b] = S(...v0), [a2, b2] = S(...W[n]); ctx.strokeStyle = rgba(tok('--accent'), 0.6); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); });
+    if (iP.checked) pairs.forEach(([a, b]) => { const [x1, y1] = S(...W[a]), [x2, y2] = S(...W[b]); const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+      ctx.strokeStyle = tok('--bin2'); ctx.fillStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * 8, y2 - uy * 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2 - ux * 3, y2 - uy * 3); ctx.lineTo(x2 - ux * 11 - uy * 4, y2 - uy * 11 + ux * 4); ctx.lineTo(x2 - ux * 11 + uy * 4, y2 - uy * 11 - ux * 4); ctx.fill(); });
+    const top = new Set(sims.slice(0, 3).map(x => x[0]));
+    for (const n of names) { const [a, b] = S(...W[n]), on = n === cur;
+      ctx.fillStyle = on ? tok('--accent') : top.has(n) ? rgba(tok('--accent'), 0.6) : tok('--muted'); ctx.beginPath(); ctx.arc(a, b, on ? 6 : 4.5, 0, 7); ctx.fill();
+      ctx.font = `${on ? 700 : 500} 13px ${DISP}`; ctx.fillStyle = on ? tok('--fg') : tok('--muted'); ctx.textAlign = 'left'; ctx.fillText(n, a + 8, b - 6); }
+    $('#emb-read').innerHTML = `<span class="k">Kosinus-Ähnlichkeit zu „${cur}“:</span> ` + sims.slice(0, 5).map(([n, v]) => `${n} <b>${nf(v, 2)}</b>`).join('  ·  ') + `  <span class="k">…  unähnlichstes:</span> ${sims.at(-1)[0]} ${nf(sims.at(-1)[1], 2)}`;
+  } });
+  c.addEventListener('click', e => { if (!view) return; const [px, py] = mouse(c, e); let best = null, bd = 20;
+    for (const n of names) { const [a, b] = view.S(...W[n]); const d = Math.hypot(a - px, b - py); if (d < bd) { bd = d; best = n; } }
+    if (best) { sel.value = best; m.draw(); } });
+  [sel, iP].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

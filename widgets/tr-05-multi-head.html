@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mehrere Attention-Köpfe</title>
+<!-- Erzeugt von build.py aus src/figures/tr-05-multi-head.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-mh" class="c-tr" tabindex="0" role="img" aria-label="Drei Attention-Köpfe als Bögen zwischen den Tokens eines Satzes, darunter ihre Attention-Matrizen."></canvas>
+  <div class="ctrls">
+    <label class="chk"><input id="mh-1" type="checkbox" checked autocomplete="off"> Kopf 1: vorheriges Token</label>
+    <label class="chk"><input id="mh-2" type="checkbox" checked autocomplete="off"> Kopf 2: Bezug</label>
+    <label class="chk"><input id="mh-3" type="checkbox" autocomplete="off"> Kopf 3: Satzanfang</label>
+    <div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="mh-q">Nur Token</label></div><select id="mh-q" autocomplete="off"></select></div>
+  </div>
+  <div class="readout" id="mh-read"></div>
+  <figcaption><b>Abb. 5</b> Drei Köpfe einer Multi-Head Attention auf demselben Satz. Jeder Bogen führt von einem Token (unten) zu dem Token, auf das es achtet (oben), die Stärke ist das Gewicht. Kopf 1 schaut auf das jeweils vorige Token, Kopf 2 auf das inhaltlich zugehörige Wort (Artikel zu Nomen, Verb zum Subjekt, Präposition zum Ort), Kopf 3 verteilt seine Aufmerksamkeit breit mit Schwerpunkt auf dem Satzanfang. Die Ausgaben aller Köpfe werden aneinandergehängt und mit \(W_O\) gemischt. Die Muster sind von Hand gebaut.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- Multi-Head ---------- */
+(() => {
+  const c = $('#cv-mh'), sel = $('#mh-q'), ck = [$('#mh-1'), $('#mh-2'), $('#mh-3')], n = TR_TOKENS.length;
+  sel.innerHTML = '<option value="-1">alle</option>' + TR_TOKENS.map((t, i) => `<option value="${i}">${t}</option>`).join('');
+  const sharp = (target, peak) => Array.from({ length: n }, (_, j) => j === target ? peak : (1 - peak) / (n - 1));
+  const H1 = Array.from({ length: n }, (_, i) => sharp(Math.max(0, i - 1), 0.8));
+  const ref = [1, 0, 1, 5, 5, 4];
+  const H2 = ref.map(r => sharp(r, 0.75));
+  const H3 = Array.from({ length: n }, () => softmax(Array.from({ length: n }, (_, j) => j === 0 ? 1.4 : 0)));
+  const HS = [H1, H2, H3], COL = ['--accent', '--bin2', '--bin1'], NAMES = ['vorheriges Token', 'Bezug', 'Satzanfang'];
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c), q = +sel.value;
+    const top = 34, bot = h * 0.52, x0 = 40, dx = (w - 80) / (n - 1), X = j => x0 + j * dx;
+    ctx.font = `600 14px ${DISP}`; ctx.textAlign = 'center';
+    TR_TOKENS.forEach((t, j) => { ctx.fillStyle = tok('--fg'); ctx.fillText(t, X(j), top - 10); ctx.fillStyle = q === -1 || q === j ? tok('--fg') : tok('--muted'); ctx.fillText(t, X(j), bot + 22); });
+    ctx.font = `11px ${MONO}`; ctx.fillStyle = tok('--muted'); ctx.textAlign = 'left'; ctx.fillText('Keys', 4, top - 24); ctx.fillText('Queries', 4, bot + 38);
+    HS.forEach((H, k) => { if (!ck[k].checked) return; const col = tok(COL[k]), off = (k - 1) * 6;
+      for (let i = 0; i < n; i++) { if (q !== -1 && q !== i) continue;
+        for (let j = 0; j < n; j++) { const a = H[i][j]; if (a < 0.06) continue;
+          ctx.strokeStyle = rgba(col, Math.min(0.9, 0.25 + a)); ctx.lineWidth = 0.8 + 7 * a;
+          ctx.beginPath(); ctx.moveTo(X(i) + off, bot); ctx.bezierCurveTo(X(i) + off, (top + bot) / 2, X(j) + off, (top + bot) / 2, X(j) + off, top); ctx.stroke(); } } });
+    // kleine Matrizen
+    const active = HS.map((_, k) => k).filter(k => ck[k].checked), cs = Math.max(8, Math.min(22, (w - 20 * 3) / (3 * n + 6), (h - bot - 60) / (n + 1)));
+    const by = bot + 54; let bx = 8;
+    HS.forEach((H, k) => { const hm = heatmap(ctx, H, { x: bx, y: by + 14, cell: cs, color: v => heat(v, tok(COL[k])), hl: q >= 0 ? { i: q } : null });
+      ctx.fillStyle = ck[k].checked ? tok('--fg') : tok('--muted'); ctx.font = `600 12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(`Kopf ${k + 1}`, bx, by + 8);
+      if (!ck[k].checked) { ctx.fillStyle = rgba(tok('--surface'), 0.65); ctx.fillRect(hm.x0, hm.y0, hm.w, hm.h); }
+      bx += n * cs + 22; });
+    const lines = active.map(k => { const rows = q >= 0 ? [q] : [...Array(n).keys()]; return `<span class="k">Kopf ${k + 1} (${NAMES[k]}):</span> ` + rows.slice(0, q >= 0 ? 1 : 3).map(i => { const j = HS[k][i].indexOf(Math.max(...HS[k][i])); return `${TR_TOKENS[i]} → ${TR_TOKENS[j]} ${nf(HS[k][i][j], 2)}`; }).join(', ') + (q < 0 ? ', …' : ''); });
+    $('#mh-read').innerHTML = lines.join('<br>') || '<span class="k">Kein Kopf ausgewählt.</span>';
+  } });
+  [...ck, sel].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

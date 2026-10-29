@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transformer</title>
+<!-- Erzeugt von build.py aus src/pages/ml/transformer.md. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc" aria-label="Inhalt">
+    <div class="eyebrow">Inhalt</div>
+    <ol>
+      <li class="lv">Grundidee</li>
+      <li><a href="#sequenzen"><span class="n">1</span><span>Sequenzen verarbeiten</span></a></li>
+      <li><a href="#tokenisierung"><span class="n">2</span><span>Tokenisierung (BPE)</span></a></li>
+      <li><a href="#embeddings"><span class="n">3</span><span>Embeddings</span></a></li>
+      <li class="lv">Attention</li>
+      <li><a href="#attention"><span class="n">4</span><span>Attention</span></a></li>
+      <li><a href="#qkv"><span class="n">5</span><span>Query, Key, Value</span></a></li>
+      <li><a href="#multihead"><span class="n">6</span><span>Multi-Head Attention</span></a></li>
+      <li><a href="#position"><span class="n">7</span><span>Positionskodierung</span></a></li>
+      <li class="lv">Architektur</li>
+      <li><a href="#block"><span class="n">8</span><span>Der Transformer-Block</span></a></li>
+      <li><a href="#masken"><span class="n">9</span><span>Encoder, Decoder, Masken</span></a></li>
+      <li><a href="#training"><span class="n">10</span><span>Training und Erzeugung</span></a></li>
+      <li class="lv">Praxis</li>
+      <li><a href="#aufwand"><span class="n">11</span><span>Rechenaufwand, KV-Cache</span></a></li>
+      <li><a href="#flash"><span class="n">12</span><span>Flash Attention</span></a></li>
+      <li><a href="#lora"><span class="n">13</span><span>Fine-Tuning und LoRA</span></a></li>
+      <li class="lv">Anhang</li>
+      <li><a href="#formeln"><span class="n">A</span><span>Dimensionen und Formeln</span></a></li>
+      <li><a href="#glossar"><span class="n">B</span><span>Glossar</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header id="ueberblick">
+      <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#ml">Machine Learning</a></p>
+      <div class="topbar"><div class="eyebrow">Machine Learning · Architekturen</div>
+        <div class="theme" role="group" aria-label="Darstellung"><button type="button" data-t="light">Hell</button><button type="button" data-t="dark">Dunkel</button><button type="button" data-t="system">System</button></div></div>
+      <h1>Transformer</h1>
+      <p class="lede">Wie ein Transformer aus einer Folge von Tokens eine Folge von Vektoren macht, die jedes Token im Kontext aller anderen beschreibt. Von Tokenisierung und Embeddings über Attention und den Aufbau eines Blocks bis zu Training, Rechenaufwand und den Techniken, mit denen man große Modelle effizient betreibt und anpasst.</p>
+      <details class="toc-mobile"><summary>Inhalt</summary><ol><li><a href="#sequenzen">Sequenzen verarbeiten</a></li><li><a href="#tokenisierung">Tokenisierung (BPE)</a></li><li><a href="#embeddings">Embeddings</a></li><li><a href="#attention">Attention</a></li><li><a href="#qkv">Query, Key, Value</a></li><li><a href="#multihead">Multi-Head Attention</a></li><li><a href="#position">Positionskodierung</a></li><li><a href="#block">Der Transformer-Block</a></li><li><a href="#masken">Encoder, Decoder, Masken</a></li><li><a href="#training">Training und Erzeugung</a></li><li><a href="#aufwand">Rechenaufwand, KV-Cache</a></li><li><a href="#flash">Flash Attention</a></li><li><a href="#lora">Fine-Tuning und LoRA</a></li><li><a href="#formeln">Dimensionen und Formeln</a></li><li><a href="#glossar">Glossar</a></li></ol></details>
+    </header>
+<section id="sequenzen">
+<div class="step"><b>1</b><span class="eyebrow">Grundidee</span></div>
+<h2>Sequenzen verarbeiten</h2>
+<p>Text, Audio oder Zeitreihen sind <strong>Sequenzen</strong>: Die Bedeutung eines Elements hängt von den anderen ab. In „Die Bank am Fluss“ und „Die Bank gibt Kredite“ ist das Wort „Bank“ dasselbe, gemeint ist etwas anderes. Ein Modell muss also für jedes Element Information aus dem Rest der Folge einsammeln.</p>
+<p>Vor dem Transformer übernahmen das <strong>rekurrente Netze</strong> (RNN, LSTM). Sie lesen die Folge Element für Element und tragen einen Zustandsvektor mit, der alles Bisherige zusammenfassen soll. Das hat drei Nachteile:</p>
+<ul class="tight">
+<li><strong>Sequenziell:</strong> Schritt <span class="arithmatex">\(t\)</span> braucht das Ergebnis von Schritt <span class="arithmatex">\(t-1\)</span>. Auf einer GPU, die tausende Operationen parallel ausführen will, ist das langsam.</li>
+<li><strong>Flaschenhals:</strong> Alles Frühere muss durch einen Vektor fester Größe. Was am Anfang eines langen Textes stand, ist am Ende oft verblasst.</li>
+<li><strong>Lange Wege:</strong> Information von Position 1 nach Position 100 läuft durch 99 Schritte. Beim Training müssen Gradienten denselben Weg zurück, sie werden dabei leicht sehr klein oder sehr groß.</li>
+</ul>
+<p>Der <strong>Transformer</strong> (Vaswani et al., „Attention Is All You Need“, 2017) verzichtet auf die Rekurrenz. Jedes Element schaut in einem einzigen Schritt direkt auf alle anderen und entscheidet selbst, welche für es wichtig sind. Dieser Mechanismus heißt <strong>Attention</strong>. Der Weg zwischen zwei beliebigen Positionen ist damit immer genau ein Schritt lang, und alle Positionen werden gleichzeitig berechnet. Der Preis: Jede Position vergleicht sich mit jeder anderen, der Aufwand wächst quadratisch mit der Länge der Folge (Abschnitt 11).</p>
+</section>
+<section id="tokenisierung">
+<div class="step"><b>2</b><span class="eyebrow">Grundidee</span></div>
+<h2>Tokenisierung</h2>
+<p>Ein Modell rechnet mit Zahlen, nicht mit Buchstaben. Der erste Schritt zerlegt Text deshalb in <strong>Tokens</strong> aus einem festen <strong>Vokabular</strong> und ersetzt jedes Token durch seine Nummer, die <strong>Token-ID</strong>.</p>
+<p>Die naheliegenden Extreme funktionieren beide schlecht. Ganze Wörter als Tokens ergeben ein riesiges Vokabular, und jedes neue Wort, jeder Tippfehler und jede Flexion („Katzen“, „Kätzchen“) ist unbekannt. Einzelne Zeichen als Tokens kennen zwar alles, machen die Folgen aber sehr lang, und das Modell muss erst mühsam lernen, welche Zeichen zusammengehören.</p>
+<p><strong>Byte Pair Encoding</strong> (BPE, für Sprachmodelle eingeführt von Sennrich et al., 2016) liegt dazwischen. Man startet mit einzelnen Zeichen und verschmilzt wiederholt das <strong>häufigste benachbarte Paar</strong> im Trainingstext zu einem neuen Token, bis das Vokabular die gewünschte Größe hat. Häufige Wörter werden so zu einem einzigen Token, seltene zerfallen in bekannte Teile.</p>
+<figure class="fig">
+<div class="ctrl"><div class="lab"><label for="bpe-txt">Trainingstext</label></div>
+<input autocomplete="off" id="bpe-txt" type="text" value="die katze sitzt auf der matte. die katzen sitzen auf den matten. eine tatze, zwei tatzen. der satz, die sätze, die katze sitzt."/></div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="bpe-k">Anzahl Verschmelzungen</label><output id="bpe-k-o"></output></div><input autocomplete="off" id="bpe-k" max="40" min="0" step="1" type="range" value="8"/></div>
+<button class="btn" id="bpe-prev" type="button">− 1</button>
+<button class="btn" id="bpe-next" type="button">+ 1</button>
+</div>
+<div class="bpe-grid">
+<div><div class="lbl">Wörter im Text, zerlegt in Tokens (Häufigkeit klein dahinter)</div><div class="chips" id="bpe-words"></div></div>
+<div><div class="lbl">Gelernte Verschmelzungen (Paar → Token, Anzahl)</div><div class="merges" id="bpe-merges"></div></div>
+</div>
+<div class="readout" id="bpe-read"></div>
+<figcaption><b>Abb. 1</b> BPE auf einem kleinen Text. Zu Beginn ist jedes Zeichen ein Token. Jede Verschmelzung ersetzt das häufigste benachbarte Paar im ganzen Text durch ein neues Token (dunkel hervorgehoben). Mit jedem Schritt wächst das Vokabular um eins, und die Zahl der Tokens im Text sinkt. Der Text lässt sich ändern.</figcaption>
+</figure>
+<p>In der Praxis arbeitet man auf <strong>Bytes</strong> statt auf Zeichen (byte-level BPE, z. B. bei GPT-2). Damit lässt sich jeder beliebige Text darstellen, es gibt keine unbekannten Zeichen. Typische Vokabulare haben 30 000 bis 200 000 Tokens. Ein Token entspricht bei englischem Text im Mittel etwa vier Zeichen, bei Deutsch oder Code meist etwas weniger.</p>
+<p>Die Tokenisierung erklärt manche Eigenheiten von Sprachmodellen: Ein Wort, das in drei Tokens zerfällt, „sieht“ das Modell nie als Ganzes, und Aufgaben wie Buchstaben zählen oder Zahlen addieren werden schwer, wenn „12345“ als „123“ + „45“ ankommt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Text → Tokens → Token-IDs. Das Vokabular ist fest und wird vor dem Modell gelernt.</li>
+<li>BPE verschmilzt wiederholt das häufigste Paar: häufige Wörter ein Token, seltene mehrere.</li>
+</ul>
+</div>
+</section>
+<section id="embeddings">
+<div class="step"><b>3</b><span class="eyebrow">Grundidee</span></div>
+<h2>Embeddings</h2>
+<p>Jede Token-ID wird über eine Tabelle auf einen Vektor der Länge <span class="arithmatex">\(d_\text{model}\)</span> abgebildet, das <strong>Embedding</strong>. Die Tabelle ist eine Matrix <span class="arithmatex">\(E \in \mathbb R^{V \times d_\text{model}}\)</span> mit einer Zeile pro Token im Vokabular. Sie wird mit dem Rest des Modells trainiert. Aus einer Folge von <span class="arithmatex">\(n\)</span> Tokens wird so eine Matrix <span class="arithmatex">\(X \in \mathbb R^{n \times d_\text{model}}\)</span>: eine Zeile pro Position.</p>
+<p>Nach dem Training liegen Tokens mit ähnlicher Bedeutung oder ähnlicher Rolle nah beieinander. Als Maß für Ähnlichkeit dient das Skalarprodukt oder die Kosinus-Ähnlichkeit (siehe <a href="../grundlagen/lineare-algebra.html#vektoren">Lineare Algebra</a>). Richtungen im Raum tragen dabei oft Bedeutung, etwa Singular gegenüber Plural.</p>
+<figure class="fig">
+<canvas aria-label="Wörter als Punkte in einer Ebene. Ein Klick auf ein Wort zeigt seine ähnlichsten Nachbarn nach Kosinus-Ähnlichkeit." class="c-tr" id="cv-emb" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 200px"><div class="lab"><label for="emb-w">Wort</label></div><select autocomplete="off" id="emb-w"></select></div>
+<label class="chk"><input autocomplete="off" id="emb-pl" type="checkbox"/> Plural-Richtung zeigen</label>
+</div>
+<div class="readout" id="emb-read"></div>
+<figcaption><b>Abb. 2</b> Ein ausgedachter, zweidimensionaler Embedding-Raum. Echte Embeddings haben hunderte bis tausende Dimensionen, das Prinzip ist dasselbe: Wörter mit ähnlicher Bedeutung liegen in ähnlicher Richtung, und die Kosinus-Ähnlichkeit misst den Winkel zwischen ihnen. Mit „Plural-Richtung“ sieht man, dass der Schritt vom Singular zum Plural für alle Nomen ungefähr derselbe Vektor ist. Ein Klick auf einen Punkt wählt das Wort.</figcaption>
+</figure>
+<p>Ein einzelnes Embedding beschreibt das Token aber noch <strong>ohne Kontext</strong>: „Bank“ hat in beiden Beispielsätzen aus Abschnitt 1 denselben Vektor. Die Aufgabe der Transformer-Blöcke ist es, diese Vektoren Schicht für Schicht so umzurechnen, dass jeder am Ende die Bedeutung des Tokens <em>in diesem Satz</em> beschreibt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Embedding = Zeile einer gelernten Tabelle <span class="arithmatex">\(E \in \mathbb R^{V\times d_\text{model}}\)</span>.</li>
+<li>Eingabe des Modells: <span class="arithmatex">\(X \in \mathbb R^{n\times d_\text{model}}\)</span>, eine Zeile pro Token, noch ohne Kontext.</li>
+</ul>
+</div>
+</section>
+<section id="attention">
+<div class="step"><b>4</b><span class="eyebrow">Attention</span></div>
+<h2>Attention als gewichteter Mittelwert</h2>
+<p>Die Grundidee von Attention ist einfach: Der neue Vektor für Position <span class="arithmatex">\(i\)</span> ist ein <strong>gewichteter Mittelwert</strong> der Vektoren aller Positionen. Die Gewichte geben an, wie relevant Position <span class="arithmatex">\(j\)</span> für Position <span class="arithmatex">\(i\)</span> ist:</p>
+<div class="eq">\[
+\mathbf y_i = \sum_{j=1}^{n} a_{ij}\,\mathbf v_j, \qquad a_{ij} \ge 0, \quad \sum_j a_{ij} = 1
+\]</div>
+<p>Die Gewichte kommen aus Ähnlichkeitswerten <span class="arithmatex">\(s_{ij}\)</span>, die durch die <strong>Softmax</strong> in eine Wahrscheinlichkeitsverteilung verwandelt werden:</p>
+<div class="eq">\[
+a_{ij} = \operatorname{softmax}_j(s_{ij}) = \frac{e^{s_{ij}}}{\sum_{k} e^{s_{ik}}}
+\]</div>
+<p>Die Softmax macht alle Werte positiv, normiert sie auf Summe 1 und verstärkt Unterschiede: Ein Wert, der um 2 größer ist als ein anderer, bekommt das <span class="arithmatex">\(e^2 \approx 7{,}4\)</span>-fache Gewicht. Teilt man die Werte vorher durch eine <strong>Temperatur</strong> <span class="arithmatex">\(T\)</span>, wird die Verteilung bei kleinem <span class="arithmatex">\(T\)</span> spitzer (fast nur das Maximum zählt) und bei großem <span class="arithmatex">\(T\)</span> flacher (alle zählen gleich).</p>
+<p>Wichtig ist, was hier <em>nicht</em> gelernt wird: Die Gewichte <span class="arithmatex">\(a_{ij}\)</span> sind keine Parameter, sondern werden für jede Eingabe neu aus den Daten berechnet. Dasselbe Modell achtet in jedem Satz auf andere Stellen.</p>
+</section>
+<section id="qkv">
+<div class="step"><b>5</b><span class="eyebrow">Attention</span></div>
+<h2>Query, Key, Value</h2>
+<p>Woher kommen die Ähnlichkeitswerte? Man könnte einfach <span class="arithmatex">\(s_{ij} = \mathbf x_i^\top\mathbf x_j\)</span> nehmen. Dann wäre aber jedes Token sich selbst am ähnlichsten, und die Frage „was suche ich?“ wäre dieselbe wie „was biete ich an?“. Attention trennt diese Rollen über drei gelernte Projektionen:</p>
+<ul class="tight">
+<li><strong>Query</strong> <span class="arithmatex">\(\mathbf q_i = W_Q\mathbf x_i\)</span>: wonach Position <span class="arithmatex">\(i\)</span> sucht.</li>
+<li><strong>Key</strong> <span class="arithmatex">\(\mathbf k_j = W_K\mathbf x_j\)</span>: wofür Position <span class="arithmatex">\(j\)</span> gefunden werden will.</li>
+<li><strong>Value</strong> <span class="arithmatex">\(\mathbf v_j = W_V\mathbf x_j\)</span>: was Position <span class="arithmatex">\(j\)</span> weitergibt, wenn sie gefunden wird.</li>
+</ul>
+<p>Der Vergleich ist das Skalarprodukt von Query und Key. Für alle Positionen gleichzeitig, mit <span class="arithmatex">\(Q = XW_Q\)</span>, <span class="arithmatex">\(K = XW_K\)</span>, <span class="arithmatex">\(V = XW_V\)</span> als Matrizen mit einer Zeile pro Token (hier in der in Code üblichen Zeilen-Schreibweise), ergibt das die <strong>Scaled Dot-Product Attention</strong>:</p>
+<div class="eq">\[
+\operatorname{Attention}(Q, K, V) = \operatorname{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) V
+\]</div>
+<p><span class="arithmatex">\(QK^\top\)</span> ist eine <span class="arithmatex">\(n\times n\)</span>-Matrix aller Ähnlichkeiten, die Softmax läuft zeilenweise, und das Produkt mit <span class="arithmatex">\(V\)</span> bildet die gewichteten Mittelwerte. <span class="arithmatex">\(d_k\)</span> ist die Länge der Query- und Key-Vektoren.</p>
+<figure class="fig">
+<canvas aria-label="Links die Attention-Matrix für sechs Tokens, rechts die Value-Vektoren als Punkte und die Ausgabe des gewählten Tokens als gewichteter Mittelwert." class="c-tr-wide" id="cv-att" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="att-q">Query-Token</label></div><select autocomplete="off" id="att-q"></select></div>
+<div class="ctrl" style="flex:0 1 210px"><div class="lab"><label for="att-m">Matrix zeigt</label></div><select autocomplete="off" id="att-m"><option value="w">Gewichte (nach Softmax)</option><option value="s">Werte QKᵀ/√d_k</option></select></div>
+<div class="ctrl"><div class="lab"><label for="att-t">Temperatur</label><output id="att-t-o"></output></div><input autocomplete="off" id="att-t" max="2" min="-2" step="0.05" type="range" value="0"/></div>
+</div>
+<div class="readout" id="att-read"></div>
+<figcaption><b>Abb. 3</b> Attention für den Satz „Die Katze sitzt auf der Matte“ mit von Hand gewählten Queries und Keys (\(d_k = 4\)). Jede Zeile der Matrix gehört zu einer Query und summiert sich zu 1. Rechts liegen die Values als Punkte, die Ausgabe \(\mathbf y_i\) (Raute) ist ihr gewichteter Mittelwert und liegt deshalb immer innerhalb ihrer Hülle. Die Linienstärke zeigt das Gewicht. Ein Klick in eine Zeile wählt die Query. Bei kleiner Temperatur rückt die Ausgabe auf den stärksten Value, bei großer in die Mitte.</figcaption>
+</figure>
+<h3>Warum durch <span class="arithmatex">\(\sqrt{d_k}\)</span> teilen?</h3>
+<p>Haben die Komponenten von <span class="arithmatex">\(\mathbf q\)</span> und <span class="arithmatex">\(\mathbf k\)</span> Mittelwert 0 und Varianz 1 und sind unabhängig, dann hat ihr Skalarprodukt die Varianz <span class="arithmatex">\(d_k\)</span>. Bei <span class="arithmatex">\(d_k = 64\)</span> streuen die Werte also mit einer Standardabweichung von 8. Die Softmax solcher Werte ist fast immer eine harte Auswahl: Ein Eintrag bekommt nahezu das ganze Gewicht, alle anderen fast nichts. Dann sind auch die Gradienten der übrigen Einträge praktisch null, und das Training kommt kaum voran. Die Division durch <span class="arithmatex">\(\sqrt{d_k}\)</span> bringt die Varianz zurück auf 1, unabhängig von der Dimension.</p>
+<figure class="fig">
+<canvas aria-label="Links die Softmax-Gewichte von 16 zufälligen Keys für eine Query, rechts das mittlere größte Gewicht in Abhängigkeit von d_k, mit und ohne Skalierung." class="c-tr" id="cv-sk" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="sk-d">Dimension d_k</label><output id="sk-d-o"></output></div><input autocomplete="off" id="sk-d" max="9" min="0" step="1" type="range" value="6"/></div>
+<label class="chk"><input autocomplete="off" checked="" id="sk-s" type="checkbox"/> durch √d_k teilen</label>
+<button class="btn" id="sk-re" type="button">Neu würfeln</button>
+</div>
+<div class="readout" id="sk-read"></div>
+<figcaption><b>Abb. 4</b> Eine Query und 16 Keys mit zufälligen, standardnormalverteilten Komponenten. Links die Softmax-Gewichte, sortiert. Ohne Skalierung wächst die Streuung der Skalarprodukte mit \(\sqrt{d_k}\), und schon ab \(d_k \approx 64\) bekommt meist ein einziger Key fast das ganze Gewicht. Rechts das größte Gewicht, gemittelt über 300 Versuche: Mit Skalierung bleibt es unabhängig von \(d_k\).</figcaption>
+</figure>
+<h3>In Code</h3>
+<pre><code class="language-python">import torch, math
+
+def attention(Q, K, V, mask=None):
+    # Q, K: (..., n, d_k), V: (..., n, d_v)
+    scores = Q @ K.transpose(-2, -1) / math.sqrt(Q.size(-1))  # (..., n, n)
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    weights = scores.softmax(dim=-1)                           # Zeilen summieren zu 1
+    return weights @ V, weights
+</code></pre>
+<p>In PyTorch gibt es dieselbe Rechnung fertig und deutlich schneller als <code>torch.nn.functional.scaled_dot_product_attention</code> (siehe Flash Attention in Abschnitt 12).</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Query fragt, Key wird gefunden, Value wird weitergegeben. Alle drei sind lineare Projektionen derselben Eingabe.</li>
+<li><span class="arithmatex">\(\operatorname{softmax}(QK^\top/\sqrt{d_k})\,V\)</span>: Ähnlichkeiten, zeilenweise normiert, gewichteter Mittelwert.</li>
+<li><span class="arithmatex">\(\sqrt{d_k}\)</span> hält die Streuung der Werte bei 1, damit die Softmax nicht sättigt.</li>
+</ul>
+</div>
+</section>
+<section id="multihead">
+<div class="step"><b>6</b><span class="eyebrow">Attention</span></div>
+<h2>Multi-Head Attention</h2>
+<p>Eine einzelne Attention mischt pro Position genau eine Verteilung von Gewichten. Sprache hat aber viele Beziehungen gleichzeitig: welches Wort grammatisch zu welchem gehört, worauf sich ein Pronomen bezieht, was direkt davor steht. <strong>Multi-Head Attention</strong> rechnet deshalb <span class="arithmatex">\(h\)</span> Attentions parallel, jede mit eigenen Projektionen und in einem kleineren Raum der Größe <span class="arithmatex">\(d_k = d_\text{model}/h\)</span>:</p>
+<div class="eq">\[
+\text{head}_i = \operatorname{Attention}(XW_Q^{(i)}, XW_K^{(i)}, XW_V^{(i)}), \qquad \operatorname{MHA}(X) = \operatorname{concat}(\text{head}_1, \dots, \text{head}_h)\,W_O
+\]</div>
+<p>Die Ergebnisse der Köpfe werden aneinandergehängt und mit <span class="arithmatex">\(W_O\)</span> zurück auf <span class="arithmatex">\(d_\text{model}\)</span> projiziert. Weil jeder Kopf nur <span class="arithmatex">\(d_\text{model}/h\)</span> Dimensionen hat, kostet Multi-Head Attention ungefähr so viel wie eine einzelne Attention in voller Breite. Im ursprünglichen Transformer sind es <span class="arithmatex">\(h = 8\)</span> Köpfe mit <span class="arithmatex">\(d_k = 64\)</span> bei <span class="arithmatex">\(d_\text{model} = 512\)</span>.</p>
+<figure class="fig">
+<canvas aria-label="Drei Attention-Köpfe als Bögen zwischen den Tokens eines Satzes, darunter ihre Attention-Matrizen." class="c-tr" id="cv-mh" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<label class="chk"><input autocomplete="off" checked="" id="mh-1" type="checkbox"/> Kopf 1: vorheriges Token</label>
+<label class="chk"><input autocomplete="off" checked="" id="mh-2" type="checkbox"/> Kopf 2: Bezug</label>
+<label class="chk"><input autocomplete="off" id="mh-3" type="checkbox"/> Kopf 3: Satzanfang</label>
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="mh-q">Nur Token</label></div><select autocomplete="off" id="mh-q"></select></div>
+</div>
+<div class="readout" id="mh-read"></div>
+<figcaption><b>Abb. 5</b> Drei Köpfe einer Multi-Head Attention auf demselben Satz. Jeder Bogen führt von einem Token (unten) zu dem Token, auf das es achtet (oben), die Stärke ist das Gewicht. Kopf 1 schaut auf das jeweils vorige Token, Kopf 2 auf das inhaltlich zugehörige Wort (Artikel zu Nomen, Verb zum Subjekt, Präposition zum Ort), Kopf 3 verteilt seine Aufmerksamkeit breit mit Schwerpunkt auf dem Satzanfang. Die Ausgaben aller Köpfe werden aneinandergehängt und mit \(W_O\) gemischt. Die Muster sind von Hand gebaut.</figcaption>
+</figure>
+<p>Welche Muster die Köpfe eines trainierten Modells lernen, ist nicht vorgegeben. Man findet oft Köpfe, die auf das vorige Token achten, solche, die grammatische Beziehungen abbilden, und viele, deren Muster sich schwer deuten lässt. Die Köpfe in der Abbildung sind von Hand konstruiert, um die Idee zu zeigen.</p>
+<pre><code class="language-python">import torch.nn as nn
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, n_heads):
+        super().__init__()
+        self.h, self.d_k = n_heads, d_model // n_heads
+        self.qkv = nn.Linear(d_model, 3 * d_model)   # W_Q, W_K, W_V in einer Matrix
+        self.out = nn.Linear(d_model, d_model)       # W_O
+
+    def forward(self, x, mask=None):                 # x: (batch, n, d_model)
+        b, n, _ = x.shape
+        q, k, v = self.qkv(x).view(b, n, 3, self.h, self.d_k).permute(2, 0, 3, 1, 4)
+        y, _ = attention(q, k, v, mask)              # (batch, h, n, d_k)
+        return self.out(y.transpose(1, 2).reshape(b, n, -1))
+</code></pre>
+</section>
+<section id="position">
+<div class="step"><b>7</b><span class="eyebrow">Attention</span></div>
+<h2>Positionskodierung</h2>
+<p>Attention ist <strong>permutationsinvariant</strong>: Vertauscht man zwei Tokens der Eingabe, vertauschen sich nur die entsprechenden Zeilen der Ausgabe. „Hund beißt Mann“ und „Mann beißt Hund“ wären für das Modell dieselbe Menge von Wörtern. Die Reihenfolge muss deshalb ausdrücklich hinzugefügt werden.</p>
+<p>Der ursprüngliche Transformer addiert zu jedem Embedding einen festen Vektor, der nur von der Position <span class="arithmatex">\(p\)</span> abhängt. Seine Komponenten sind Sinus- und Kosinusschwingungen mit geometrisch abgestuften Wellenlängen:</p>
+<div class="eq">\[
+PE_{p,\,2i} = \sin\!\left(\frac{p}{10000^{2i/d_\text{model}}}\right), \qquad PE_{p,\,2i+1} = \cos\!\left(\frac{p}{10000^{2i/d_\text{model}}}\right)
+\]</div>
+<p>Die vorderen Dimensionen schwingen schnell und unterscheiden benachbarte Positionen, die hinteren schwingen langsam und unterscheiden weit entfernte. Jedes Sinus-Kosinus-Paar ist ein Zeiger, der sich mit der Position dreht. Der Vektor für Position <span class="arithmatex">\(p + k\)</span> entsteht deshalb aus dem für Position <span class="arithmatex">\(p\)</span> durch eine feste Drehung, die nur von <span class="arithmatex">\(k\)</span> abhängt. Das Skalarprodukt zweier Positionskodierungen hängt nur vom Abstand ab.</p>
+<figure class="fig">
+<canvas aria-label="Oben die Positionskodierung als Farbbild über Position und Dimension, unten das Skalarprodukt zweier Positionskodierungen in Abhängigkeit vom Abstand." class="c-tr-tall" id="cv-pe" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="pe-d">d_model</label><output id="pe-d-o"></output></div><input autocomplete="off" id="pe-d" max="7" min="4" step="1" type="range" value="6"/></div>
+<div class="ctrl"><div class="lab"><label for="pe-p">Bezugsposition p</label><output id="pe-p-o"></output></div><input autocomplete="off" id="pe-p" max="80" min="0" step="1" type="range" value="20"/></div>
+</div>
+<div class="readout" id="pe-read"></div>
+<figcaption><b>Abb. 6</b> Oben die Sinus-Positionskodierung für die Positionen 0 bis 100: jede Spalte eine Position, jede Zeile eine Dimension, rot negativ, blau positiv. Die oberen Dimensionen wechseln schnell, die unteren langsam. Unten das Skalarprodukt der Kodierung von Position \(p\) mit allen anderen Positionen, normiert auf 1 beim Abstand 0. Es hängt nur vom Abstand ab: Verschiebt man \(p\), wandert die Kurve unverändert mit. Ein Klick in das obere Bild setzt \(p\).</figcaption>
+</figure>
+<p>Später setzten sich zwei Alternativen durch:</p>
+<ul class="tight">
+<li><strong>Gelernte Positions-Embeddings</strong> (BERT, GPT-2): eine zweite Tabelle mit einer Zeile pro Position. Einfach, aber auf die beim Training gesehene Länge beschränkt.</li>
+<li><strong>Rotary Position Embedding</strong> (RoPE, Su et al., 2021): Statt etwas zu addieren, dreht man Query und Key paarweise um einen Winkel proportional zur Position. Im Skalarprodukt <span class="arithmatex">\(\mathbf q_i^\top\mathbf k_j\)</span> bleibt dann nur die Differenz <span class="arithmatex">\(i - j\)</span> übrig, die Attention sieht direkt den <strong>relativen</strong> Abstand. RoPE ist heute in den meisten großen Sprachmodellen Standard.</li>
+</ul>
+<pre><code class="language-python">def sinusoidal_pe(n, d_model):
+    pos = torch.arange(n).unsqueeze(1)                         # (n, 1)
+    freq = 10000 ** (-torch.arange(0, d_model, 2) / d_model)   # (d_model/2,)
+    pe = torch.zeros(n, d_model)
+    pe[:, 0::2], pe[:, 1::2] = torch.sin(pos * freq), torch.cos(pos * freq)
+    return pe
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Ohne Positionsinformation sieht Attention nur eine Menge, keine Reihenfolge.</li>
+<li>Sinus-Kodierung: feste Schwingungen, Abstand entspricht einer Drehung. RoPE dreht Query und Key und macht Attention direkt relativ.</li>
+</ul>
+</div>
+</section>
+<section id="block">
+<div class="step"><b>8</b><span class="eyebrow">Architektur</span></div>
+<h2>Der Transformer-Block</h2>
+<p>Ein Transformer besteht aus <span class="arithmatex">\(N\)</span> gleich aufgebauten <strong>Blöcken</strong> hintereinander, im Original <span class="arithmatex">\(N = 6\)</span>. Jeder Block hat zwei Teilschichten:</p>
+<ol class="steps">
+<li><strong>Multi-Head Attention:</strong> Die Positionen tauschen Information aus.</li>
+<li><strong>Feed-Forward-Netz (FFN):</strong> Jede Position wird für sich durch ein kleines zweischichtiges Netz geschickt, <span class="arithmatex">\(\operatorname{FFN}(\mathbf x) = W_2\,\phi(W_1\mathbf x + \mathbf b_1) + \mathbf b_2\)</span>, mit einer Zwischenschicht der Breite <span class="arithmatex">\(d_\text{ff}\)</span>, meist <span class="arithmatex">\(4\,d_\text{model}\)</span>. <span class="arithmatex">\(\phi\)</span> ist ReLU im Original, später meist GELU oder SwiGLU.</li>
+</ol>
+<p>Attention verteilt Information zwischen den Positionen, das FFN verarbeitet sie an jeder Position. Etwa zwei Drittel der Parameter eines Blocks stecken im FFN.</p>
+<p>Um jede Teilschicht liegen zwei Hilfsmittel, ohne die tiefe Transformer nicht trainierbar wären:</p>
+<ul class="tight">
+<li><strong>Residualverbindung:</strong> Die Teilschicht berechnet nur eine Änderung, die zur Eingabe addiert wird, <span class="arithmatex">\(\mathbf x \leftarrow \mathbf x + f(\mathbf x)\)</span>. Gradienten können über diese Abkürzungen ungehindert durch alle Schichten fließen. Man spricht vom <strong>Residual Stream</strong>, in den jede Schicht schreibt und aus dem jede liest.</li>
+<li><strong>LayerNorm:</strong> normiert jeden Vektor auf Mittelwert 0 und Varianz 1 über seine <span class="arithmatex">\(d_\text{model}\)</span> Komponenten und skaliert danach mit gelernten Faktoren. Das hält die Größenordnungen über viele Schichten stabil.</li>
+</ul>
+<p>Der ursprüngliche Transformer normiert <em>nach</em> der Addition (<strong>Post-LN</strong>): <span class="arithmatex">\(\mathbf x \leftarrow \operatorname{LN}(\mathbf x + f(\mathbf x))\)</span>. Fast alle neueren Modelle normieren <em>vorher</em> (<strong>Pre-LN</strong>): <span class="arithmatex">\(\mathbf x \leftarrow \mathbf x + f(\operatorname{LN}(\mathbf x))\)</span>. Pre-LN trainiert deutlich stabiler, weil der Residual Stream selbst nie normiert wird und Gradienten ungeschwächt durchlaufen.</p>
+<figure class="fig">
+<canvas aria-label="Diagramm eines Transformer-Blocks mit LayerNorm, Multi-Head Attention, Feed-Forward-Netz und Residualverbindungen. Der aktuelle Schritt ist hervorgehoben." class="c-tr-tall" id="cv-blk" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 160px"><div class="lab"><label for="blk-v">Variante</label></div><select autocomplete="off" id="blk-v"><option value="pre">Pre-LN</option><option value="post">Post-LN (Original)</option></select></div>
+<button class="btn" id="blk-prev" type="button">Zurück</button>
+<button class="btn" id="blk-next" type="button">Weiter</button>
+<button class="btn" id="blk-play" type="button">Abspielen</button>
+</div>
+<div class="readout" id="blk-read"></div>
+<figcaption><b>Abb. 7</b> Ein Transformer-Block, Schritt für Schritt. Die Zahlen gelten für den ursprünglichen Transformer (\(d_\text{model} = 512\), 8 Köpfe, \(d_\text{ff} = 2048\)) und eine Folge von \(n\) Tokens. Rechts läuft der Residual Stream an den Teilschichten vorbei, sie addieren nur ihre Änderung. Bei Post-LN liegt die Normierung im Residual Stream selbst, bei Pre-LN nur im Abzweig.</figcaption>
+</figure>
+<pre><code class="language-python">class Block(nn.Module):  # Pre-LN
+    def __init__(self, d_model, n_heads, d_ff):
+        super().__init__()
+        self.ln1, self.ln2 = nn.LayerNorm(d_model), nn.LayerNorm(d_model)
+        self.attn = MultiHeadAttention(d_model, n_heads)
+        self.ffn = nn.Sequential(nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model))
+
+    def forward(self, x, mask=None):
+        x = x + self.attn(self.ln1(x), mask)   # Austausch zwischen Positionen
+        x = x + self.ffn(self.ln2(x))          # Verarbeitung je Position
+        return x
+</code></pre>
+<p>Am Ende des letzten Blocks bildet eine lineare Schicht jeden Vektor auf <span class="arithmatex">\(V\)</span> Werte ab, einen pro Token im Vokabular. Diese <strong>Logits</strong> werden mit einer Softmax zur Wahrscheinlichkeitsverteilung über das nächste Token (Abschnitt 10). Oft teilt sich diese Schicht ihre Gewichte mit der Embedding-Tabelle.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Block = Attention (zwischen Positionen) + FFN (je Position), jeweils mit Residualverbindung und LayerNorm.</li>
+<li>Pre-LN: <span class="arithmatex">\(\mathbf x + f(\operatorname{LN}(\mathbf x))\)</span>. Der Residual Stream läuft unverändert durch alle Blöcke.</li>
+</ul>
+</div>
+</section>
+<section id="masken">
+<div class="step"><b>9</b><span class="eyebrow">Architektur</span></div>
+<h2>Encoder, Decoder und Masken</h2>
+<p>Der ursprüngliche Transformer war für Übersetzung gebaut und hat zwei Teile:</p>
+<ul class="tight">
+<li>Der <strong>Encoder</strong> liest den Ausgangssatz. Jede Position darf auf alle anderen achten, vorwärts wie rückwärts.</li>
+<li>Der <strong>Decoder</strong> erzeugt den übersetzten Satz Token für Token. Er hat zwei Attention-Schichten: eine <strong>Self-Attention</strong> über das bisher Erzeugte und eine <strong>Cross-Attention</strong>, in der die Queries aus dem Decoder und Keys und Values aus dem Encoder kommen. So kann jedes erzeugte Wort im Ausgangssatz nachschlagen.</li>
+</ul>
+<p>Beim Erzeugen darf Position <span class="arithmatex">\(i\)</span> nur auf Positionen <span class="arithmatex">\(j \le i\)</span> schauen, die Zukunft kennt das Modell ja noch nicht. Beim Training liegt der ganze Zielsatz aber schon vor, und ohne Vorkehrung könnte das Modell einfach abschreiben. Eine <strong>kausale Maske</strong> setzt deshalb alle Werte oberhalb der Diagonale von <span class="arithmatex">\(QK^\top\)</span> vor der Softmax auf <span class="arithmatex">\(-\infty\)</span>. Deren Gewicht wird exakt 0. Ähnlich blendet eine <strong>Padding-Maske</strong> Füllzeichen aus, mit denen kürzere Folgen in einem Batch auf gleiche Länge gebracht werden.</p>
+<figure class="fig">
+<canvas aria-label="Links die Werte QKᵀ mit maskierten Feldern, rechts die Gewichte nach der Softmax." class="c-tr" id="cv-mask" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 230px"><div class="lab"><label for="mask-m">Maske</label></div><select autocomplete="off" id="mask-m">
+<option value="none">keine (Encoder)</option><option selected="" value="causal">kausal (Decoder)</option><option value="pad">Padding</option><option value="both">kausal + Padding</option></select></div>
+</div>
+<div class="readout" id="mask-read"></div>
+<figcaption><b>Abb. 8</b> Dieselben Werte wie in der Attention-Abbildung oben, ergänzt um zwei Füllzeichen [PAD], wie sie entstehen, wenn kürzere Folgen in einem Batch auf gleiche Länge gebracht werden. Maskierte Felder bekommen vor der Softmax den Wert \(-\infty\), ihr Gewicht wird exakt 0. Die übrigen Gewichte jeder Zeile werden neu normiert. Mit kausaler Maske bleibt nur das untere Dreieck: Jedes Token sieht sich selbst und alles davor.</figcaption>
+</figure>
+<p>Aus dem ursprünglichen Aufbau sind drei Familien hervorgegangen:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Familie</th>
+<th>Attention</th>
+<th>Trainingsaufgabe</th>
+<th>Beispiele</th>
+<th>typisch für</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Encoder-only</td>
+<td>bidirektional</td>
+<td>maskierte Tokens erraten</td>
+<td>BERT, RoBERTa</td>
+<td>Klassifikation, Suche, Embeddings</td>
+</tr>
+<tr>
+<td>Decoder-only</td>
+<td>kausal</td>
+<td>nächstes Token vorhersagen</td>
+<td>GPT, Llama, Claude</td>
+<td>Textgenerierung, Chat</td>
+</tr>
+<tr>
+<td>Encoder-Decoder</td>
+<td>Encoder bidirektional, Decoder kausal + Cross-Attention</td>
+<td>Folge in Folge übersetzen</td>
+<td>Original-Transformer, T5</td>
+<td>Übersetzung, Zusammenfassung</td>
+</tr>
+</tbody>
+</table></div>
+<p>Decoder-only-Modelle haben sich für allgemeine Sprachmodelle durchgesetzt: Eine einzige, einfache Trainingsaufgabe skaliert auf beliebig viel Text, und jede andere Aufgabe lässt sich als „schreibe den Text weiter“ formulieren.</p>
+<pre><code class="language-python">n = 6
+causal = torch.tril(torch.ones(n, n))   # 1 = erlaubt, 0 = maskiert (obere Dreiecksmatrix)
+</code></pre>
+</section>
+<section id="training">
+<div class="step"><b>10</b><span class="eyebrow">Architektur</span></div>
+<h2>Training und Erzeugung</h2>
+<p>Ein Decoder-only-Modell wird darauf trainiert, an jeder Position das <strong>nächste Token</strong> vorherzusagen. Dank kausaler Maske geht das für alle Positionen eines Textes gleichzeitig: Ein Text mit <span class="arithmatex">\(n\)</span> Tokens liefert in einem Durchlauf <span class="arithmatex">\(n\)</span> Trainingsbeispiele. Der Verlust ist die <strong>Cross-Entropy</strong>, also <span class="arithmatex">\(-\log\)</span> der Wahrscheinlichkeit, die das Modell dem tatsächlich folgenden Token gegeben hat, gemittelt über alle Positionen. Dass beim Training stets der echte Text als Eingabe dient und nicht das, was das Modell selbst erzeugt hätte, heißt <strong>Teacher Forcing</strong>.</p>
+<p>Beim <strong>Erzeugen</strong> läuft das Modell autoregressiv: Es berechnet die Verteilung für das nächste Token, wählt eines aus, hängt es an und wiederholt das. Wie ausgewählt wird, bestimmt den Charakter des Textes:</p>
+<ul class="tight">
+<li><strong>Greedy:</strong> immer das wahrscheinlichste Token. Deterministisch, neigt zu Wiederholungen.</li>
+<li><strong>Temperatur</strong> <span class="arithmatex">\(T\)</span>: Logits vor der Softmax durch <span class="arithmatex">\(T\)</span> teilen. <span class="arithmatex">\(T &lt; 1\)</span> macht die Verteilung spitzer und den Text vorhersehbarer, <span class="arithmatex">\(T &gt; 1\)</span> flacher und vielfältiger, aber fehleranfälliger.</li>
+<li><strong>Top-k:</strong> nur die <span class="arithmatex">\(k\)</span> wahrscheinlichsten Tokens zulassen und neu normieren.</li>
+<li><strong>Top-p</strong> (Nucleus Sampling): die kleinste Menge der wahrscheinlichsten Tokens zulassen, deren Wahrscheinlichkeiten zusammen mindestens <span class="arithmatex">\(p\)</span> ergeben. Passt sich an: Bei einer klaren Verteilung bleiben wenige Kandidaten, bei einer unsicheren viele.</li>
+</ul>
+<figure class="fig">
+<canvas aria-label="Balkendiagramm der Wahrscheinlichkeiten für das nächste Token nach „Die Katze sitzt auf der“, verändert durch Temperatur, Top-k und Top-p." class="c-tr" id="cv-smp" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="smp-t">Temperatur T</label><output id="smp-t-o"></output></div><input autocomplete="off" id="smp-t" max="2.5" min="0.05" step="0.05" type="range" value="1"/></div>
+<div class="ctrl"><div class="lab"><label for="smp-k">Top-k</label><output id="smp-k-o"></output></div><input autocomplete="off" id="smp-k" max="12" min="1" step="1" type="range" value="12"/></div>
+<div class="ctrl"><div class="lab"><label for="smp-p">Top-p</label><output id="smp-p-o"></output></div><input autocomplete="off" id="smp-p" max="1" min="0.05" step="0.05" type="range" value="1"/></div>
+</div>
+<div class="ctrls">
+<button class="btn" id="smp-go" type="button">10-mal ziehen</button>
+<div class="chips samples" id="smp-out"></div>
+</div>
+<div class="readout" id="smp-read"></div>
+<figcaption><b>Abb. 9</b> Wahrscheinlichkeiten für das nächste Token nach „Die Katze sitzt auf der“, mit ausgedachten Logits. Die Umrisse zeigen die Verteilung bei \(T = 1\) ohne Einschränkung, die Balken die tatsächlich verwendete. Kleine Temperatur macht fast alles zu „Matte“, große gibt auch „Mond“ eine Chance. Top-k und Top-p schneiden den unwahrscheinlichen Rest ab (grau) und normieren die verbleibenden Tokens neu.</figcaption>
+</figure>
+<pre><code class="language-python">@torch.no_grad()
+def generate(model, ids, steps, T=1.0, k=None):
+    for _ in range(steps):
+        logits = model(ids)[:, -1, :] / T          # nur die letzte Position
+        if k is not None:
+            kth = logits.topk(k).values[:, -1:]
+            logits[logits &lt; kth] = float("-inf")
+        nxt = torch.multinomial(logits.softmax(-1), 1)
+        ids = torch.cat([ids, nxt], dim=1)
+    return ids
+</code></pre>
+<p>Ein vortrainiertes Sprachmodell setzt Text nur fort. Damit es Anweisungen befolgt und hilfreich antwortet, wird es anschließend auf Beispielen von Fragen und guten Antworten weiter trainiert (Instruction Tuning) und mit menschlichem oder automatisiertem Feedback abgestimmt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Training: nächstes Token vorhersagen, alle Positionen gleichzeitig, Cross-Entropy.</li>
+<li>Erzeugen: autoregressiv, Token für Token. Temperatur, Top-k und Top-p steuern die Auswahl.</li>
+</ul>
+</div>
+</section>
+<section id="aufwand">
+<div class="step"><b>11</b><span class="eyebrow">Praxis</span></div>
+<h2>Rechenaufwand und KV-Cache</h2>
+<p>Die Parameter eines Blocks stecken in vier <span class="arithmatex">\(d\times d\)</span>-Matrizen der Attention (<span class="arithmatex">\(W_Q, W_K, W_V, W_O\)</span>) und zwei Matrizen des FFN (<span class="arithmatex">\(d \times 4d\)</span> und <span class="arithmatex">\(4d \times d\)</span>). Das sind zusammen etwa <span class="arithmatex">\(12\,d^2\)</span> Parameter pro Block, für das ganze Modell rund</p>
+<div class="eq">\[
+N_\text{param} \approx 12\,L\,d^2 + V d
+\]</div>
+<p>mit <span class="arithmatex">\(L\)</span> Blöcken und <span class="arithmatex">\(d = d_\text{model}\)</span>. GPT-2 small (<span class="arithmatex">\(L = 12\)</span>, <span class="arithmatex">\(d = 768\)</span>, <span class="arithmatex">\(V = 50\,257\)</span>) kommt so auf etwa 124 Millionen Parameter.</p>
+<p>Pro Token kostet ein Vorwärtsdurchlauf etwa <span class="arithmatex">\(2\,N_\text{param}\)</span> Rechenoperationen (eine Multiplikation und eine Addition pro Gewicht). Dazu kommt die Attention selbst: <span class="arithmatex">\(QK^\top\)</span> und das Produkt mit <span class="arithmatex">\(V\)</span> kosten pro Block etwa <span class="arithmatex">\(4\,n^2 d\)</span> Operationen für die ganze Folge. Dieser Teil wächst <strong>quadratisch</strong> mit der Länge <span class="arithmatex">\(n\)</span> und dominiert bei langen Folgen. Auch der Speicher für die <span class="arithmatex">\(n\times n\)</span>-Gewichte wächst quadratisch, das löst Flash Attention (Abschnitt 12).</p>
+<h3>KV-Cache</h3>
+<p>Beim Erzeugen kommt pro Schritt nur ein neues Token dazu. Die Keys und Values der früheren Tokens ändern sich wegen der kausalen Maske nicht mehr. Man speichert sie deshalb im <strong>KV-Cache</strong> und berechnet pro Schritt nur Query, Key und Value des neuen Tokens. Statt die ganze Folge neu zu rechnen, kostet jeder Schritt dann nur noch <span class="arithmatex">\(O(n)\)</span> für die Attention. Der Cache braucht Speicher:</p>
+<div class="eq">\[
+\text{KV-Cache} = 2 \cdot L \cdot n \cdot d \cdot \text{Bytes pro Zahl}
+\]</div>
+<p>pro Sequenz (Faktor 2 für Keys und Values). Bei einem Modell mit 32 Blöcken und <span class="arithmatex">\(d = 4096\)</span> sind das in 16 Bit für 4096 Tokens schon 2 GiB, für jede gleichzeitig bediente Anfrage. Deshalb teilen sich in neueren Modellen mehrere Query-Köpfe dieselben Keys und Values (<strong>Grouped-Query Attention</strong>, im Extrem ein einziger Key-Value-Kopf: Multi-Query Attention). Das verkleinert den Cache um den Faktor der Gruppengröße.</p>
+<figure class="fig">
+<canvas aria-label="Links Rechenoperationen pro erzeugtem Token über der Kontextlänge, aufgeteilt in Gewichte und Attention; rechts Speicher des KV-Caches über der Kontextlänge." class="c-tr" id="cv-cost" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 260px"><div class="lab"><label for="cost-pre">Modell</label></div><select autocomplete="off" id="cost-pre">
+<option value="0">GPT-2 small</option><option selected="" value="1">Llama-2-7B</option><option value="2">Llama-2-70B (GQA)</option><option value="-1">eigene Werte</option></select></div>
+<div class="ctrl"><div class="lab"><label for="cost-L">Blöcke L</label><output id="cost-L-o"></output></div><input autocomplete="off" id="cost-L" max="96" min="2" step="1" type="range"/></div>
+<div class="ctrl"><div class="lab"><label for="cost-d">d_model</label><output id="cost-d-o"></output></div><input autocomplete="off" id="cost-d" max="14" min="6" step="0.25" type="range"/></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="cost-h">Köpfe</label><output id="cost-h-o"></output></div><input autocomplete="off" id="cost-h" max="128" min="1" step="1" type="range"/></div>
+<div class="ctrl"><div class="lab"><label for="cost-kv">Key-Value-Köpfe</label><output id="cost-kv-o"></output></div><input autocomplete="off" id="cost-kv" max="128" min="1" step="1" type="range"/></div>
+<div class="ctrl"><div class="lab"><label for="cost-n">Kontextlänge n</label><output id="cost-n-o"></output></div><input autocomplete="off" id="cost-n" max="17" min="8" step="1" type="range" value="12"/></div>
+</div>
+<div class="readout" id="cost-read"></div>
+<figcaption><b>Abb. 10</b> Grobe Abschätzung für ein Decoder-only-Modell mit \(d_\text{ff} = 4d\) und 16-Bit-Zahlen. Links die Rechenoperationen für ein neues Token an Position \(n\) (mit KV-Cache): Der Anteil der Gewichte ist konstant, der Anteil der Attention wächst linear mit \(n\) und überholt ihn bei etwa \(n = 6d\). Rechts der KV-Cache für eine Sequenz. Weniger Key-Value-Köpfe (GQA) verkleinern ihn im selben Verhältnis. Die Parameterformel ist eine Näherung, echte Modelle weichen je nach FFN-Aufbau etwas ab.</figcaption>
+</figure>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Parameter <span class="arithmatex">\(\approx 12Ld^2\)</span>, Rechenaufwand <span class="arithmatex">\(\approx 2N_\text{param}\)</span> pro Token plus <span class="arithmatex">\(O(n^2 d)\)</span> Attention.</li>
+<li>KV-Cache: Keys und Values früherer Tokens speichern, <span class="arithmatex">\(2Lnd\)</span> Zahlen pro Sequenz. GQA verkleinert ihn.</li>
+</ul>
+</div>
+</section>
+<section id="flash">
+<div class="step"><b>12</b><span class="eyebrow">Praxis</span></div>
+<h2>Flash Attention</h2>
+<p>Die naive Attention schreibt die <span class="arithmatex">\(n\times n\)</span>-Matrix der Werte <span class="arithmatex">\(S = QK^\top\)</span> in den Grafikspeicher, liest sie für die Softmax wieder ein, schreibt die Gewichte <span class="arithmatex">\(P\)</span> zurück und liest sie erneut für das Produkt mit <span class="arithmatex">\(V\)</span>. Auf einer GPU ist aber nicht das Rechnen der Engpass, sondern dieses Hin- und Herschieben: Der große Grafikspeicher (HBM) ist um ein Vielfaches langsamer als der kleine, schnelle Speicher direkt an den Recheneinheiten (SRAM), der nur einige hundert Kilobyte pro Recheneinheit fasst.</p>
+<p><strong>Flash Attention</strong> (Dao et al., 2022) rechnet dasselbe Ergebnis, ohne <span class="arithmatex">\(S\)</span> oder <span class="arithmatex">\(P\)</span> je vollständig zu speichern. Q, K und V werden in <strong>Kacheln</strong> zerlegt, die in den schnellen Speicher passen. Für einen Block von Queries läuft man über alle Key-Value-Kacheln und führt das Ergebnis laufend nach. Das Problem dabei ist die Softmax, die eigentlich das Maximum und die Summe über die ganze Zeile braucht. Die Lösung ist die <strong>Online-Softmax</strong>: Man merkt sich pro Zeile das bisherige Maximum <span class="arithmatex">\(m\)</span> und die bisherige Summe <span class="arithmatex">\(\ell\)</span>. Kommt eine Kachel mit größerem Maximum, werden alte Summe und altes Zwischenergebnis mit <span class="arithmatex">\(e^{m_\text{alt} - m_\text{neu}}\)</span> heruntergerechnet:</p>
+<div class="eq">\[
+m' = \max(m, \tilde m), \qquad \ell' = e^{m - m'}\,\ell + e^{\tilde m - m'}\,\tilde\ell, \qquad O' = e^{m - m'}\,O + e^{\tilde m - m'}\,\tilde P\,\tilde V
+\]</div>
+<p>Am Ende teilt man <span class="arithmatex">\(O\)</span> durch <span class="arithmatex">\(\ell\)</span>. Das Ergebnis ist <strong>exakt</strong> dasselbe wie bei der naiven Rechnung, keine Näherung. Der Speicherbedarf sinkt von <span class="arithmatex">\(O(n^2)\)</span> auf <span class="arithmatex">\(O(n)\)</span>, und weil viel weniger Daten durch den langsamen Speicher müssen, wird die Rechnung deutlich schneller. Für die Rückwärtsrechnung beim Training werden die Gewichte bei Bedarf aus Q und K neu berechnet, statt sie zu speichern.</p>
+<figure class="fig">
+<canvas aria-label="Die Matrix der Attention-Werte in Kacheln. Für einen Query-Block wird eine Key-Value-Kachel nach der anderen bearbeitet; daneben laufendes Maximum, laufende Summe und Ausgabe für eine Zeile." class="c-tr-wide" id="cv-fl" role="img"></canvas>
+<div class="ctrls">
+<button class="btn" id="fl-prev" type="button">Zurück</button>
+<button class="btn" id="fl-next" type="button">Nächste Kachel</button>
+<button class="btn" id="fl-play" type="button">Abspielen</button>
+<button class="btn" id="fl-re" type="button">Neue Werte</button>
+</div>
+<div class="readout" id="fl-read"></div>
+<figcaption><b>Abb. 11</b> Flash Attention für 16 Queries und 16 Keys in Kacheln zu 4. Gezeigt ist der zweite Query-Block (hervorgehoben). Er wird nacheinander mit jeder Key-Value-Kachel verrechnet, die vollständige 16 × 16-Matrix existiert nie im Speicher. Rechts die Online-Softmax für eine Zeile: Laufendes Maximum \(m\), laufende Summe \(\ell\) und Ausgabe \(o\) (hier eindimensionale Values) werden nach jeder Kachel nachgeführt, „max“ ist das Maximum der neuen Kachel und „Faktor“ \(e^{m_\text{alt} - m}\), mit dem alte Summe und Ausgabe heruntergerechnet werden. Am Ende stimmt \(o/\ell\) exakt mit der normalen Attention überein.</figcaption>
+</figure>
+<p>Flash Attention ändert nichts am Modell, nur an der Implementierung. In PyTorch wählt <code>scaled_dot_product_attention</code> automatisch eine solche Implementierung, wenn die Hardware sie unterstützt.</p>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Engpass ist der Speichertransfer, nicht die Rechnung. Flash Attention rechnet kachelweise im schnellen Speicher.</li>
+<li>Online-Softmax führt Maximum und Summe laufend nach. Exaktes Ergebnis, Speicher <span class="arithmatex">\(O(n)\)</span> statt <span class="arithmatex">\(O(n^2)\)</span>.</li>
+</ul>
+</div>
+</section>
+<section id="lora">
+<div class="step"><b>13</b><span class="eyebrow">Praxis</span></div>
+<h2>Fine-Tuning und LoRA</h2>
+<p>Ein vortrainiertes Modell an eine neue Aufgabe anzupassen, heißt <strong>Fine-Tuning</strong>. Beim vollständigen Fine-Tuning werden alle Gewichte weiter trainiert. Bei Milliarden Parametern braucht das sehr viel Speicher, denn der Optimierer (z. B. Adam) hält pro Gewicht noch zwei weitere Zahlen, und am Ende hat man für jede Aufgabe eine vollständige Kopie des Modells.</p>
+<p><strong>LoRA</strong> (Low-Rank Adaptation, Hu et al., 2021) geht davon aus, dass die nötige Änderung der Gewichte einen niedrigen Rang hat (siehe <a href="../grundlagen/lineare-algebra.html#svd">Niedrigrang-Approximation</a>). Statt eine Gewichtsmatrix <span class="arithmatex">\(W_0 \in \mathbb R^{d\times k}\)</span> zu ändern, friert man sie ein und lernt nur eine Korrektur als Produkt zweier schmaler Matrizen:</p>
+<div class="eq">\[
+W = W_0 + \frac{\alpha}{r}\,BA, \qquad B \in \mathbb R^{d\times r}, \quad A \in \mathbb R^{r\times k}, \quad r \ll \min(d, k)
+\]</div>
+<p>Statt <span class="arithmatex">\(dk\)</span> Parametern trainiert man nur <span class="arithmatex">\(r(d + k)\)</span>. Bei <span class="arithmatex">\(d = k = 4096\)</span> und <span class="arithmatex">\(r = 8\)</span> sind das 65 536 statt knapp 17 Millionen pro Matrix, weniger als ein halbes Prozent. <span class="arithmatex">\(B\)</span> wird mit Nullen initialisiert, sodass das Modell zu Beginn exakt dem Original entspricht. <span class="arithmatex">\(\alpha\)</span> ist ein fester Skalierungsfaktor. Üblich ist LoRA auf den Attention-Projektionen, oft auch auf den FFN-Matrizen, mit Rang 4 bis 64.</p>
+<figure class="fig">
+<canvas aria-label="Die nötige Änderung einer Gewichtsmatrix, ihre beste Näherung als Produkt B mal A mit Rang r, und der verbleibende Fehler." class="c-tr-wide" id="cv-lora" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="lora-r">Rang r</label><output id="lora-r-o"></output></div><input autocomplete="off" id="lora-r" max="12" min="1" step="1" type="range" value="2"/></div>
+<div class="ctrl"><div class="lab"><label for="lora-d">echte Größe d = k</label><output id="lora-d-o"></output></div><input autocomplete="off" id="lora-d" max="14" min="8" step="1" type="range" value="12"/></div>
+<button class="btn" id="lora-re" type="button">Neue Zieländerung</button>
+</div>
+<div class="readout" id="lora-read"></div>
+<figcaption><b>Abb. 12</b> Eine ausgedachte Änderung \(\Delta W\) einer 24 × 24-Gewichtsmatrix, wie sie vollständiges Fine-Tuning ergeben würde: im Wesentlichen Rang 3 plus etwas Rauschen. LoRA lernt stattdessen \(BA\) mit Rang \(r\). Gezeigt ist die bestmögliche Näherung dieses Rangs (über die Singulärwertzerlegung) und der Rest. Schon \(r = 3\) erfasst fast alles. Der zweite Regler rechnet die Parameterzahl für eine echte Matrixgröße aus.</figcaption>
+</figure>
+<p>Nach dem Training kann man <span class="arithmatex">\(\frac{\alpha}{r}BA\)</span> einfach zu <span class="arithmatex">\(W_0\)</span> addieren, dann kostet das angepasste Modell beim Ausführen nichts extra. Oder man behält die kleinen Matrizen getrennt und wechselt je nach Aufgabe zwischen mehreren Adaptern für dasselbe Grundmodell. Kombiniert mit einem auf 4 Bit quantisierten Grundmodell (<strong>QLoRA</strong>) lassen sich so auch große Modelle auf einer einzelnen GPU anpassen.</p>
+<pre><code class="language-python">class LoRALinear(nn.Module):
+    def __init__(self, base: nn.Linear, r=8, alpha=16):
+        super().__init__()
+        self.base = base.requires_grad_(False)                    # W_0 eingefroren
+        self.A = nn.Parameter(torch.randn(r, base.in_features) * 0.01)
+        self.B = nn.Parameter(torch.zeros(base.out_features, r))  # Start: keine Änderung
+        self.scale = alpha / r
+
+    def forward(self, x):
+        return self.base(x) + (x @ self.A.T @ self.B.T) * self.scale
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>LoRA: <span class="arithmatex">\(W_0\)</span> einfrieren, nur <span class="arithmatex">\(BA\)</span> mit kleinem Rang <span class="arithmatex">\(r\)</span> trainieren. Parameter <span class="arithmatex">\(r(d + k)\)</span> statt <span class="arithmatex">\(dk\)</span>.</li>
+<li><span class="arithmatex">\(B = 0\)</span> zu Beginn. Nach dem Training einrechnen oder als austauschbaren Adapter behalten.</li>
+</ul>
+</div>
+</section>
+<section id="formeln">
+<div class="eyebrow">Anhang A</div>
+<h2>Dimensionen und Formeln</h2>
+<p>Alle Größen für eine Folge der Länge <span class="arithmatex">\(n\)</span> (Batch weggelassen). Im ursprünglichen Transformer: <span class="arithmatex">\(d_\text{model} = 512\)</span>, <span class="arithmatex">\(h = 8\)</span>, <span class="arithmatex">\(d_k = d_v = 64\)</span>, <span class="arithmatex">\(d_\text{ff} = 2048\)</span>, <span class="arithmatex">\(N = 6\)</span> Blöcke in Encoder und Decoder.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Größe</th>
+<th>Form</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(X\)</span></td>
+<td><span class="arithmatex">\(n \times d_\text{model}\)</span></td>
+<td>Eingabe: Embeddings plus Position</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(E\)</span></td>
+<td><span class="arithmatex">\(V \times d_\text{model}\)</span></td>
+<td>Embedding-Tabelle</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W_Q^{(i)}, W_K^{(i)}\)</span></td>
+<td><span class="arithmatex">\(d_\text{model} \times d_k\)</span></td>
+<td>Projektionen eines Kopfes</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W_V^{(i)}\)</span></td>
+<td><span class="arithmatex">\(d_\text{model} \times d_v\)</span></td>
+<td>Value-Projektion eines Kopfes</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(Q, K\)</span></td>
+<td><span class="arithmatex">\(n \times d_k\)</span></td>
+<td>Queries, Keys eines Kopfes</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(V\)</span></td>
+<td><span class="arithmatex">\(n \times d_v\)</span></td>
+<td>Values eines Kopfes</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(QK^\top\)</span>, Gewichte</td>
+<td><span class="arithmatex">\(n \times n\)</span></td>
+<td>Ähnlichkeiten, Attention-Gewichte</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W_O\)</span></td>
+<td><span class="arithmatex">\(h d_v \times d_\text{model}\)</span></td>
+<td>Zusammenführen der Köpfe</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W_1\)</span>, <span class="arithmatex">\(W_2\)</span></td>
+<td><span class="arithmatex">\(d_\text{model} \times d_\text{ff}\)</span>, <span class="arithmatex">\(d_\text{ff} \times d_\text{model}\)</span></td>
+<td>Feed-Forward-Netz</td>
+</tr>
+<tr>
+<td>Logits</td>
+<td><span class="arithmatex">\(n \times V\)</span></td>
+<td>eine Verteilung über das Vokabular pro Position</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Formel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attention</td>
+<td><span class="arithmatex">\(\operatorname{softmax}(QK^\top/\sqrt{d_k})\,V\)</span></td>
+</tr>
+<tr>
+<td>Multi-Head</td>
+<td><span class="arithmatex">\(\operatorname{concat}(\text{head}_1,\dots,\text{head}_h)\,W_O\)</span>, <span class="arithmatex">\(d_k = d_\text{model}/h\)</span></td>
+</tr>
+<tr>
+<td>Sinus-Position</td>
+<td><span class="arithmatex">\(PE_{p,2i} = \sin(p/10000^{2i/d})\)</span>, <span class="arithmatex">\(PE_{p,2i+1} = \cos(p/10000^{2i/d})\)</span></td>
+</tr>
+<tr>
+<td>Block (Pre-LN)</td>
+<td><span class="arithmatex">\(\mathbf x \leftarrow \mathbf x + \operatorname{MHA}(\operatorname{LN}(\mathbf x))\)</span>, <span class="arithmatex">\(\mathbf x \leftarrow \mathbf x + \operatorname{FFN}(\operatorname{LN}(\mathbf x))\)</span></td>
+</tr>
+<tr>
+<td>Temperatur</td>
+<td><span class="arithmatex">\(p_i = \operatorname{softmax}(z_i / T)\)</span></td>
+</tr>
+<tr>
+<td>Parameter</td>
+<td><span class="arithmatex">\(\approx 12 L d^2 + Vd\)</span></td>
+</tr>
+<tr>
+<td>KV-Cache</td>
+<td><span class="arithmatex">\(2 \cdot L \cdot n \cdot d \cdot\)</span> Bytes (bei GQA geteilt durch Gruppengröße)</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td><span class="arithmatex">\(W = W_0 + \frac{\alpha}{r}BA\)</span>, <span class="arithmatex">\(r(d + k)\)</span> Parameter</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="glossar">
+<div class="eyebrow">Anhang B</div>
+<h2>Glossar</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Begriff</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token</td>
+<td>Einheit, in die Text zerlegt wird, oft ein Wortteil</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>gelernter Vektor zu einem Token</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>gewichteter Mittelwert über Positionen, Gewichte aus Query-Key-Ähnlichkeit</td>
+</tr>
+<tr>
+<td>Self-/Cross-Attention</td>
+<td>Queries, Keys und Values aus derselben bzw. aus verschiedenen Folgen</td>
+</tr>
+<tr>
+<td>Kopf (Head)</td>
+<td>eine von mehreren parallelen Attentions mit eigenen Projektionen</td>
+</tr>
+<tr>
+<td>Residual Stream</td>
+<td>Vektor pro Position, zu dem jede Teilschicht ihre Änderung addiert</td>
+</tr>
+<tr>
+<td>Kausale Maske</td>
+<td>verbietet den Blick auf spätere Positionen</td>
+</tr>
+<tr>
+<td>Logits</td>
+<td>Werte vor der Softmax, einer pro Token im Vokabular</td>
+</tr>
+<tr>
+<td>Kontextlänge</td>
+<td>maximale Anzahl Tokens, die das Modell auf einmal verarbeitet</td>
+</tr>
+<tr>
+<td>KV-Cache</td>
+<td>gespeicherte Keys und Values früherer Tokens beim Erzeugen</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td>Grouped-Query Attention: mehrere Query-Köpfe teilen sich Keys und Values</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td>Anpassung durch eine trainierte Korrektur niedrigen Rangs</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+    <footer>Alle Abbildungen rechnen mit kleinen, von Hand gewählten Zahlen im Browser. Sie zeigen die Mechanik, nicht das Verhalten trainierter Modelle. Code-Schnipsel in PyTorch, auf das Wesentliche gekürzt.</footer>
+  </main>
+</div>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- BPE ---------- */
+(() => {
+  const iT = $('#bpe-txt'), iK = $('#bpe-k');
+  let words = [], merges = [];
+  function train() {
+    const freq = new Map();
+    for (const w of iT.value.toLowerCase().match(/[\p{L}]+/gu) || []) freq.set(w, (freq.get(w) || 0) + 1);
+    words = [...freq].sort((a, b) => b[1] - a[1]).map(([w, f]) => ({ w, f, steps: [] }));
+    let seqs = words.map(x => [...x.w]);
+    merges = [];
+    for (let k = 0; k < 40; k++) {
+      words.forEach((x, i) => x.steps.push(seqs[i].slice()));
+      const pc = new Map();
+      seqs.forEach((s, i) => { for (let j = 0; j + 1 < s.length; j++) { const key = s[j] + '\u0000' + s[j + 1]; pc.set(key, (pc.get(key) || 0) + words[i].f); } });
+      if (!pc.size) break;
+      let best = null, bc = 0;
+      for (const [key, c] of pc) if (c > bc || (c === bc && key < best)) { best = key; bc = c; }
+      if (bc < 2) break;
+      const [a, b] = best.split('\u0000');
+      merges.push({ a, b, t: a + b, c: bc });
+      seqs = seqs.map(s => { const o = []; for (let j = 0; j < s.length; j++) { if (j + 1 < s.length && s[j] === a && s[j + 1] === b) { o.push(a + b); j++; } else o.push(s[j]); } return o; });
+    }
+    words.forEach((x, i) => x.steps.push(seqs[i].slice()));
+    iK.max = merges.length; if (+iK.value > merges.length) iK.value = merges.length;
+  }
+  function show() {
+    const k = +iK.value, last = k > 0 ? merges[k - 1].t : null;
+    $('#bpe-k-o').textContent = `${k} von ${merges.length}`;
+    const chars = new Set(); words.forEach(x => [...x.w].forEach(c => chars.add(c)));
+    let total = 0;
+    $('#bpe-words').innerHTML = words.map(x => { const s = x.steps[Math.min(k, x.steps.length - 1)]; total += s.length * x.f;
+      return `<span class="word">${s.map(t => `<span class="chip${t === last ? ' new' : ''}">${t}</span>`).join('')}<span class="chip off f">${x.f}×</span></span>`; }).join('');
+    $('#bpe-merges').innerHTML = merges.map((m, i) => `<div class="${i === k - 1 ? 'cur' : i >= k ? 'fut' : ''}">${String(i + 1).padStart(2, ' ')}. ${m.a} + ${m.b} → ${m.t}  (${m.c})</div>`).join('') || '<div class="fut">keine Paare mehr, die mindestens zweimal vorkommen</div>';
+    const chars0 = words.reduce((s, x) => s + x.w.length * x.f, 0);
+    $('#bpe-read').innerHTML = `<span class="k">Vokabular:</span> ${chars.size} Zeichen + ${k} neue Tokens = <b>${chars.size + k}</b>  <span class="k">·</span>  <span class="k">Tokens im Text:</span> <b>${total}</b> statt ${chars0} Zeichen (${nf(chars0 / total, 2)} Zeichen pro Token)`;
+  }
+  iT.addEventListener('input', rafDebounce(() => { train(); show(); }));
+  iK.addEventListener('input', show);
+  $('#bpe-prev').addEventListener('click', () => { iK.value = Math.max(0, +iK.value - 1); show(); });
+  $('#bpe-next').addEventListener('click', () => { iK.value = Math.min(merges.length, +iK.value + 1); show(); });
+  train(); show();
+})();
+</script>
+<script>
+/* ---------- Embeddings ---------- */
+(() => {
+  const c = $('#cv-emb'), sel = $('#emb-w'), iP = $('#emb-pl');
+  const PL = [0.7, -0.25];
+  const base = { Katze: [2.3, 1.1], Hund: [2.6, 0.1], Maus: [1.7, 1.8], Tisch: [-1.2, 2.4], Stuhl: [-2.0, 1.7], Matte: [-0.1, 2.6] };
+  const W = {};
+  for (const [w, v] of Object.entries(base)) { W[w] = v; }
+  Object.assign(W, { Katzen: [2.4 + PL[0], 1.3 + PL[1]], Hunde: [2.7 + PL[0], 0.9 + PL[1]], Tische: [-0.6 + PL[0], 2.5 + PL[1]], Matten: [-0.2 + PL[0], 2.7 + PL[1]],
+    sitzt: [-1.9, -1.0], liegt: [-2.5, -0.3], läuft: [-1.2, -1.7], schläft: [-2.9, 0.4],
+    eins: [0.5, -2.5], zwei: [1.3, -2.4], drei: [2.0, -2.0] });
+  const pairs = [['Katze', 'Katzen'], ['Hund', 'Hunde'], ['Tisch', 'Tische'], ['Matte', 'Matten']];
+  const names = Object.keys(W);
+  sel.innerHTML = names.map(n => `<option>${n}</option>`).join(''); sel.value = 'Katze';
+  const cos = (a, b) => dotv(a, b) / Math.hypot(...a) / Math.hypot(...b);
+  let view = null;
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c), R = 3.4, s = Math.min(w, h) / (2 * R), cx = w / 2, cy = h / 2;
+    const S = (x, y) => [cx + x * s, cy - y * s]; view = { S, s, cx, cy };
+    ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1;
+    for (let k = -3; k <= 3; k++) { let [a, b] = S(k, -R * 2), [a2, b2] = S(k, R * 2); ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); [a, b] = S(-R * 3, k); [a2, b2] = S(R * 3, k); ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); }
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1.4; const [ox, oy] = S(0, 0); ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    const cur = sel.value, v0 = W[cur];
+    const sims = names.filter(n => n !== cur).map(n => [n, cos(v0, W[n])]).sort((a, b) => b[1] - a[1]);
+    // Richtung des gewählten Wortes
+    const [ex_, ey_] = S(v0[0] * 1.6, v0[1] * 1.6); ctx.strokeStyle = rgba(tok('--accent'), 0.25); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ex_, ey_); ctx.stroke(); ctx.setLineDash([]);
+    sims.slice(0, 3).forEach(([n]) => { const [a, b] = S(...v0), [a2, b2] = S(...W[n]); ctx.strokeStyle = rgba(tok('--accent'), 0.6); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(a2, b2); ctx.stroke(); });
+    if (iP.checked) pairs.forEach(([a, b]) => { const [x1, y1] = S(...W[a]), [x2, y2] = S(...W[b]); const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+      ctx.strokeStyle = tok('--bin2'); ctx.fillStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * 8, y2 - uy * 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2 - ux * 3, y2 - uy * 3); ctx.lineTo(x2 - ux * 11 - uy * 4, y2 - uy * 11 + ux * 4); ctx.lineTo(x2 - ux * 11 + uy * 4, y2 - uy * 11 - ux * 4); ctx.fill(); });
+    const top = new Set(sims.slice(0, 3).map(x => x[0]));
+    for (const n of names) { const [a, b] = S(...W[n]), on = n === cur;
+      ctx.fillStyle = on ? tok('--accent') : top.has(n) ? rgba(tok('--accent'), 0.6) : tok('--muted'); ctx.beginPath(); ctx.arc(a, b, on ? 6 : 4.5, 0, 7); ctx.fill();
+      ctx.font = `${on ? 700 : 500} 13px ${DISP}`; ctx.fillStyle = on ? tok('--fg') : tok('--muted'); ctx.textAlign = 'left'; ctx.fillText(n, a + 8, b - 6); }
+    $('#emb-read').innerHTML = `<span class="k">Kosinus-Ähnlichkeit zu „${cur}“:</span> ` + sims.slice(0, 5).map(([n, v]) => `${n} <b>${nf(v, 2)}</b>`).join('  ·  ') + `  <span class="k">…  unähnlichstes:</span> ${sims.at(-1)[0]} ${nf(sims.at(-1)[1], 2)}`;
+  } });
+  c.addEventListener('click', e => { if (!view) return; const [px, py] = mouse(c, e); let best = null, bd = 20;
+    for (const n of names) { const [a, b] = view.S(...W[n]); const d = Math.hypot(a - px, b - py); if (d < bd) { bd = d; best = n; } }
+    if (best) { sel.value = best; m.draw(); } });
+  [sel, iP].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+<script>
+/* ---------- Attention-Rechner ---------- */
+(() => {
+  const c = $('#cv-att'), iq = $('#att-q'), im = $('#att-m'), it = $('#att-t');
+  iq.innerHTML = TR_TOKENS.map((t, i) => `<option value="${i}">${t}</option>`).join(''); iq.value = 2;
+  let hm = null, cell = 0;
+  const m = reg({ el: c, draw() {
+    const T = Math.pow(2, +it.value); $('#att-t-o').textContent = nf(T, 2);
+    const S = trScores(true), A = S.map(r => softmax(r, T)), qi = +iq.value;
+    const { ctx, w, h } = fit(c);
+    const narrow = w < 560, hmSize = narrow ? Math.min(w - 70, h * 0.48) : Math.min(h - 40, w * 0.48);
+    cell = Math.floor(hmSize / 6);
+    const show = im.value === 'w' ? A : S, smax = Math.max(...S.flat());
+    hm = heatmap(ctx, show, { x: 8, y: 28, cell, rows: TR_TOKENS.map(t => t + ' →'), cols: TR_TOKENS, lw: 64, th: 18, hl: { i: qi },
+      fmt: v => nf(v, 2), color: v => im.value === 'w' ? heat(v) : heat(v / smax, tok('--bin2')) });
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left';
+    ctx.fillText(im.value === 'w' ? 'Gewichte a = softmax(QKᵀ/√d_k)' : 'Werte QKᵀ/√d_k', 8, 14);
+    // Value-Ebene
+    const px = narrow ? 8 : hm.x0 + hm.w + 30, py = narrow ? hm.y0 + hm.h + 16 : 20, pw = w - px - 8, ph = narrow ? h - py - 8 : h - 28;
+    const R = 2.2, s = Math.min(pw * 0.62, ph) / (2 * R), cx = px + pw / 2, cy = py + ph / 2, P = (x, y) => [cx + x * s, cy - y * s];
+    ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1; ctx.strokeRect(cx - R * s, cy - R * s, 2 * R * s, 2 * R * s);
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.fillText('Values und Ausgabe', cx - R * s, cy - R * s - 6);
+    const a = A[qi], y = [0, 0]; TR_V.forEach((v, j) => { y[0] += a[j] * v[0]; y[1] += a[j] * v[1]; });
+    const [yx, yy] = P(...y);
+    TR_V.forEach((v, j) => { const [vx, vy] = P(...v); ctx.strokeStyle = rgba(tok('--accent'), 0.85); ctx.lineWidth = 0.5 + 9 * a[j]; ctx.beginPath(); ctx.moveTo(vx, vy); ctx.lineTo(yx, yy); ctx.stroke(); });
+    TR_V.forEach((v, j) => { const [vx, vy] = P(...v); ctx.fillStyle = tok('--muted'); ctx.beginPath(); ctx.arc(vx, vy, 5, 0, 7); ctx.fill();
+      ctx.font = `13px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = v[0] > 0 ? 'left' : 'right'; ctx.fillText(`v(${TR_TOKENS[j]})  ${nf(a[j], 2)}`, vx + (v[0] > 0 ? 9 : -9), vy - 7); });
+    ctx.fillStyle = tok('--bin2'); ctx.beginPath(); ctx.moveTo(yx, yy - 9); ctx.lineTo(yx + 9, yy); ctx.lineTo(yx, yy + 9); ctx.lineTo(yx - 9, yy); ctx.closePath(); ctx.fill();
+    ctx.font = `700 13px ${DISP}`; ctx.fillStyle = tok('--fg'); ctx.textAlign = 'left'; ctx.fillText(`y(${TR_TOKENS[qi]})`, yx + 12, yy + 16);
+    const order = a.map((v, j) => [v, j]).sort((p, q) => q[0] - p[0]);
+    $('#att-read').innerHTML = `<span class="k">q(${TR_TOKENS[qi]}) =</span> (${TR_Q[qi].map(v => nf(v, 1)).join('; ')})  <span class="k">·</span>  <span class="k">stärkste Gewichte:</span> ${order.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 2)}</b>`).join(', ')}<br>` +
+      `<span class="k">y = Σ aⱼ vⱼ =</span> (${nf(y[0], 2)}; ${nf(y[1], 2)})  <span class="k">·</span>  <span class="k">Entropie der Zeile:</span> ${nf(entropy(a), 2)} bit (gleichverteilt: ${nf(Math.log2(6), 2)} bit)`;
+  } });
+  c.addEventListener('click', e => { if (!hm) return; const [x, y] = mouse(c, e); const hit = cellAt(hm, cell, x, y) || (x < hm.x0 && y > hm.y0 && y < hm.y0 + hm.h ? { i: Math.floor((y - hm.y0) / cell) } : null); if (hit) { iq.value = hit.i; m.draw(); } });
+  [iq, im, it].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+<script>
+/* ---------- Skalierung ---------- */
+(() => {
+  const c = $('#cv-sk'), id = $('#sk-d'), is = $('#sk-s'), N = 16, DS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+  const trial = (d, scale) => { const q = Array.from({ length: d }, gauss); const s = Array.from({ length: N }, () => dotv(q, Array.from({ length: d }, gauss)) / (scale ? Math.sqrt(d) : 1)); return s; };
+  seed = 3;
+  const curve = sc => DS.map(d => { let m = 0; for (let t = 0; t < 300; t++) m += Math.max(...softmax(trial(d, sc))); return m / 300; });
+  const C1 = curve(true), C0 = curve(false);
+  let cur = null;
+  const roll = () => { seed = Math.floor(Math.random() * 1e6) + 1; cur = null; };
+  const m = reg({ el: c, draw() {
+    const d = DS[+id.value], sc = is.checked; $('#sk-d-o').textContent = d;
+    if (!cur || cur.d !== d || cur.sc !== sc) { const s0 = seed; cur = { d, sc, s: trial(d, sc) }; seed = s0; }
+    const p = softmax(cur.s).slice().sort((a, b) => b - a);
+    const { ctx, w, h } = fit(c), narrow = w < 560, lw = narrow ? w : w * 0.5, lh = narrow ? h / 2 : h;
+    const f = frame(ctx, 0, 0, lw, lh, { x0: 0, x1: N, y0: 0, y1: 1, yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v, 2), xl: 'Keys, nach Gewicht sortiert', yl: 'Gewicht', l: 44, b: 34 });
+    const bw = f.bw / N;
+    p.forEach((v, i) => { ctx.fillStyle = i === 0 ? tok('--accent') : rgba(tok('--accent'), 0.5); const y = f.Y(v); ctx.fillRect(f.bx + i * bw + 2, y, bw - 4, f.by + f.bh - y); });
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(1 / N)); ctx.lineTo(f.bx + f.bw, f.Y(1 / N)); ctx.stroke(); ctx.setLineDash([]);
+    const ox = narrow ? 0 : lw + 10, oy = narrow ? lh : 0;
+    const g = frame(ctx, ox, oy, narrow ? w : w - lw - 10, lh, { x0: 0, x1: DS.length - 1, y0: 0, y1: 1, xt: DS.map((_, i) => i), xf: i => String(DS[i]), yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'd_k', yl: 'mittleres größtes Gewicht', l: 44, b: 34 });
+    [[C0, tok('--hole'), 'ohne Skalierung'], [C1, tok('--accent'), 'mit √d_k']].forEach(([C, col, lab], k) => {
+      ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); C.forEach((v, i) => i ? ctx.lineTo(g.X(i), g.Y(v)) : ctx.moveTo(g.X(i), g.Y(v))); ctx.stroke();
+      ctx.fillStyle = col; ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(lab, g.bx + 8, g.by + 14 + k * 16); });
+    const i = +id.value; ctx.fillStyle = tok('--fg'); ctx.beginPath(); ctx.arc(g.X(i), g.Y((sc ? C1 : C0)[i]), 5, 0, 7); ctx.fill();
+    const sd = Math.sqrt(cur.s.reduce((a, v) => a + v * v, 0) / N);
+    $('#sk-read').innerHTML = `<span class="k">Streuung der Werte:</span> ${nf(sd, 2)} (erwartet ${nf(sc ? 1 : Math.sqrt(d), 2)})  <span class="k">·</span>  <span class="k">größtes Gewicht:</span> <b>${nf(p[0], 3)}</b>  <span class="k">·</span>  <span class="k">Entropie:</span> ${nf(entropy(p), 2)} von ${nf(Math.log2(N), 2)} bit`;
+  } });
+  [id, is].forEach(e => e.addEventListener('input', () => m.draw()));
+  $('#sk-re').addEventListener('click', () => { roll(); m.draw(); });
+})();
+</script>
+<script>
+/* ---------- Multi-Head ---------- */
+(() => {
+  const c = $('#cv-mh'), sel = $('#mh-q'), ck = [$('#mh-1'), $('#mh-2'), $('#mh-3')], n = TR_TOKENS.length;
+  sel.innerHTML = '<option value="-1">alle</option>' + TR_TOKENS.map((t, i) => `<option value="${i}">${t}</option>`).join('');
+  const sharp = (target, peak) => Array.from({ length: n }, (_, j) => j === target ? peak : (1 - peak) / (n - 1));
+  const H1 = Array.from({ length: n }, (_, i) => sharp(Math.max(0, i - 1), 0.8));
+  const ref = [1, 0, 1, 5, 5, 4];
+  const H2 = ref.map(r => sharp(r, 0.75));
+  const H3 = Array.from({ length: n }, () => softmax(Array.from({ length: n }, (_, j) => j === 0 ? 1.4 : 0)));
+  const HS = [H1, H2, H3], COL = ['--accent', '--bin2', '--bin1'], NAMES = ['vorheriges Token', 'Bezug', 'Satzanfang'];
+  const m = reg({ el: c, draw() {
+    const { ctx, w, h } = fit(c), q = +sel.value;
+    const top = 34, bot = h * 0.52, x0 = 40, dx = (w - 80) / (n - 1), X = j => x0 + j * dx;
+    ctx.font = `600 14px ${DISP}`; ctx.textAlign = 'center';
+    TR_TOKENS.forEach((t, j) => { ctx.fillStyle = tok('--fg'); ctx.fillText(t, X(j), top - 10); ctx.fillStyle = q === -1 || q === j ? tok('--fg') : tok('--muted'); ctx.fillText(t, X(j), bot + 22); });
+    ctx.font = `11px ${MONO}`; ctx.fillStyle = tok('--muted'); ctx.textAlign = 'left'; ctx.fillText('Keys', 4, top - 24); ctx.fillText('Queries', 4, bot + 38);
+    HS.forEach((H, k) => { if (!ck[k].checked) return; const col = tok(COL[k]), off = (k - 1) * 6;
+      for (let i = 0; i < n; i++) { if (q !== -1 && q !== i) continue;
+        for (let j = 0; j < n; j++) { const a = H[i][j]; if (a < 0.06) continue;
+          ctx.strokeStyle = rgba(col, Math.min(0.9, 0.25 + a)); ctx.lineWidth = 0.8 + 7 * a;
+          ctx.beginPath(); ctx.moveTo(X(i) + off, bot); ctx.bezierCurveTo(X(i) + off, (top + bot) / 2, X(j) + off, (top + bot) / 2, X(j) + off, top); ctx.stroke(); } } });
+    // kleine Matrizen
+    const active = HS.map((_, k) => k).filter(k => ck[k].checked), cs = Math.max(8, Math.min(22, (w - 20 * 3) / (3 * n + 6), (h - bot - 60) / (n + 1)));
+    const by = bot + 54; let bx = 8;
+    HS.forEach((H, k) => { const hm = heatmap(ctx, H, { x: bx, y: by + 14, cell: cs, color: v => heat(v, tok(COL[k])), hl: q >= 0 ? { i: q } : null });
+      ctx.fillStyle = ck[k].checked ? tok('--fg') : tok('--muted'); ctx.font = `600 12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(`Kopf ${k + 1}`, bx, by + 8);
+      if (!ck[k].checked) { ctx.fillStyle = rgba(tok('--surface'), 0.65); ctx.fillRect(hm.x0, hm.y0, hm.w, hm.h); }
+      bx += n * cs + 22; });
+    const lines = active.map(k => { const rows = q >= 0 ? [q] : [...Array(n).keys()]; return `<span class="k">Kopf ${k + 1} (${NAMES[k]}):</span> ` + rows.slice(0, q >= 0 ? 1 : 3).map(i => { const j = HS[k][i].indexOf(Math.max(...HS[k][i])); return `${TR_TOKENS[i]} → ${TR_TOKENS[j]} ${nf(HS[k][i][j], 2)}`; }).join(', ') + (q < 0 ? ', …' : ''); });
+    $('#mh-read').innerHTML = lines.join('<br>') || '<span class="k">Kein Kopf ausgewählt.</span>';
+  } });
+  [...ck, sel].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+<script>
+/* ---------- Positionskodierung ---------- */
+(() => {
+  const c = $('#cv-pe'), id = $('#pe-d'), ip = $('#pe-p'), NP = 101;
+  const PE = (p, d) => Array.from({ length: d }, (_, k) => { const i = Math.floor(k / 2), f = Math.pow(10000, -2 * i / d); return k % 2 ? Math.cos(p * f) : Math.sin(p * f); });
+  let geo = null;
+  const m = reg({ el: c, draw() {
+    const d = Math.pow(2, +id.value), p0 = +ip.value; $('#pe-d-o').textContent = d; $('#pe-p-o').textContent = p0;
+    const { ctx, w, h } = fit(c), L = 46, R = 10, top = 22, hh = h * 0.5, cw = (w - L - R) / NP, ch = (hh - top) / d;
+    const all = Array.from({ length: NP }, (_, p) => PE(p, d));
+    for (let p = 0; p < NP; p++) for (let k = 0; k < d; k++) { ctx.fillStyle = div(all[p][k]); ctx.fillRect(L + p * cw, top + k * ch, Math.ceil(cw), Math.ceil(ch)); }
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.strokeRect(L + p0 * cw, top, cw, d * ch);
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText('Dim 0', L - 4, top + 8); ctx.fillText(`${d - 1}`, L - 4, top + d * ch);
+    ctx.textAlign = 'center'; [0, 25, 50, 75, 100].forEach(p => ctx.fillText(p, L + (p + 0.5) * cw, top + d * ch + 14));
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('PE(Position, Dimension)', L, 14);
+    geo = { L, cw, top, bh: d * ch };
+    const dots = all.map(v => dotv(v, all[p0]) / (d / 2));
+    const f = frame(ctx, 0, hh + 24, w, h - hh - 24, { x0: 0, x1: NP - 1, y0: -0.4, y1: 1.05, xt: [0, 25, 50, 75, 100], yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'Position', yl: 'PE(p)·PE(x), normiert', l: L, r: R, b: 32, t: 6 });
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2; ctx.beginPath(); dots.forEach((v, x) => x ? ctx.lineTo(f.X(x), f.Y(v)) : ctx.moveTo(f.X(x), f.Y(v))); ctx.stroke();
+    ctx.strokeStyle = tok('--fg'); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(f.X(p0), f.by); ctx.lineTo(f.X(p0), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+    const at = k => dotv(PE(p0 + k, d), PE(p0, d)) / (d / 2), at2 = k => dotv(PE(k + 50, d), PE(50, d)) / (d / 2);
+    $('#pe-read').innerHTML = `<span class="k">Wellenlängen:</span> von ${nf(2 * Math.PI, 1)} (Dim 0/1) bis ${ex(2 * Math.PI * Math.pow(10000, (d - 2) / d), 1)} Positionen  <span class="k">·</span>  <span class="k">Ähnlichkeit bei Abstand 5:</span> ${nf(at(5), 3)} ab p = ${p0}, ${nf(at2(5), 3)} ab p = 50`;
+  } });
+  c.addEventListener('click', e => { if (!geo) return; const [x, y] = mouse(c, e); if (y < geo.top || y > geo.top + geo.bh) return; const p = Math.round((x - geo.L) / geo.cw - 0.5); if (p >= 0 && p <= 80) { ip.value = p; m.draw(); } });
+  [id, ip].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+<script>
+/* ---------- Block ---------- */
+(() => {
+  const c = $('#cv-blk'), iv = $('#blk-v'), bplay = $('#blk-play');
+  const PRE = [
+    ['in', 'Eingabe x', 'n × 512', 'Der Residual Stream: ein Vektor pro Token, aus Embedding und Position oder aus dem vorigen Block.'],
+    ['ln', 'LayerNorm', 'n × 512', 'Jeder der n Vektoren wird für sich auf Mittelwert 0 und Varianz 1 gebracht und mit gelernten Faktoren skaliert. Der Residual Stream selbst bleibt unverändert.'],
+    ['att', 'Multi-Head Attention', 'n × 512', '8 Köpfe mit je d_k = 64 rechnen Q, K, V, je eine n × n-Gewichtsmatrix und gewichtete Mittelwerte. Zusammengefügt und mit W_O zurück auf 512. Hier tauschen die Positionen Information aus.'],
+    ['add', 'Addition', 'n × 512', 'Die Ausgabe der Attention wird zum Residual Stream addiert: x ← x + MHA(LN(x)).'],
+    ['ln', 'LayerNorm', 'n × 512', 'Zweite Normierung, wieder nur im Abzweig.'],
+    ['ffn', 'Feed-Forward-Netz', 'n × 512 → n × 2048 → n × 512', 'Jede Position einzeln: Linear auf 2048, Aktivierung (ReLU/GELU), Linear zurück auf 512. Keine Verbindung zwischen den Positionen. Hier stecken zwei Drittel der Parameter.'],
+    ['add', 'Addition', 'n × 512', 'x ← x + FFN(LN(x)). Der Block hat jetzt zwei Änderungen in den Residual Stream geschrieben.'],
+    ['out', 'Ausgabe', 'n × 512', 'Gleiche Form wie die Eingabe. Sie geht in den nächsten Block, nach dem letzten Block über eine letzte LayerNorm in die Ausgabeschicht.']];
+  const POST = [
+    ['in', 'Eingabe x', 'n × 512', 'Der Residual Stream am Eingang des Blocks.'],
+    ['att', 'Multi-Head Attention', 'n × 512', 'Attention direkt auf x, ohne vorherige Normierung.'],
+    ['add', 'Addition', 'n × 512', 'x + MHA(x).'],
+    ['ln', 'LayerNorm', 'n × 512', 'Normiert die Summe. Damit liegt die Normierung im Residual Stream selbst: x ← LN(x + MHA(x)). Gradienten müssen durch jede dieser Normierungen hindurch, das macht tiefe Post-LN-Modelle schwer zu trainieren.'],
+    ['ffn', 'Feed-Forward-Netz', 'n × 512 → n × 2048 → n × 512', 'Wie bei Pre-LN: je Position zwei lineare Schichten mit Aktivierung.'],
+    ['add', 'Addition', 'n × 512', 'x + FFN(x).'],
+    ['ln', 'LayerNorm', 'n × 512', 'x ← LN(x + FFN(x)).'],
+    ['out', 'Ausgabe', 'n × 512', 'Weiter in den nächsten Block.']];
+  let step = 0, acc = 0;
+  const steps = () => iv.value === 'pre' ? PRE : POST;
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.6) { acc = 0; step = (step + 1) % steps().length; } },
+    draw() {
+      const S = steps(), { ctx, w, h } = fit(c), cx = Math.max(w * 0.42, Math.min(w * 0.55, 300)), bw = Math.min(220, w * 0.5), bh = Math.min(38, h / (S.length * 1.55));
+      const gap = (h - 20 - S.length * bh) / (S.length - 1), Y = i => h - 10 - bh - i * (bh + gap), rx = cx + bw / 2 + 34;
+      const col = { in: '--muted', out: '--muted', ln: '--bin1', att: '--accent', ffn: '--bin2', add: '--fg' };
+      // Residual-Strom: von jedem Abzweig bis zur Addition
+      ctx.lineWidth = 2;
+      S.forEach((s, i) => { if (s[0] !== 'add') return; let j = i - 1; while (j > 0 && S[j][0] !== 'add' && S[j][0] !== 'in' && !(iv.value === 'post' && S[j][0] === 'ln')) j--;
+        const yFrom = Y(j) + bh / 2 - (S[j][0] === 'add' ? 0 : 0), yTo = Y(i) + bh / 2;
+        ctx.strokeStyle = rgba(tok('--fg'), 0.55); ctx.beginPath(); ctx.moveTo(cx + (S[j][0] === 'add' ? 14 : bw / 2), yFrom); ctx.lineTo(rx, yFrom); ctx.lineTo(rx, yTo); ctx.lineTo(cx + 16, yTo); ctx.stroke();
+        ctx.fillStyle = rgba(tok('--fg'), 0.55); ctx.beginPath(); ctx.moveTo(cx + 15, yTo); ctx.lineTo(cx + 23, yTo - 4); ctx.lineTo(cx + 23, yTo + 4); ctx.fill(); });
+      ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('Residual', rx + 6, h / 2);
+      // Pfeile zwischen den Kästen
+      for (let i = 0; i + 1 < S.length; i++) { const y1 = Y(i), y2 = Y(i + 1) + bh; ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(cx, y1); ctx.lineTo(cx, y2 + 6); ctx.stroke(); ctx.fillStyle = tok('--muted'); ctx.beginPath(); ctx.moveTo(cx, y2); ctx.lineTo(cx - 4, y2 + 7); ctx.lineTo(cx + 4, y2 + 7); ctx.fill(); }
+      S.forEach((s, i) => { const on = i === step, y = Y(i), cl = tok(col[s[0]]);
+        if (s[0] === 'add') { ctx.beginPath(); ctx.arc(cx, y + bh / 2, 13, 0, 7); ctx.fillStyle = on ? cl : tok('--surface'); ctx.fill(); ctx.strokeStyle = cl; ctx.lineWidth = on ? 3 : 1.5; ctx.stroke();
+          ctx.fillStyle = on ? tok('--surface') : cl; ctx.font = `700 18px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('+', cx, y + bh / 2 + 6); }
+        else { ctx.fillStyle = on ? cl : rgba(cl, 0.13); ctx.strokeStyle = cl; ctx.lineWidth = on ? 3 : 1.4; ctx.beginPath(); ctx.roundRect(cx - bw / 2, y, bw, bh, 5); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = on ? tok('--surface') : tok('--fg'); ctx.font = `600 ${Math.min(14, bh * 0.42)}px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(s[1], cx, y + bh / 2 + 5); }
+        ctx.fillStyle = on ? tok('--fg') : tok('--muted'); ctx.font = `${on ? 600 : 400} 11px ${MONO}`; ctx.textAlign = 'right'; if (w > 420) ctx.fillText(s[0] === 'ffn' ? 'n × 512 (innen 2048)' : s[2], cx - bw / 2 - 10, y + bh / 2 + 4); });
+      const s = S[step]; $('#blk-read').innerHTML = `<b>${step + 1}/${S.length} · ${s[1]}</b>  <span class="k">Form:</span> ${s[2]}<br>${s[3]}`;
+    } });
+  const go = d => { step = (step + d + steps().length) % steps().length; acc = 0; m.draw(); };
+  $('#blk-prev').addEventListener('click', () => go(-1)); $('#blk-next').addEventListener('click', () => go(1));
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  iv.addEventListener('input', () => { step = 0; m.draw(); });
+})();
+</script>
+<script>
+/* ---------- Masken ---------- */
+(() => {
+  const c = $('#cv-mask'), im = $('#mask-m');
+  const toks = [...TR_TOKENS, '[PAD]', '[PAD]'], n = toks.length, real = TR_TOKENS.length;
+  const S0 = trScores(true);
+  const S = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => i < real && j < real ? S0[i][j] : 0.3));
+  const m = reg({ el: c, draw() {
+    const mode = im.value, causal = mode === 'causal' || mode === 'both', pad = mode === 'pad' || mode === 'both';
+    const allowed = (i, j) => !(causal && j > i) && !(pad && j >= real);
+    const M = S.map((r, i) => r.map((v, j) => allowed(i, j) ? v : -Infinity));
+    const A = M.map(r => softmax(r));
+    const { ctx, w, h } = fit(c), narrow = w < 560, half = narrow ? w : w / 2 - 8;
+    const cell = Math.floor(Math.min((half - 70) / n, (narrow ? h / 2 - 40 : h - 40) / n));
+    const smax = Math.max(...S0.flat());
+    const opts = (title, x, y) => ({ x, y, cell, rows: toks, cols: toks, lw: 62, th: 34, rotate: true, title });
+    const hmA = heatmap(ctx, M, { ...opts('Werte QKᵀ/√d_k (maskiert = −∞)', 4, 16), fmt: v => isFinite(v) ? nf(v, 1) : '−∞', color: v => isFinite(v) ? heat(v / smax * 0.85, tok('--bin2')) : rgba(tok('--muted'), 0.18), textColor: v => isFinite(v) ? textOn(v / smax * 0.85) : tok('--muted') });
+    const ox = narrow ? 4 : w / 2 + 4, oy = narrow ? hmA.y0 + hmA.h + 34 : 16;
+    heatmap(ctx, A, { ...opts('Gewichte nach Softmax', ox, oy), fmt: v => v === 0 ? '0' : nf(v, 2) });
+    const visible = A.map(r => r.filter(v => v > 0).length);
+    $('#mask-read').innerHTML = `<span class="k">Erlaubte Felder:</span> ${M.flat().filter(isFinite).length} von ${n * n}  <span class="k">·</span>  <span class="k">„${toks[2]}“ sieht:</span> ${toks.filter((_, j) => allowed(2, j)).join(', ')}  <span class="k">·</span>  <span class="k">Gewicht von „sitzt“ auf „Katze“:</span> ${nf(A[2][1], 2)}`;
+  } });
+  im.addEventListener('input', () => m.draw());
+})();
+</script>
+<script>
+/* ---------- Sampling ---------- */
+(() => {
+  const c = $('#cv-smp'), iT = $('#smp-t'), iK = $('#smp-k'), iP = $('#smp-p');
+  const W = ['Matte', 'Couch', 'Fensterbank', 'Treppe', 'Wiese', 'Mauer', 'Tastatur', 'Decke', 'Heizung', 'Zeitung', 'Mond', 'Banane'];
+  const Z = [3.1, 2.4, 2.2, 1.6, 1.3, 1.1, 0.9, 0.7, 0.5, 0.1, -1.4, -2.2];
+  function dist() {
+    const T = +iT.value, k = +iK.value, p = +iP.value, q = softmax(Z, T);
+    const order = q.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+    const keep = new Set(); let cum = 0;
+    for (const [v, i] of order) { if (keep.size >= k) break; if (cum >= p && keep.size > 0) break; keep.add(i); cum += v; }
+    const s = [...keep].reduce((a, i) => a + q[i], 0);
+    return { q, keep, r: q.map((v, i) => keep.has(i) ? v / s : 0) };
+  }
+  const m = reg({ el: c, draw() {
+    $('#smp-t-o').textContent = nf(+iT.value, 2); $('#smp-k-o').textContent = +iK.value; $('#smp-p-o').textContent = nf(+iP.value, 2);
+    const { r, keep } = dist(), base = softmax(Z);
+    const { ctx, w, h } = fit(c);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: W.length, y0: 0, y1: 1, yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v, 2), yl: 'Wahrscheinlichkeit', l: 46, b: 64 });
+    const bw = f.bw / W.length;
+    W.forEach((t, i) => { const x = f.bx + i * bw;
+      ctx.fillStyle = keep.has(i) ? tok('--accent') : rgba(tok('--muted'), 0.35); const y = f.Y(r[i]); ctx.fillRect(x + 3, y, bw - 6, f.by + f.bh - y);
+      ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1; ctx.setLineDash([3, 2]); const yb = f.Y(base[i]); ctx.strokeRect(x + 3, yb, bw - 6, f.by + f.bh - yb); ctx.setLineDash([]);
+      ctx.save(); ctx.translate(x + bw / 2, f.by + f.bh + 8); ctx.rotate(-Math.PI / 5); ctx.fillStyle = keep.has(i) ? tok('--fg') : tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'right'; ctx.fillText(t, 0, 8); ctx.restore();
+      if (r[i] > 0.005) { ctx.fillStyle = tok('--fg'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(nf(r[i] * 100, r[i] < 0.1 ? 1 : 0) + ' %', x + bw / 2, y - 4); } });
+    $('#smp-read').innerHTML = `<span class="k">Zugelassene Tokens:</span> ${keep.size} von ${W.length}  <span class="k">·</span>  <span class="k">P(Matte):</span> <b>${nf(r[0] * 100, 1)} %</b>  <span class="k">·</span>  <span class="k">Entropie:</span> ${nf(entropy(r), 2)} bit (bei T = 1 ohne Einschränkung ${nf(entropy(base), 2)} bit)`;
+  } });
+  $('#smp-go').addEventListener('click', () => { const { r } = dist(); const out = [];
+    for (let s = 0; s < 10; s++) { let u = Math.random(), i = 0; while (i < r.length - 1 && (u -= r[i]) > 0) i++; out.push(W[i]); }
+    $('#smp-out').innerHTML = out.map(t => `<span class="chip">${t}</span>`).join(''); });
+  [iT, iK, iP].forEach(e => e.addEventListener('input', () => { m.draw(); }));
+})();
+</script>
+<script>
+/* ---------- Aufwand ---------- */
+(() => {
+  const c = $('#cv-cost'), ip = $('#cost-pre'), iL = $('#cost-L'), id = $('#cost-d'), ih = $('#cost-h'), ikv = $('#cost-kv'), iN = $('#cost-n');
+  const PRE = [{ L: 12, d: 768, h: 12, kv: 12, V: 50257 }, { L: 32, d: 4096, h: 32, kv: 32, V: 32000 }, { L: 80, d: 8192, h: 64, kv: 8, V: 32000 }];
+  let V = 32000;
+  const set = p => { iL.value = p.L; id.value = Math.log2(p.d); ih.value = p.h; ikv.value = p.kv; V = p.V; };
+  set(PRE[1]);
+  const bytes = b => { if (b === 0) return '0'; const u = ['B', 'KiB', 'MiB', 'GiB', 'TiB']; let i = 0; while (b >= 1024 && i < 4) { b /= 1024; i++; } return `${nf(b, b < 10 ? 2 : b < 100 ? 1 : 0)} ${u[i]}`; };
+  const big = v => v === 0 ? '0' : v >= 1e12 ? nf(v / 1e12, 1) + ' T' : v >= 1e9 ? nf(v / 1e9, 1) + ' G' : v >= 1e6 ? nf(v / 1e6, 1) + ' M' : nf(v / 1e3, 1) + ' k';
+  const m = reg({ el: c, draw() {
+    const L = +iL.value, d = Math.round(Math.pow(2, +id.value) / 64) * 64, h = +ih.value, kv = Math.min(+ikv.value, h), n = Math.pow(2, +iN.value);
+    $('#cost-L-o').textContent = L; $('#cost-d-o').textContent = d; $('#cost-h-o').textContent = h; $('#cost-kv-o').textContent = kv; $('#cost-n-o').textContent = n.toLocaleString('de-DE');
+    const N = 12 * L * d * d + V * d, wFl = 2 * N, aFl = x => 4 * L * x * d, kvB = x => 2 * L * x * d * (kv / h) * 2;
+    const { ctx, w, h: H } = fit(c), narrow = w < 560, cw = narrow ? w : w / 2 - 6, ch = narrow ? H / 2 : H;
+    const xs = []; for (let e = 8; e <= 17; e += 0.25) xs.push(e);
+    const ymax = Math.max(wFl + aFl(Math.pow(2, 17)), 1) * 1.05;
+    const f = frame(ctx, 0, 0, cw, ch, { x0: 8, x1: 17, y0: 0, y1: ymax, xt: [8, 10, 12, 14, 16], xf: e => (Math.pow(2, e) / 1024 >= 1 ? Math.pow(2, e) / 1024 + 'k' : Math.pow(2, e)), yt: [0, ymax / 2 / 1.05, ymax / 1.05], yf: v => big(v), xl: 'Kontextlänge n', yl: 'Operationen pro Token', l: 72, b: 34 });
+    ctx.fillStyle = rgba(tok('--accent'), 0.35); ctx.beginPath(); ctx.moveTo(f.X(8), f.Y(0)); xs.forEach(e => ctx.lineTo(f.X(e), f.Y(wFl))); ctx.lineTo(f.X(17), f.Y(0)); ctx.fill();
+    ctx.fillStyle = rgba(tok('--bin2'), 0.6); ctx.beginPath(); xs.forEach((e, i) => i ? ctx.lineTo(f.X(e), f.Y(wFl + aFl(Math.pow(2, e)))) : ctx.moveTo(f.X(e), f.Y(wFl + aFl(Math.pow(2, e))))); for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(f.X(xs[i]), f.Y(wFl)); ctx.fill();
+    ctx.strokeStyle = tok('--fg'); ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(f.X(+iN.value), f.by); ctx.lineTo(f.X(+iN.value), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--accent'); ctx.fillText('Gewichte 2·N', f.bx + 8, f.by + 14); ctx.fillStyle = tok('--bin2'); ctx.fillText('Attention 4·L·n·d', f.bx + 8, f.by + 30);
+    const ox = narrow ? 0 : w / 2 + 6, oy = narrow ? ch : 0, kmax = kvB(Math.pow(2, 17)) * 1.05;
+    const g = frame(ctx, ox, oy, cw, ch, { x0: 8, x1: 17, y0: 0, y1: kmax, xt: [8, 10, 12, 14, 16], xf: e => (Math.pow(2, e) / 1024 >= 1 ? Math.pow(2, e) / 1024 + 'k' : Math.pow(2, e)), yt: [0, kmax / 2 / 1.05, kmax / 1.05], yf: v => bytes(v), xl: 'Kontextlänge n', yl: 'KV-Cache je Sequenz', l: 76, b: 34 });
+    ctx.strokeStyle = tok('--bin1'); ctx.lineWidth = 2.4; ctx.beginPath(); xs.forEach((e, i) => i ? ctx.lineTo(g.X(e), g.Y(kvB(Math.pow(2, e)))) : ctx.moveTo(g.X(e), g.Y(kvB(Math.pow(2, e))))); ctx.stroke();
+    if (kv < h) { ctx.strokeStyle = rgba(tok('--muted'), 0.7); ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5; ctx.beginPath(); xs.forEach((e, i) => { const y = g.Y(Math.min(kmax, kvB(Math.pow(2, e)) * h / kv)); i ? ctx.lineTo(g.X(e), y) : ctx.moveTo(g.X(e), y); }); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('ohne GQA', g.bx + 8, g.by + 14); }
+    ctx.fillStyle = tok('--fg'); ctx.beginPath(); ctx.arc(g.X(+iN.value), g.Y(kvB(n)), 4.5, 0, 7); ctx.fill();
+    $('#cost-read').innerHTML = `<span class="k">Parameter ≈ 12·L·d² + V·d =</span> <b>${big(N)}</b>  <span class="k">·</span>  <span class="k">Gewichte in 16 Bit:</span> ${bytes(2 * N)}  <span class="k">·</span>  <span class="k">d_k =</span> ${Math.round(d / h)}<br>` +
+      `<span class="k">Pro Token bei n = ${n.toLocaleString('de-DE')}:</span> ${big(wFl)} (Gewichte) + ${big(aFl(n))} (Attention) Operationen  <span class="k">·</span>  <span class="k">KV-Cache:</span> <b>${bytes(kvB(n))}</b> je Sequenz${kv < h ? `, ohne GQA ${bytes(kvB(n) * h / kv)}` : ''}`;
+  } });
+  ip.addEventListener('input', () => { if (+ip.value >= 0) set(PRE[+ip.value]); m.draw(); });
+  [iL, id, ih, ikv].forEach(e => e.addEventListener('input', () => { ip.value = -1; m.draw(); }));
+  iN.addEventListener('input', () => m.draw());
+})();
+</script>
+<script>
+/* ---------- Flash Attention ---------- */
+(() => {
+  const c = $('#cv-fl'), bplay = $('#fl-play'), n = 16, B = 4, QB = 1, ROW = QB * B + 1;
+  let S, Vv, step = 0, acc = 0;
+  const gen = () => { S = Array.from({ length: n }, () => Array.from({ length: n }, () => gauss() * 1.4)); Vv = Array.from({ length: n }, () => Math.round(gauss() * 20) / 10); step = 0; };
+  seed = 9; gen(); step = 1;
+  function online(row, upto) { let m = -Infinity, l = 0, o = 0; const hist = [];
+    for (let t = 0; t < upto; t++) { const blk = row.slice(t * B, t * B + B), mt = Math.max(...blk), mn = Math.max(m, mt), sc = isFinite(m) ? Math.exp(m - mn) : 0;
+      const p = blk.map(v => Math.exp(v - mn)); l = sc * l + p.reduce((a, b) => a + b, 0); o = sc * o + p.reduce((a, v, k) => a + v * Vv[t * B + k], 0); m = mn; hist.push({ m, l, o, mt, sc }); }
+    return hist; }
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.3) { acc = 0; step = (step + 1) % (n / B + 1); } },
+    draw() {
+      const { ctx, w, h } = fit(c), narrow = w < 600, side = narrow ? Math.min(w - 20, h * 0.55) : Math.min(h - 30, w * 0.45), cs = side / n, x0 = 10, y0 = 24;
+      const smax = Math.max(...S.flat().map(Math.abs));
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('Werte S = QKᵀ (16 × 16, in Kacheln)', x0, 14);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const inQ = Math.floor(i / B) === QB, kb = Math.floor(j / B), done = inQ && kb < step, now = inQ && kb === step - 1;
+        ctx.fillStyle = inQ && (done || now) ? div(S[i][j] / smax) : rgba(tok('--muted'), inQ ? 0.18 : 0.08);
+        ctx.fillRect(x0 + j * cs, y0 + i * cs, cs - 1, cs - 1); }
+      ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 2; ctx.strokeRect(x0, y0 + QB * B * cs, n * cs, B * cs);
+      if (step > 0) { ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 3; ctx.strokeRect(x0 + (step - 1) * B * cs, y0 + QB * B * cs, B * cs, B * cs); }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.strokeRect(x0, y0 + (ROW) * cs, n * cs, cs); ctx.setLineDash([]);
+      for (let k = 1; k < n / B; k++) { ctx.strokeStyle = tok('--surface'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 + k * B * cs, y0); ctx.lineTo(x0 + k * B * cs, y0 + n * cs); ctx.moveTo(x0, y0 + k * B * cs); ctx.lineTo(x0 + n * cs, y0 + k * B * cs); ctx.stroke(); }
+      // Online-Softmax für eine Zeile
+      const row = S[ROW], hist = online(row, n / B), exact = softmax(row).reduce((a, p, j) => a + p * Vv[j], 0);
+      const tx = narrow ? x0 : x0 + n * cs + 30, ty = narrow ? y0 + n * cs + 26 : 30;
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.fillText(`Online-Softmax für Zeile ${ROW} (gestrichelt)`, tx, ty - 8);
+      const cols = ['Kachel', 'max', 'm', 'Faktor', 'ℓ', 'o'], cwid = narrow ? (w - 20) / 6 : Math.min(92, (w - tx - 10) / 6);
+      ctx.font = `11px ${MONO}`; cols.forEach((t, k) => { ctx.fillStyle = tok('--muted'); ctx.fillText(t, tx + k * cwid, ty + 14); });
+      hist.forEach((r, t) => { const y = ty + 34 + t * 22, on = t === step - 1, vis = t < step;
+        ctx.fillStyle = on ? rgba(tok('--bin2'), 0.18) : 'transparent'; ctx.fillRect(tx - 4, y - 14, cwid * 6, 20);
+        ctx.fillStyle = vis ? tok('--fg') : rgba(tok('--muted'), 0.4); ctx.font = `${on ? 500 : 400} 12px ${MONO}`;
+        [`${t + 1}`, vis ? nf(r.mt, 2) : '·', vis ? nf(r.m, 2) : '·', vis ? (t === 0 ? '–' : nf(r.sc, 3)) : '·', vis ? nf(r.l, 3) : '·', vis ? nf(r.o, 3) : '·'].forEach((s, k) => ctx.fillText(s, tx + k * cwid, y)); });
+      const yE = ty + 34 + 4 * 22 + 14;
+      ctx.font = `12px ${MONO}`; ctx.fillStyle = tok('--fg');
+      if (step === n / B) { const fin = hist.at(-1); ctx.fillText(`o/ℓ = ${nf(fin.o / fin.l, 5)}   normale Attention: ${nf(exact, 5)}`, tx, yE); }
+      else ctx.fillStyle = tok('--muted'), ctx.fillText('Ergebnis nach der letzten Kachel …', tx, yE);
+      const naive = n * n, mem = B * B;
+      $('#fl-read').innerHTML = `<span class="k">Schritt:</span> ${step} von ${n / B} Kacheln  <span class="k">·</span>  <span class="k">Zwischenspeicher pro Query-Block:</span> ${mem} Werte statt ${naive} für die ganze Matrix` +
+        `<br><span class="k">Bei n = 8192 und 16 Bit:</span> naive Attention speichert ${nf(8192 * 8192 * 2 / 2 ** 20, 0)} MiB pro Kopf und Sequenz für S, Flash Attention nur Kacheln im schnellen Speicher`;
+    } });
+  const go = d => { step = Math.max(0, Math.min(n / B, step + d)); acc = 0; m.draw(); };
+  $('#fl-prev').addEventListener('click', () => go(-1)); $('#fl-next').addEventListener('click', () => { if (step === n / B) step = 0; else go(1); m.draw(); });
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  $('#fl-re').addEventListener('click', () => { seed = Math.floor(Math.random() * 1e6) + 1; gen(); m.draw(); });
+})();
+</script>
+<script>
+/* ---------- LoRA ---------- */
+(() => {
+  const c = $('#cv-lora'), ir = $('#lora-r'), id = $('#lora-d'), n = 24;
+  let T, U, s, Vt;
+  function gen() {
+    const comps = [[1.0], [0.7], [0.45]].map(([a]) => ({ a, u: Array.from({ length: n }, gauss), v: Array.from({ length: n }, gauss) }));
+    T = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => comps.reduce((acc, q) => acc + q.a * q.u[i] * q.v[j], 0) / 4 + 0.05 * gauss()));
+    const AtA = new Float64Array(n * n); for (let p = 0; p < n; p++) for (let q = 0; q < n; q++) { let t = 0; for (let i = 0; i < n; i++) t += T[i][p] * T[i][q]; AtA[p * n + q] = t; }
+    const E = jacobiEig(AtA, n); s = E.val.map(v => Math.sqrt(Math.max(0, v))); Vt = E.vec;
+    U = Vt.map((v, k) => { const u = T.map(r => dotv(r, v)); return u.map(x => s[k] > 1e-9 ? x / s[k] : 0); });
+  }
+  seed = 21; gen();
+  const m = reg({ el: c, draw() {
+    const r = +ir.value, D = Math.pow(2, +id.value); $('#lora-r-o').textContent = r; $('#lora-d-o').textContent = D.toLocaleString('de-DE');
+    const A = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => { let t = 0; for (let k = 0; k < r; k++) t += s[k] * U[k][i] * Vt[k][j]; return t; }));
+    const Rm = T.map((row, i) => row.map((v, j) => v - A[i][j]));
+    const amax = Math.max(...T.flat().map(Math.abs));
+    const { ctx, w, h } = fit(c), narrow = w < 600;
+    const cs = narrow ? Math.max(3, Math.floor((w - 40) / (3 * n))) : Math.max(3, Math.floor(Math.min((w * 0.72 - 60) / (3 * n), (h - 50) / n)));
+    let x = 10; const y = 28;
+    [['ΔW (Ziel)', T], [`BA mit Rang ${r}`, A], ['Rest ΔW − BA', Rm]].forEach(([t, M]) => { heatmap(ctx, M, { x, y, cell: cs, title: t, color: v => div(v / (amax * 0.6)) }); x += n * cs + 18; });
+    // Singulärwerte
+    const gx = narrow ? 10 : x + 6, gy = narrow ? y + n * cs + 30 : 10, gw = narrow ? w - 20 : w - gx - 6, gh = narrow ? h - gy - 4 : h - 14;
+    const f = frame(ctx, gx, gy, gw, gh, { x0: 0, x1: 12.5, y0: 0, y1: s[0] * 1.08, xt: [1, 3, 6, 9, 12], yt: [0], yf: () => '0', xl: 'Singulärwerte σᵢ', l: 18, b: 32 });
+    for (let k = 0; k < 12; k++) { const X = f.X(k + 1), Y = f.Y(s[k]); ctx.fillStyle = k < r ? tok('--accent') : rgba(tok('--muted'), 0.45); ctx.fillRect(X - 5, Y, 10, f.by + f.bh - Y); }
+    const tot = s.reduce((a, v) => a + v * v, 0), kept = s.slice(0, r).reduce((a, v) => a + v * v, 0);
+    const full = D * D, lora = r * 2 * D;
+    $('#lora-read').innerHTML = `<span class="k">Erfasster Anteil von ‖ΔW‖²:</span> <b>${nf(100 * kept / tot, 1)} %</b>  <span class="k">·</span>  <span class="k">Parameter hier:</span> r·(d + k) = ${r * 2 * n} statt ${n * n}<br>` +
+      `<span class="k">Bei d = k = ${D.toLocaleString('de-DE')}:</span> ${lora.toLocaleString('de-DE')} statt ${full.toLocaleString('de-DE')} Parameter, also <b>${nf(100 * lora / full, lora / full < 0.01 ? 2 : 1)} %</b>`;
+  } });
+  [ir, id].forEach(e => e.addEventListener('input', () => m.draw()));
+  $('#lora-re').addEventListener('click', () => { seed = Math.floor(Math.random() * 1e6) + 1; gen(); m.draw(); });
+})();
+</script>
+</body>
+</html>

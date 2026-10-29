@@ -111,7 +111,7 @@ def preprocess(md):
 
 
 def render(md):
-    return markdown.markdown(md, extensions=['tables', 'attr_list', 'md_in_html', 'pymdownx.arithmatex'],
+    return markdown.markdown(md, extensions=['tables', 'attr_list', 'md_in_html', 'fenced_code', 'pymdownx.arithmatex'],
                              extension_configs={'pymdownx.arithmatex': {'generic': True}})
 
 

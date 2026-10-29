@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sinus-Positionskodierung</title>
+<!-- Erzeugt von build.py aus src/figures/tr-06-positionskodierung.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-pe" class="c-tr-tall" tabindex="0" role="img" aria-label="Oben die Positionskodierung als Farbbild über Position und Dimension, unten das Skalarprodukt zweier Positionskodierungen in Abhängigkeit vom Abstand."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="pe-d">d_model</label><output id="pe-d-o"></output></div><input id="pe-d" type="range" min="4" max="7" step="1" value="6" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="pe-p">Bezugsposition p</label><output id="pe-p-o"></output></div><input id="pe-p" type="range" min="0" max="80" step="1" value="20" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="pe-read"></div>
+  <figcaption><b>Abb. 6</b> Oben die Sinus-Positionskodierung für die Positionen 0 bis 100: jede Spalte eine Position, jede Zeile eine Dimension, rot negativ, blau positiv. Die oberen Dimensionen wechseln schnell, die unteren langsam. Unten das Skalarprodukt der Kodierung von Position \(p\) mit allen anderen Positionen, normiert auf 1 beim Abstand 0. Es hängt nur vom Abstand ab: Verschiebt man \(p\), wandert die Kurve unverändert mit. Ein Klick in das obere Bild setzt \(p\).</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- Positionskodierung ---------- */
+(() => {
+  const c = $('#cv-pe'), id = $('#pe-d'), ip = $('#pe-p'), NP = 101;
+  const PE = (p, d) => Array.from({ length: d }, (_, k) => { const i = Math.floor(k / 2), f = Math.pow(10000, -2 * i / d); return k % 2 ? Math.cos(p * f) : Math.sin(p * f); });
+  let geo = null;
+  const m = reg({ el: c, draw() {
+    const d = Math.pow(2, +id.value), p0 = +ip.value; $('#pe-d-o').textContent = d; $('#pe-p-o').textContent = p0;
+    const { ctx, w, h } = fit(c), L = 46, R = 10, top = 22, hh = h * 0.5, cw = (w - L - R) / NP, ch = (hh - top) / d;
+    const all = Array.from({ length: NP }, (_, p) => PE(p, d));
+    for (let p = 0; p < NP; p++) for (let k = 0; k < d; k++) { ctx.fillStyle = div(all[p][k]); ctx.fillRect(L + p * cw, top + k * ch, Math.ceil(cw), Math.ceil(ch)); }
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.strokeRect(L + p0 * cw, top, cw, d * ch);
+    ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'right'; ctx.fillText('Dim 0', L - 4, top + 8); ctx.fillText(`${d - 1}`, L - 4, top + d * ch);
+    ctx.textAlign = 'center'; [0, 25, 50, 75, 100].forEach(p => ctx.fillText(p, L + (p + 0.5) * cw, top + d * ch + 14));
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('PE(Position, Dimension)', L, 14);
+    geo = { L, cw, top, bh: d * ch };
+    const dots = all.map(v => dotv(v, all[p0]) / (d / 2));
+    const f = frame(ctx, 0, hh + 24, w, h - hh - 24, { x0: 0, x1: NP - 1, y0: -0.4, y1: 1.05, xt: [0, 25, 50, 75, 100], yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'Position', yl: 'PE(p)·PE(x), normiert', l: L, r: R, b: 32, t: 6 });
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2; ctx.beginPath(); dots.forEach((v, x) => x ? ctx.lineTo(f.X(x), f.Y(v)) : ctx.moveTo(f.X(x), f.Y(v))); ctx.stroke();
+    ctx.strokeStyle = tok('--fg'); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(f.X(p0), f.by); ctx.lineTo(f.X(p0), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+    const at = k => dotv(PE(p0 + k, d), PE(p0, d)) / (d / 2), at2 = k => dotv(PE(k + 50, d), PE(50, d)) / (d / 2);
+    $('#pe-read').innerHTML = `<span class="k">Wellenlängen:</span> von ${nf(2 * Math.PI, 1)} (Dim 0/1) bis ${ex(2 * Math.PI * Math.pow(10000, (d - 2) / d), 1)} Positionen  <span class="k">·</span>  <span class="k">Ähnlichkeit bei Abstand 5:</span> ${nf(at(5), 3)} ab p = ${p0}, ${nf(at2(5), 3)} ab p = 50`;
+  } });
+  c.addEventListener('click', e => { if (!geo) return; const [x, y] = mouse(c, e); if (y < geo.top || y > geo.top + geo.bh) return; const p = Math.round((x - geo.L) / geo.cw - 0.5); if (p >= 0 && p <= 80) { ip.value = p; m.draw(); } });
+  [id, ip].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

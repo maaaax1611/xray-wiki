@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parameter, Rechenaufwand und KV-Cache</title>
+<!-- Erzeugt von build.py aus src/figures/tr-10-aufwand.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-cost" class="c-tr" role="img" aria-label="Links Rechenoperationen pro erzeugtem Token über der Kontextlänge, aufgeteilt in Gewichte und Attention; rechts Speicher des KV-Caches über der Kontextlänge."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 260px"><div class="lab"><label for="cost-pre">Modell</label></div><select id="cost-pre" autocomplete="off">
+      <option value="0">GPT-2 small</option><option value="1" selected>Llama-2-7B</option><option value="2">Llama-2-70B (GQA)</option><option value="-1">eigene Werte</option></select></div>
+    <div class="ctrl"><div class="lab"><label for="cost-L">Blöcke L</label><output id="cost-L-o"></output></div><input id="cost-L" type="range" min="2" max="96" step="1" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="cost-d">d_model</label><output id="cost-d-o"></output></div><input id="cost-d" type="range" min="6" max="14" step="0.25" autocomplete="off"></div>
+  </div>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="cost-h">Köpfe</label><output id="cost-h-o"></output></div><input id="cost-h" type="range" min="1" max="128" step="1" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="cost-kv">Key-Value-Köpfe</label><output id="cost-kv-o"></output></div><input id="cost-kv" type="range" min="1" max="128" step="1" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="cost-n">Kontextlänge n</label><output id="cost-n-o"></output></div><input id="cost-n" type="range" min="8" max="17" step="1" value="12" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="cost-read"></div>
+  <figcaption><b>Abb. 10</b> Grobe Abschätzung für ein Decoder-only-Modell mit \(d_\text{ff} = 4d\) und 16-Bit-Zahlen. Links die Rechenoperationen für ein neues Token an Position \(n\) (mit KV-Cache): Der Anteil der Gewichte ist konstant, der Anteil der Attention wächst linear mit \(n\) und überholt ihn bei etwa \(n = 6d\). Rechts der KV-Cache für eine Sequenz. Weniger Key-Value-Köpfe (GQA) verkleinern ihn im selben Verhältnis. Die Parameterformel ist eine Näherung, echte Modelle weichen je nach FFN-Aufbau etwas ab.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- Aufwand ---------- */
+(() => {
+  const c = $('#cv-cost'), ip = $('#cost-pre'), iL = $('#cost-L'), id = $('#cost-d'), ih = $('#cost-h'), ikv = $('#cost-kv'), iN = $('#cost-n');
+  const PRE = [{ L: 12, d: 768, h: 12, kv: 12, V: 50257 }, { L: 32, d: 4096, h: 32, kv: 32, V: 32000 }, { L: 80, d: 8192, h: 64, kv: 8, V: 32000 }];
+  let V = 32000;
+  const set = p => { iL.value = p.L; id.value = Math.log2(p.d); ih.value = p.h; ikv.value = p.kv; V = p.V; };
+  set(PRE[1]);
+  const bytes = b => { if (b === 0) return '0'; const u = ['B', 'KiB', 'MiB', 'GiB', 'TiB']; let i = 0; while (b >= 1024 && i < 4) { b /= 1024; i++; } return `${nf(b, b < 10 ? 2 : b < 100 ? 1 : 0)} ${u[i]}`; };
+  const big = v => v === 0 ? '0' : v >= 1e12 ? nf(v / 1e12, 1) + ' T' : v >= 1e9 ? nf(v / 1e9, 1) + ' G' : v >= 1e6 ? nf(v / 1e6, 1) + ' M' : nf(v / 1e3, 1) + ' k';
+  const m = reg({ el: c, draw() {
+    const L = +iL.value, d = Math.round(Math.pow(2, +id.value) / 64) * 64, h = +ih.value, kv = Math.min(+ikv.value, h), n = Math.pow(2, +iN.value);
+    $('#cost-L-o').textContent = L; $('#cost-d-o').textContent = d; $('#cost-h-o').textContent = h; $('#cost-kv-o').textContent = kv; $('#cost-n-o').textContent = n.toLocaleString('de-DE');
+    const N = 12 * L * d * d + V * d, wFl = 2 * N, aFl = x => 4 * L * x * d, kvB = x => 2 * L * x * d * (kv / h) * 2;
+    const { ctx, w, h: H } = fit(c), narrow = w < 560, cw = narrow ? w : w / 2 - 6, ch = narrow ? H / 2 : H;
+    const xs = []; for (let e = 8; e <= 17; e += 0.25) xs.push(e);
+    const ymax = Math.max(wFl + aFl(Math.pow(2, 17)), 1) * 1.05;
+    const f = frame(ctx, 0, 0, cw, ch, { x0: 8, x1: 17, y0: 0, y1: ymax, xt: [8, 10, 12, 14, 16], xf: e => (Math.pow(2, e) / 1024 >= 1 ? Math.pow(2, e) / 1024 + 'k' : Math.pow(2, e)), yt: [0, ymax / 2 / 1.05, ymax / 1.05], yf: v => big(v), xl: 'Kontextlänge n', yl: 'Operationen pro Token', l: 72, b: 34 });
+    ctx.fillStyle = rgba(tok('--accent'), 0.35); ctx.beginPath(); ctx.moveTo(f.X(8), f.Y(0)); xs.forEach(e => ctx.lineTo(f.X(e), f.Y(wFl))); ctx.lineTo(f.X(17), f.Y(0)); ctx.fill();
+    ctx.fillStyle = rgba(tok('--bin2'), 0.6); ctx.beginPath(); xs.forEach((e, i) => i ? ctx.lineTo(f.X(e), f.Y(wFl + aFl(Math.pow(2, e)))) : ctx.moveTo(f.X(e), f.Y(wFl + aFl(Math.pow(2, e))))); for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(f.X(xs[i]), f.Y(wFl)); ctx.fill();
+    ctx.strokeStyle = tok('--fg'); ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(f.X(+iN.value), f.by); ctx.lineTo(f.X(+iN.value), f.by + f.bh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--accent'); ctx.fillText('Gewichte 2·N', f.bx + 8, f.by + 14); ctx.fillStyle = tok('--bin2'); ctx.fillText('Attention 4·L·n·d', f.bx + 8, f.by + 30);
+    const ox = narrow ? 0 : w / 2 + 6, oy = narrow ? ch : 0, kmax = kvB(Math.pow(2, 17)) * 1.05;
+    const g = frame(ctx, ox, oy, cw, ch, { x0: 8, x1: 17, y0: 0, y1: kmax, xt: [8, 10, 12, 14, 16], xf: e => (Math.pow(2, e) / 1024 >= 1 ? Math.pow(2, e) / 1024 + 'k' : Math.pow(2, e)), yt: [0, kmax / 2 / 1.05, kmax / 1.05], yf: v => bytes(v), xl: 'Kontextlänge n', yl: 'KV-Cache je Sequenz', l: 76, b: 34 });
+    ctx.strokeStyle = tok('--bin1'); ctx.lineWidth = 2.4; ctx.beginPath(); xs.forEach((e, i) => i ? ctx.lineTo(g.X(e), g.Y(kvB(Math.pow(2, e)))) : ctx.moveTo(g.X(e), g.Y(kvB(Math.pow(2, e))))); ctx.stroke();
+    if (kv < h) { ctx.strokeStyle = rgba(tok('--muted'), 0.7); ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5; ctx.beginPath(); xs.forEach((e, i) => { const y = g.Y(Math.min(kmax, kvB(Math.pow(2, e)) * h / kv)); i ? ctx.lineTo(g.X(e), y) : ctx.moveTo(g.X(e), y); }); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('ohne GQA', g.bx + 8, g.by + 14); }
+    ctx.fillStyle = tok('--fg'); ctx.beginPath(); ctx.arc(g.X(+iN.value), g.Y(kvB(n)), 4.5, 0, 7); ctx.fill();
+    $('#cost-read').innerHTML = `<span class="k">Parameter ≈ 12·L·d² + V·d =</span> <b>${big(N)}</b>  <span class="k">·</span>  <span class="k">Gewichte in 16 Bit:</span> ${bytes(2 * N)}  <span class="k">·</span>  <span class="k">d_k =</span> ${Math.round(d / h)}<br>` +
+      `<span class="k">Pro Token bei n = ${n.toLocaleString('de-DE')}:</span> ${big(wFl)} (Gewichte) + ${big(aFl(n))} (Attention) Operationen  <span class="k">·</span>  <span class="k">KV-Cache:</span> <b>${bytes(kvB(n))}</b> je Sequenz${kv < h ? `, ohne GQA ${bytes(kvB(n) * h / kv)}` : ''}`;
+  } });
+  ip.addEventListener('input', () => { if (+ip.value >= 0) set(PRE[+ip.value]); m.draw(); });
+  [iL, id, ih, ikv].forEach(e => e.addEventListener('input', () => { ip.value = -1; m.draw(); }));
+  iN.addEventListener('input', () => m.draw());
+})();
+</script>
+</body>
+</html>

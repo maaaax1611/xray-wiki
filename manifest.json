@@ -143,6 +143,23 @@
     "Pile-up",
     "Spektral-CT"
    ]
+  },
+  {
+   "id": "transformer",
+   "category": "ml",
+   "path": "ml/transformer.html",
+   "title": "Transformer",
+   "desc": "Tokenisierung, Embeddings, Attention, Multi-Head, Positionskodierung, Transformer-Block, Masken, Sampling, KV-Cache, Flash Attention und LoRA.",
+   "tags": [
+    "Machine Learning",
+    "Transformer",
+    "Attention",
+    "LLM",
+    "BPE",
+    "LoRA",
+    "Flash Attention",
+    "KV-Cache"
+   ]
   }
  ],
  "widgets": [
@@ -318,6 +335,90 @@
    "slug": "la-12-pca",
    "page": "lineare-algebra",
    "title": "PCA",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-01-bpe",
+   "page": "transformer",
+   "title": "Byte Pair Encoding Schritt für Schritt",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-02-embeddings",
+   "page": "transformer",
+   "title": "Embeddings und Ähnlichkeit",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-03-attention-rechner",
+   "page": "transformer",
+   "title": "Attention Schritt für Schritt",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-04-skalierung",
+   "page": "transformer",
+   "title": "Warum durch √d_k teilen",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-05-multi-head",
+   "page": "transformer",
+   "title": "Mehrere Attention-Köpfe",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-06-positionskodierung",
+   "page": "transformer",
+   "title": "Sinus-Positionskodierung",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-07-block",
+   "page": "transformer",
+   "title": "Aufbau eines Transformer-Blocks",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-08-masken",
+   "page": "transformer",
+   "title": "Kausale Maske und Padding-Maske",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-09-sampling",
+   "page": "transformer",
+   "title": "Temperatur, Top-k und Top-p",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-10-aufwand",
+   "page": "transformer",
+   "title": "Parameter, Rechenaufwand und KV-Cache",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-11-flash-attention",
+   "page": "transformer",
+   "title": "Flash Attention und Online-Softmax",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-12-lora",
+   "page": "transformer",
+   "title": "LoRA: Anpassung mit niedrigem Rang",
    "interactive": true,
    "height": 640
   },

@@ -1,0 +1,61 @@
+<!-- title: Flash Attention und Online-Softmax
+     lib: tr -->
+<figure class="fig">
+  <canvas id="cv-fl" class="c-tr-wide" role="img" aria-label="Die Matrix der Attention-Werte in Kacheln. Für einen Query-Block wird eine Key-Value-Kachel nach der anderen bearbeitet; daneben laufendes Maximum, laufende Summe und Ausgabe für eine Zeile."></canvas>
+  <div class="ctrls">
+    <button class="btn" type="button" id="fl-prev">Zurück</button>
+    <button class="btn" type="button" id="fl-next">Nächste Kachel</button>
+    <button class="btn" type="button" id="fl-play">Abspielen</button>
+    <button class="btn" type="button" id="fl-re">Neue Werte</button>
+  </div>
+  <div class="readout" id="fl-read"></div>
+  <figcaption><b>Abb.</b> Flash Attention für 16 Queries und 16 Keys in Kacheln zu 4. Gezeigt ist der zweite Query-Block (hervorgehoben). Er wird nacheinander mit jeder Key-Value-Kachel verrechnet, die vollständige 16 × 16-Matrix existiert nie im Speicher. Rechts die Online-Softmax für eine Zeile: Laufendes Maximum \(m\), laufende Summe \(\ell\) und Ausgabe \(o\) (hier eindimensionale Values) werden nach jeder Kachel nachgeführt, „max“ ist das Maximum der neuen Kachel und „Faktor“ \(e^{m_\text{alt} - m}\), mit dem alte Summe und Ausgabe heruntergerechnet werden. Am Ende stimmt \(o/\ell\) exakt mit der normalen Attention überein.</figcaption>
+</figure>
+<script>
+/* ---------- Flash Attention ---------- */
+(() => {
+  const c = $('#cv-fl'), bplay = $('#fl-play'), n = 16, B = 4, QB = 1, ROW = QB * B + 1;
+  let S, Vv, step = 0, acc = 0;
+  const gen = () => { S = Array.from({ length: n }, () => Array.from({ length: n }, () => gauss() * 1.4)); Vv = Array.from({ length: n }, () => Math.round(gauss() * 20) / 10); step = 0; };
+  seed = 9; gen(); step = 1;
+  function online(row, upto) { let m = -Infinity, l = 0, o = 0; const hist = [];
+    for (let t = 0; t < upto; t++) { const blk = row.slice(t * B, t * B + B), mt = Math.max(...blk), mn = Math.max(m, mt), sc = isFinite(m) ? Math.exp(m - mn) : 0;
+      const p = blk.map(v => Math.exp(v - mn)); l = sc * l + p.reduce((a, b) => a + b, 0); o = sc * o + p.reduce((a, v, k) => a + v * Vv[t * B + k], 0); m = mn; hist.push({ m, l, o, mt, sc }); }
+    return hist; }
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.3) { acc = 0; step = (step + 1) % (n / B + 1); } },
+    draw() {
+      const { ctx, w, h } = fit(c), narrow = w < 600, side = narrow ? Math.min(w - 20, h * 0.55) : Math.min(h - 30, w * 0.45), cs = side / n, x0 = 10, y0 = 24;
+      const smax = Math.max(...S.flat().map(Math.abs));
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('Werte S = QKᵀ (16 × 16, in Kacheln)', x0, 14);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const inQ = Math.floor(i / B) === QB, kb = Math.floor(j / B), done = inQ && kb < step, now = inQ && kb === step - 1;
+        ctx.fillStyle = inQ && (done || now) ? div(S[i][j] / smax) : rgba(tok('--muted'), inQ ? 0.18 : 0.08);
+        ctx.fillRect(x0 + j * cs, y0 + i * cs, cs - 1, cs - 1); }
+      ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 2; ctx.strokeRect(x0, y0 + QB * B * cs, n * cs, B * cs);
+      if (step > 0) { ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 3; ctx.strokeRect(x0 + (step - 1) * B * cs, y0 + QB * B * cs, B * cs, B * cs); }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.strokeRect(x0, y0 + (ROW) * cs, n * cs, cs); ctx.setLineDash([]);
+      for (let k = 1; k < n / B; k++) { ctx.strokeStyle = tok('--surface'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 + k * B * cs, y0); ctx.lineTo(x0 + k * B * cs, y0 + n * cs); ctx.moveTo(x0, y0 + k * B * cs); ctx.lineTo(x0 + n * cs, y0 + k * B * cs); ctx.stroke(); }
+      // Online-Softmax für eine Zeile
+      const row = S[ROW], hist = online(row, n / B), exact = softmax(row).reduce((a, p, j) => a + p * Vv[j], 0);
+      const tx = narrow ? x0 : x0 + n * cs + 30, ty = narrow ? y0 + n * cs + 26 : 30;
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.fillText(`Online-Softmax für Zeile ${ROW} (gestrichelt)`, tx, ty - 8);
+      const cols = ['Kachel', 'max', 'm', 'Faktor', 'ℓ', 'o'], cwid = narrow ? (w - 20) / 6 : Math.min(92, (w - tx - 10) / 6);
+      ctx.font = `11px ${MONO}`; cols.forEach((t, k) => { ctx.fillStyle = tok('--muted'); ctx.fillText(t, tx + k * cwid, ty + 14); });
+      hist.forEach((r, t) => { const y = ty + 34 + t * 22, on = t === step - 1, vis = t < step;
+        ctx.fillStyle = on ? rgba(tok('--bin2'), 0.18) : 'transparent'; ctx.fillRect(tx - 4, y - 14, cwid * 6, 20);
+        ctx.fillStyle = vis ? tok('--fg') : rgba(tok('--muted'), 0.4); ctx.font = `${on ? 500 : 400} 12px ${MONO}`;
+        [`${t + 1}`, vis ? nf(r.mt, 2) : '·', vis ? nf(r.m, 2) : '·', vis ? (t === 0 ? '–' : nf(r.sc, 3)) : '·', vis ? nf(r.l, 3) : '·', vis ? nf(r.o, 3) : '·'].forEach((s, k) => ctx.fillText(s, tx + k * cwid, y)); });
+      const yE = ty + 34 + 4 * 22 + 14;
+      ctx.font = `12px ${MONO}`; ctx.fillStyle = tok('--fg');
+      if (step === n / B) { const fin = hist.at(-1); ctx.fillText(`o/ℓ = ${nf(fin.o / fin.l, 5)}   normale Attention: ${nf(exact, 5)}`, tx, yE); }
+      else ctx.fillStyle = tok('--muted'), ctx.fillText('Ergebnis nach der letzten Kachel …', tx, yE);
+      const naive = n * n, mem = B * B;
+      $('#fl-read').innerHTML = `<span class="k">Schritt:</span> ${step} von ${n / B} Kacheln  <span class="k">·</span>  <span class="k">Zwischenspeicher pro Query-Block:</span> ${mem} Werte statt ${naive} für die ganze Matrix` +
+        `<br><span class="k">Bei n = 8192 und 16 Bit:</span> naive Attention speichert ${nf(8192 * 8192 * 2 / 2 ** 20, 0)} MiB pro Kopf und Sequenz für S, Flash Attention nur Kacheln im schnellen Speicher`;
+    } });
+  const go = d => { step = Math.max(0, Math.min(n / B, step + d)); acc = 0; m.draw(); };
+  $('#fl-prev').addEventListener('click', () => go(-1)); $('#fl-next').addEventListener('click', () => { if (step === n / B) step = 0; else go(1); m.draw(); });
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  $('#fl-re').addEventListener('click', () => { seed = Math.floor(Math.random() * 1e6) + 1; gen(); m.draw(); });
+})();
+</script>

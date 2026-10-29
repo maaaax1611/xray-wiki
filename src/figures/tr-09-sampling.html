@@ -1,0 +1,49 @@
+<!-- title: Temperatur, Top-k und Top-p
+     lib: tr -->
+<figure class="fig">
+  <canvas id="cv-smp" class="c-tr" role="img" aria-label="Balkendiagramm der Wahrscheinlichkeiten für das nächste Token nach „Die Katze sitzt auf der“, verändert durch Temperatur, Top-k und Top-p."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="smp-t">Temperatur T</label><output id="smp-t-o"></output></div><input id="smp-t" type="range" min="0.05" max="2.5" step="0.05" value="1" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="smp-k">Top-k</label><output id="smp-k-o"></output></div><input id="smp-k" type="range" min="1" max="12" step="1" value="12" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="smp-p">Top-p</label><output id="smp-p-o"></output></div><input id="smp-p" type="range" min="0.05" max="1" step="0.05" value="1" autocomplete="off"></div>
+  </div>
+  <div class="ctrls">
+    <button class="btn" type="button" id="smp-go">10-mal ziehen</button>
+    <div class="chips samples" id="smp-out"></div>
+  </div>
+  <div class="readout" id="smp-read"></div>
+  <figcaption><b>Abb.</b> Wahrscheinlichkeiten für das nächste Token nach „Die Katze sitzt auf der“, mit ausgedachten Logits. Die Umrisse zeigen die Verteilung bei \(T = 1\) ohne Einschränkung, die Balken die tatsächlich verwendete. Kleine Temperatur macht fast alles zu „Matte“, große gibt auch „Mond“ eine Chance. Top-k und Top-p schneiden den unwahrscheinlichen Rest ab (grau) und normieren die verbleibenden Tokens neu.</figcaption>
+</figure>
+<script>
+/* ---------- Sampling ---------- */
+(() => {
+  const c = $('#cv-smp'), iT = $('#smp-t'), iK = $('#smp-k'), iP = $('#smp-p');
+  const W = ['Matte', 'Couch', 'Fensterbank', 'Treppe', 'Wiese', 'Mauer', 'Tastatur', 'Decke', 'Heizung', 'Zeitung', 'Mond', 'Banane'];
+  const Z = [3.1, 2.4, 2.2, 1.6, 1.3, 1.1, 0.9, 0.7, 0.5, 0.1, -1.4, -2.2];
+  function dist() {
+    const T = +iT.value, k = +iK.value, p = +iP.value, q = softmax(Z, T);
+    const order = q.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+    const keep = new Set(); let cum = 0;
+    for (const [v, i] of order) { if (keep.size >= k) break; if (cum >= p && keep.size > 0) break; keep.add(i); cum += v; }
+    const s = [...keep].reduce((a, i) => a + q[i], 0);
+    return { q, keep, r: q.map((v, i) => keep.has(i) ? v / s : 0) };
+  }
+  const m = reg({ el: c, draw() {
+    $('#smp-t-o').textContent = nf(+iT.value, 2); $('#smp-k-o').textContent = +iK.value; $('#smp-p-o').textContent = nf(+iP.value, 2);
+    const { r, keep } = dist(), base = softmax(Z);
+    const { ctx, w, h } = fit(c);
+    const f = frame(ctx, 0, 0, w, h, { x0: 0, x1: W.length, y0: 0, y1: 1, yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v, 2), yl: 'Wahrscheinlichkeit', l: 46, b: 64 });
+    const bw = f.bw / W.length;
+    W.forEach((t, i) => { const x = f.bx + i * bw;
+      ctx.fillStyle = keep.has(i) ? tok('--accent') : rgba(tok('--muted'), 0.35); const y = f.Y(r[i]); ctx.fillRect(x + 3, y, bw - 6, f.by + f.bh - y);
+      ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1; ctx.setLineDash([3, 2]); const yb = f.Y(base[i]); ctx.strokeRect(x + 3, yb, bw - 6, f.by + f.bh - yb); ctx.setLineDash([]);
+      ctx.save(); ctx.translate(x + bw / 2, f.by + f.bh + 8); ctx.rotate(-Math.PI / 5); ctx.fillStyle = keep.has(i) ? tok('--fg') : tok('--muted'); ctx.font = `12px ${DISP}`; ctx.textAlign = 'right'; ctx.fillText(t, 0, 8); ctx.restore();
+      if (r[i] > 0.005) { ctx.fillStyle = tok('--fg'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(nf(r[i] * 100, r[i] < 0.1 ? 1 : 0) + ' %', x + bw / 2, y - 4); } });
+    $('#smp-read').innerHTML = `<span class="k">Zugelassene Tokens:</span> ${keep.size} von ${W.length}  <span class="k">·</span>  <span class="k">P(Matte):</span> <b>${nf(r[0] * 100, 1)} %</b>  <span class="k">·</span>  <span class="k">Entropie:</span> ${nf(entropy(r), 2)} bit (bei T = 1 ohne Einschränkung ${nf(entropy(base), 2)} bit)`;
+  } });
+  $('#smp-go').addEventListener('click', () => { const { r } = dist(); const out = [];
+    for (let s = 0; s < 10; s++) { let u = Math.random(), i = 0; while (i < r.length - 1 && (u -= r[i]) > 0) i++; out.push(W[i]); }
+    $('#smp-out').innerHTML = out.map(t => `<span class="chip">${t}</span>`).join(''); });
+  [iT, iK, iP].forEach(e => e.addEventListener('input', () => { m.draw(); }));
+})();
+</script>

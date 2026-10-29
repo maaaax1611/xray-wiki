@@ -1,0 +1,44 @@
+<!-- title: Warum durch √d_k teilen
+     lib: tr -->
+<figure class="fig">
+  <canvas id="cv-sk" class="c-tr" role="img" aria-label="Links die Softmax-Gewichte von 16 zufälligen Keys für eine Query, rechts das mittlere größte Gewicht in Abhängigkeit von d_k, mit und ohne Skalierung."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="sk-d">Dimension d_k</label><output id="sk-d-o"></output></div><input id="sk-d" type="range" min="0" max="9" step="1" value="6" autocomplete="off"></div>
+    <label class="chk"><input id="sk-s" type="checkbox" checked autocomplete="off"> durch √d_k teilen</label>
+    <button class="btn" type="button" id="sk-re">Neu würfeln</button>
+  </div>
+  <div class="readout" id="sk-read"></div>
+  <figcaption><b>Abb.</b> Eine Query und 16 Keys mit zufälligen, standardnormalverteilten Komponenten. Links die Softmax-Gewichte, sortiert. Ohne Skalierung wächst die Streuung der Skalarprodukte mit \(\sqrt{d_k}\), und schon ab \(d_k \approx 64\) bekommt meist ein einziger Key fast das ganze Gewicht. Rechts das größte Gewicht, gemittelt über 300 Versuche: Mit Skalierung bleibt es unabhängig von \(d_k\).</figcaption>
+</figure>
+<script>
+/* ---------- Skalierung ---------- */
+(() => {
+  const c = $('#cv-sk'), id = $('#sk-d'), is = $('#sk-s'), N = 16, DS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+  const trial = (d, scale) => { const q = Array.from({ length: d }, gauss); const s = Array.from({ length: N }, () => dotv(q, Array.from({ length: d }, gauss)) / (scale ? Math.sqrt(d) : 1)); return s; };
+  seed = 3;
+  const curve = sc => DS.map(d => { let m = 0; for (let t = 0; t < 300; t++) m += Math.max(...softmax(trial(d, sc))); return m / 300; });
+  const C1 = curve(true), C0 = curve(false);
+  let cur = null;
+  const roll = () => { seed = Math.floor(Math.random() * 1e6) + 1; cur = null; };
+  const m = reg({ el: c, draw() {
+    const d = DS[+id.value], sc = is.checked; $('#sk-d-o').textContent = d;
+    if (!cur || cur.d !== d || cur.sc !== sc) { const s0 = seed; cur = { d, sc, s: trial(d, sc) }; seed = s0; }
+    const p = softmax(cur.s).slice().sort((a, b) => b - a);
+    const { ctx, w, h } = fit(c), narrow = w < 560, lw = narrow ? w : w * 0.5, lh = narrow ? h / 2 : h;
+    const f = frame(ctx, 0, 0, lw, lh, { x0: 0, x1: N, y0: 0, y1: 1, yt: [0, 0.25, 0.5, 0.75, 1], yf: v => nf(v, 2), xl: 'Keys, nach Gewicht sortiert', yl: 'Gewicht', l: 44, b: 34 });
+    const bw = f.bw / N;
+    p.forEach((v, i) => { ctx.fillStyle = i === 0 ? tok('--accent') : rgba(tok('--accent'), 0.5); const y = f.Y(v); ctx.fillRect(f.bx + i * bw + 2, y, bw - 4, f.by + f.bh - y); });
+    ctx.strokeStyle = tok('--muted'); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(f.bx, f.Y(1 / N)); ctx.lineTo(f.bx + f.bw, f.Y(1 / N)); ctx.stroke(); ctx.setLineDash([]);
+    const ox = narrow ? 0 : lw + 10, oy = narrow ? lh : 0;
+    const g = frame(ctx, ox, oy, narrow ? w : w - lw - 10, lh, { x0: 0, x1: DS.length - 1, y0: 0, y1: 1, xt: DS.map((_, i) => i), xf: i => String(DS[i]), yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'd_k', yl: 'mittleres größtes Gewicht', l: 44, b: 34 });
+    [[C0, tok('--hole'), 'ohne Skalierung'], [C1, tok('--accent'), 'mit √d_k']].forEach(([C, col, lab], k) => {
+      ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); C.forEach((v, i) => i ? ctx.lineTo(g.X(i), g.Y(v)) : ctx.moveTo(g.X(i), g.Y(v))); ctx.stroke();
+      ctx.fillStyle = col; ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(lab, g.bx + 8, g.by + 14 + k * 16); });
+    const i = +id.value; ctx.fillStyle = tok('--fg'); ctx.beginPath(); ctx.arc(g.X(i), g.Y((sc ? C1 : C0)[i]), 5, 0, 7); ctx.fill();
+    const sd = Math.sqrt(cur.s.reduce((a, v) => a + v * v, 0) / N);
+    $('#sk-read').innerHTML = `<span class="k">Streuung der Werte:</span> ${nf(sd, 2)} (erwartet ${nf(sc ? 1 : Math.sqrt(d), 2)})  <span class="k">·</span>  <span class="k">größtes Gewicht:</span> <b>${nf(p[0], 3)}</b>  <span class="k">·</span>  <span class="k">Entropie:</span> ${nf(entropy(p), 2)} von ${nf(Math.log2(N), 2)} bit`;
+  } });
+  [id, is].forEach(e => e.addEventListener('input', () => m.draw()));
+  $('#sk-re').addEventListener('click', () => { roll(); m.draw(); });
+})();
+</script>

@@ -1,0 +1,61 @@
+<!-- title: Byte Pair Encoding Schritt für Schritt
+     lib: tr -->
+<figure class="fig">
+  <div class="ctrl"><div class="lab"><label for="bpe-txt">Trainingstext</label></div>
+    <input id="bpe-txt" type="text" autocomplete="off" value="die katze sitzt auf der matte. die katzen sitzen auf den matten. eine tatze, zwei tatzen. der satz, die sätze, die katze sitzt."></div>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="bpe-k">Anzahl Verschmelzungen</label><output id="bpe-k-o"></output></div><input id="bpe-k" type="range" min="0" max="40" step="1" value="8" autocomplete="off"></div>
+    <button class="btn" type="button" id="bpe-prev">− 1</button>
+    <button class="btn" type="button" id="bpe-next">+ 1</button>
+  </div>
+  <div class="bpe-grid">
+    <div><div class="lbl">Wörter im Text, zerlegt in Tokens (Häufigkeit klein dahinter)</div><div class="chips" id="bpe-words"></div></div>
+    <div><div class="lbl">Gelernte Verschmelzungen (Paar → Token, Anzahl)</div><div class="merges" id="bpe-merges"></div></div>
+  </div>
+  <div class="readout" id="bpe-read"></div>
+  <figcaption><b>Abb.</b> BPE auf einem kleinen Text. Zu Beginn ist jedes Zeichen ein Token. Jede Verschmelzung ersetzt das häufigste benachbarte Paar im ganzen Text durch ein neues Token (dunkel hervorgehoben). Mit jedem Schritt wächst das Vokabular um eins, und die Zahl der Tokens im Text sinkt. Der Text lässt sich ändern.</figcaption>
+</figure>
+<script>
+/* ---------- BPE ---------- */
+(() => {
+  const iT = $('#bpe-txt'), iK = $('#bpe-k');
+  let words = [], merges = [];
+  function train() {
+    const freq = new Map();
+    for (const w of iT.value.toLowerCase().match(/[\p{L}]+/gu) || []) freq.set(w, (freq.get(w) || 0) + 1);
+    words = [...freq].sort((a, b) => b[1] - a[1]).map(([w, f]) => ({ w, f, steps: [] }));
+    let seqs = words.map(x => [...x.w]);
+    merges = [];
+    for (let k = 0; k < 40; k++) {
+      words.forEach((x, i) => x.steps.push(seqs[i].slice()));
+      const pc = new Map();
+      seqs.forEach((s, i) => { for (let j = 0; j + 1 < s.length; j++) { const key = s[j] + '\u0000' + s[j + 1]; pc.set(key, (pc.get(key) || 0) + words[i].f); } });
+      if (!pc.size) break;
+      let best = null, bc = 0;
+      for (const [key, c] of pc) if (c > bc || (c === bc && key < best)) { best = key; bc = c; }
+      if (bc < 2) break;
+      const [a, b] = best.split('\u0000');
+      merges.push({ a, b, t: a + b, c: bc });
+      seqs = seqs.map(s => { const o = []; for (let j = 0; j < s.length; j++) { if (j + 1 < s.length && s[j] === a && s[j + 1] === b) { o.push(a + b); j++; } else o.push(s[j]); } return o; });
+    }
+    words.forEach((x, i) => x.steps.push(seqs[i].slice()));
+    iK.max = merges.length; if (+iK.value > merges.length) iK.value = merges.length;
+  }
+  function show() {
+    const k = +iK.value, last = k > 0 ? merges[k - 1].t : null;
+    $('#bpe-k-o').textContent = `${k} von ${merges.length}`;
+    const chars = new Set(); words.forEach(x => [...x.w].forEach(c => chars.add(c)));
+    let total = 0;
+    $('#bpe-words').innerHTML = words.map(x => { const s = x.steps[Math.min(k, x.steps.length - 1)]; total += s.length * x.f;
+      return `<span class="word">${s.map(t => `<span class="chip${t === last ? ' new' : ''}">${t}</span>`).join('')}<span class="chip off f">${x.f}×</span></span>`; }).join('');
+    $('#bpe-merges').innerHTML = merges.map((m, i) => `<div class="${i === k - 1 ? 'cur' : i >= k ? 'fut' : ''}">${String(i + 1).padStart(2, ' ')}. ${m.a} + ${m.b} → ${m.t}  (${m.c})</div>`).join('') || '<div class="fut">keine Paare mehr, die mindestens zweimal vorkommen</div>';
+    const chars0 = words.reduce((s, x) => s + x.w.length * x.f, 0);
+    $('#bpe-read').innerHTML = `<span class="k">Vokabular:</span> ${chars.size} Zeichen + ${k} neue Tokens = <b>${chars.size + k}</b>  <span class="k">·</span>  <span class="k">Tokens im Text:</span> <b>${total}</b> statt ${chars0} Zeichen (${nf(chars0 / total, 2)} Zeichen pro Token)`;
+  }
+  iT.addEventListener('input', rafDebounce(() => { train(); show(); }));
+  iK.addEventListener('input', show);
+  $('#bpe-prev').addEventListener('click', () => { iK.value = Math.max(0, +iK.value - 1); show(); });
+  $('#bpe-next').addEventListener('click', () => { iK.value = Math.min(merges.length, +iK.value + 1); show(); });
+  train(); show();
+})();
+</script>

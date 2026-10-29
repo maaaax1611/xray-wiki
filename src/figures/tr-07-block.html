@@ -1,0 +1,65 @@
+<!-- title: Aufbau eines Transformer-Blocks
+     lib: tr -->
+<figure class="fig">
+  <canvas id="cv-blk" class="c-tr-tall" role="img" aria-label="Diagramm eines Transformer-Blocks mit LayerNorm, Multi-Head Attention, Feed-Forward-Netz und Residualverbindungen. Der aktuelle Schritt ist hervorgehoben."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 160px"><div class="lab"><label for="blk-v">Variante</label></div><select id="blk-v" autocomplete="off"><option value="pre">Pre-LN</option><option value="post">Post-LN (Original)</option></select></div>
+    <button class="btn" type="button" id="blk-prev">Zurück</button>
+    <button class="btn" type="button" id="blk-next">Weiter</button>
+    <button class="btn" type="button" id="blk-play">Abspielen</button>
+  </div>
+  <div class="readout" id="blk-read"></div>
+  <figcaption><b>Abb.</b> Ein Transformer-Block, Schritt für Schritt. Die Zahlen gelten für den ursprünglichen Transformer (\(d_\text{model} = 512\), 8 Köpfe, \(d_\text{ff} = 2048\)) und eine Folge von \(n\) Tokens. Rechts läuft der Residual Stream an den Teilschichten vorbei, sie addieren nur ihre Änderung. Bei Post-LN liegt die Normierung im Residual Stream selbst, bei Pre-LN nur im Abzweig.</figcaption>
+</figure>
+<script>
+/* ---------- Block ---------- */
+(() => {
+  const c = $('#cv-blk'), iv = $('#blk-v'), bplay = $('#blk-play');
+  const PRE = [
+    ['in', 'Eingabe x', 'n × 512', 'Der Residual Stream: ein Vektor pro Token, aus Embedding und Position oder aus dem vorigen Block.'],
+    ['ln', 'LayerNorm', 'n × 512', 'Jeder der n Vektoren wird für sich auf Mittelwert 0 und Varianz 1 gebracht und mit gelernten Faktoren skaliert. Der Residual Stream selbst bleibt unverändert.'],
+    ['att', 'Multi-Head Attention', 'n × 512', '8 Köpfe mit je d_k = 64 rechnen Q, K, V, je eine n × n-Gewichtsmatrix und gewichtete Mittelwerte. Zusammengefügt und mit W_O zurück auf 512. Hier tauschen die Positionen Information aus.'],
+    ['add', 'Addition', 'n × 512', 'Die Ausgabe der Attention wird zum Residual Stream addiert: x ← x + MHA(LN(x)).'],
+    ['ln', 'LayerNorm', 'n × 512', 'Zweite Normierung, wieder nur im Abzweig.'],
+    ['ffn', 'Feed-Forward-Netz', 'n × 512 → n × 2048 → n × 512', 'Jede Position einzeln: Linear auf 2048, Aktivierung (ReLU/GELU), Linear zurück auf 512. Keine Verbindung zwischen den Positionen. Hier stecken zwei Drittel der Parameter.'],
+    ['add', 'Addition', 'n × 512', 'x ← x + FFN(LN(x)). Der Block hat jetzt zwei Änderungen in den Residual Stream geschrieben.'],
+    ['out', 'Ausgabe', 'n × 512', 'Gleiche Form wie die Eingabe. Sie geht in den nächsten Block, nach dem letzten Block über eine letzte LayerNorm in die Ausgabeschicht.']];
+  const POST = [
+    ['in', 'Eingabe x', 'n × 512', 'Der Residual Stream am Eingang des Blocks.'],
+    ['att', 'Multi-Head Attention', 'n × 512', 'Attention direkt auf x, ohne vorherige Normierung.'],
+    ['add', 'Addition', 'n × 512', 'x + MHA(x).'],
+    ['ln', 'LayerNorm', 'n × 512', 'Normiert die Summe. Damit liegt die Normierung im Residual Stream selbst: x ← LN(x + MHA(x)). Gradienten müssen durch jede dieser Normierungen hindurch, das macht tiefe Post-LN-Modelle schwer zu trainieren.'],
+    ['ffn', 'Feed-Forward-Netz', 'n × 512 → n × 2048 → n × 512', 'Wie bei Pre-LN: je Position zwei lineare Schichten mit Aktivierung.'],
+    ['add', 'Addition', 'n × 512', 'x + FFN(x).'],
+    ['ln', 'LayerNorm', 'n × 512', 'x ← LN(x + FFN(x)).'],
+    ['out', 'Ausgabe', 'n × 512', 'Weiter in den nächsten Block.']];
+  let step = 0, acc = 0;
+  const steps = () => iv.value === 'pre' ? PRE : POST;
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.6) { acc = 0; step = (step + 1) % steps().length; } },
+    draw() {
+      const S = steps(), { ctx, w, h } = fit(c), cx = Math.max(w * 0.42, Math.min(w * 0.55, 300)), bw = Math.min(220, w * 0.5), bh = Math.min(38, h / (S.length * 1.55));
+      const gap = (h - 20 - S.length * bh) / (S.length - 1), Y = i => h - 10 - bh - i * (bh + gap), rx = cx + bw / 2 + 34;
+      const col = { in: '--muted', out: '--muted', ln: '--bin1', att: '--accent', ffn: '--bin2', add: '--fg' };
+      // Residual-Strom: von jedem Abzweig bis zur Addition
+      ctx.lineWidth = 2;
+      S.forEach((s, i) => { if (s[0] !== 'add') return; let j = i - 1; while (j > 0 && S[j][0] !== 'add' && S[j][0] !== 'in' && !(iv.value === 'post' && S[j][0] === 'ln')) j--;
+        const yFrom = Y(j) + bh / 2 - (S[j][0] === 'add' ? 0 : 0), yTo = Y(i) + bh / 2;
+        ctx.strokeStyle = rgba(tok('--fg'), 0.55); ctx.beginPath(); ctx.moveTo(cx + (S[j][0] === 'add' ? 14 : bw / 2), yFrom); ctx.lineTo(rx, yFrom); ctx.lineTo(rx, yTo); ctx.lineTo(cx + 16, yTo); ctx.stroke();
+        ctx.fillStyle = rgba(tok('--fg'), 0.55); ctx.beginPath(); ctx.moveTo(cx + 15, yTo); ctx.lineTo(cx + 23, yTo - 4); ctx.lineTo(cx + 23, yTo + 4); ctx.fill(); });
+      ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('Residual', rx + 6, h / 2);
+      // Pfeile zwischen den Kästen
+      for (let i = 0; i + 1 < S.length; i++) { const y1 = Y(i), y2 = Y(i + 1) + bh; ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(cx, y1); ctx.lineTo(cx, y2 + 6); ctx.stroke(); ctx.fillStyle = tok('--muted'); ctx.beginPath(); ctx.moveTo(cx, y2); ctx.lineTo(cx - 4, y2 + 7); ctx.lineTo(cx + 4, y2 + 7); ctx.fill(); }
+      S.forEach((s, i) => { const on = i === step, y = Y(i), cl = tok(col[s[0]]);
+        if (s[0] === 'add') { ctx.beginPath(); ctx.arc(cx, y + bh / 2, 13, 0, 7); ctx.fillStyle = on ? cl : tok('--surface'); ctx.fill(); ctx.strokeStyle = cl; ctx.lineWidth = on ? 3 : 1.5; ctx.stroke();
+          ctx.fillStyle = on ? tok('--surface') : cl; ctx.font = `700 18px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('+', cx, y + bh / 2 + 6); }
+        else { ctx.fillStyle = on ? cl : rgba(cl, 0.13); ctx.strokeStyle = cl; ctx.lineWidth = on ? 3 : 1.4; ctx.beginPath(); ctx.roundRect(cx - bw / 2, y, bw, bh, 5); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = on ? tok('--surface') : tok('--fg'); ctx.font = `600 ${Math.min(14, bh * 0.42)}px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(s[1], cx, y + bh / 2 + 5); }
+        ctx.fillStyle = on ? tok('--fg') : tok('--muted'); ctx.font = `${on ? 600 : 400} 11px ${MONO}`; ctx.textAlign = 'right'; if (w > 420) ctx.fillText(s[0] === 'ffn' ? 'n × 512 (innen 2048)' : s[2], cx - bw / 2 - 10, y + bh / 2 + 4); });
+      const s = S[step]; $('#blk-read').innerHTML = `<b>${step + 1}/${S.length} · ${s[1]}</b>  <span class="k">Form:</span> ${s[2]}<br>${s[3]}`;
+    } });
+  const go = d => { step = (step + d + steps().length) % steps().length; acc = 0; m.draw(); };
+  $('#blk-prev').addEventListener('click', () => go(-1)); $('#blk-next').addEventListener('click', () => go(1));
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; });
+  iv.addEventListener('input', () => { step = 0; m.draw(); });
+})();
+</script>

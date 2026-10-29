@@ -1,0 +1,36 @@
+<!-- title: Kausale Maske und Padding-Maske
+     lib: tr -->
+<figure class="fig">
+  <canvas id="cv-mask" class="c-tr" role="img" aria-label="Links die Werte QKᵀ mit maskierten Feldern, rechts die Gewichte nach der Softmax."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 230px"><div class="lab"><label for="mask-m">Maske</label></div><select id="mask-m" autocomplete="off">
+      <option value="none">keine (Encoder)</option><option value="causal" selected>kausal (Decoder)</option><option value="pad">Padding</option><option value="both">kausal + Padding</option></select></div>
+  </div>
+  <div class="readout" id="mask-read"></div>
+  <figcaption><b>Abb.</b> Dieselben Werte wie in der Attention-Abbildung oben, ergänzt um zwei Füllzeichen [PAD], wie sie entstehen, wenn kürzere Folgen in einem Batch auf gleiche Länge gebracht werden. Maskierte Felder bekommen vor der Softmax den Wert \(-\infty\), ihr Gewicht wird exakt 0. Die übrigen Gewichte jeder Zeile werden neu normiert. Mit kausaler Maske bleibt nur das untere Dreieck: Jedes Token sieht sich selbst und alles davor.</figcaption>
+</figure>
+<script>
+/* ---------- Masken ---------- */
+(() => {
+  const c = $('#cv-mask'), im = $('#mask-m');
+  const toks = [...TR_TOKENS, '[PAD]', '[PAD]'], n = toks.length, real = TR_TOKENS.length;
+  const S0 = trScores(true);
+  const S = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => i < real && j < real ? S0[i][j] : 0.3));
+  const m = reg({ el: c, draw() {
+    const mode = im.value, causal = mode === 'causal' || mode === 'both', pad = mode === 'pad' || mode === 'both';
+    const allowed = (i, j) => !(causal && j > i) && !(pad && j >= real);
+    const M = S.map((r, i) => r.map((v, j) => allowed(i, j) ? v : -Infinity));
+    const A = M.map(r => softmax(r));
+    const { ctx, w, h } = fit(c), narrow = w < 560, half = narrow ? w : w / 2 - 8;
+    const cell = Math.floor(Math.min((half - 70) / n, (narrow ? h / 2 - 40 : h - 40) / n));
+    const smax = Math.max(...S0.flat());
+    const opts = (title, x, y) => ({ x, y, cell, rows: toks, cols: toks, lw: 62, th: 34, rotate: true, title });
+    const hmA = heatmap(ctx, M, { ...opts('Werte QKᵀ/√d_k (maskiert = −∞)', 4, 16), fmt: v => isFinite(v) ? nf(v, 1) : '−∞', color: v => isFinite(v) ? heat(v / smax * 0.85, tok('--bin2')) : rgba(tok('--muted'), 0.18), textColor: v => isFinite(v) ? textOn(v / smax * 0.85) : tok('--muted') });
+    const ox = narrow ? 4 : w / 2 + 4, oy = narrow ? hmA.y0 + hmA.h + 34 : 16;
+    heatmap(ctx, A, { ...opts('Gewichte nach Softmax', ox, oy), fmt: v => v === 0 ? '0' : nf(v, 2) });
+    const visible = A.map(r => r.filter(v => v > 0).length);
+    $('#mask-read').innerHTML = `<span class="k">Erlaubte Felder:</span> ${M.flat().filter(isFinite).length} von ${n * n}  <span class="k">·</span>  <span class="k">„${toks[2]}“ sieht:</span> ${toks.filter((_, j) => allowed(2, j)).join(', ')}  <span class="k">·</span>  <span class="k">Gewicht von „sitzt“ auf „Katze“:</span> ${nf(A[2][1], 2)}`;
+  } });
+  im.addEventListener('input', () => m.draw());
+})();
+</script>
