@@ -110,3 +110,34 @@ const TR_K = [[0, 0, 0, 1], [1, 0.2, 0, 0], [0, 0, 1, 0], [0, 0.3, 0.2, 0.8], [0
 const TR_Q = [[2.6, 1.2, 0, 0], [0.4, 0, 2.8, 0.6], [2.8, 1.4, 0, 0], [0, 3, 0, 0], [0.6, 2.8, 0, 0], [0, 0, 1.4, 2.2]];
 const TR_V = [[-1.6, 1.2], [1.6, 1.5], [0.2, -1.6], [-1.2, -0.7], [-1.8, 0.5], [1.4, -0.3]];
 const trScores = (scale = true) => TR_Q.map(q => TR_K.map(k => dotv(q, k) / (scale ? Math.sqrt(q.length) : 1)));
+
+/* ---------- Matrix als Kästchengitter mit Zahlen ---------- */
+// o: {x, y, cw, ch, rows, cols, fmt, fill(v,i,j), dim(i,j) -> true = abgeblendet, hlRow, hlCol, label (unter dem Gitter), border}
+function mgrid(ctx, M, o) {
+  const n = M.length, m = M[0].length, cw = o.cw, ch = o.ch ?? o.cw, x0 = o.x, y0 = o.y;
+  const fs = Math.max(9, Math.min(12.5, cw * 0.27, ch * 0.42));
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+    const v = M[i][j], x = x0 + j * cw, y = y0 + i * ch, off = o.dim && o.dim(i, j);
+    ctx.globalAlpha = off ? 0.28 : 1;
+    ctx.fillStyle = o.fill ? o.fill(v, i, j) : tok('--surface'); ctx.fillRect(x, y, cw, ch);
+    ctx.strokeStyle = o.border || tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1);
+    if (v !== null && v !== undefined && cw >= 26) { ctx.fillStyle = o.text ? o.text(v, i, j) : tok('--fg'); ctx.font = `${fs}px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(o.fmt ? o.fmt(v) : nf(v, 2), x + cw / 2, y + ch / 2 + 0.5); }
+    ctx.globalAlpha = 1;
+  }
+  ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 2;
+  if (o.hlRow != null) ctx.strokeRect(x0 - 1, y0 + o.hlRow * ch - 1, m * cw + 2, ch + 2);
+  if (o.hlCol != null) ctx.strokeRect(x0 + o.hlCol * cw - 1, y0 - 1, cw + 2, n * ch + 2);
+  ctx.fillStyle = tok('--muted'); ctx.font = `12px ${DISP}`;
+  if (o.rows) { ctx.textAlign = 'right'; o.rows.forEach((t, i) => ctx.fillText(t, x0 - 6, y0 + i * ch + ch / 2)); }
+  if (o.cols) { ctx.textAlign = 'center'; ctx.font = `11px ${DISP}`; o.cols.forEach((t, j) => ctx.fillText(t, x0 + j * cw + cw / 2, y0 - 9)); }
+  if (o.label) { ctx.textAlign = 'center'; ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 14px ${DISP}`; ctx.fillText(o.label, x0 + m * cw / 2, y0 + n * ch + 16); }
+  ctx.textBaseline = 'alphabetic';
+  return { x0, y0, w: m * cw, h: n * ch, cw, ch, hit(px, py) { const j = Math.floor((px - x0) / cw), i = Math.floor((py - y0) / ch); return i >= 0 && j >= 0 && i < n && j < m ? { i, j } : null; } };
+}
+function arrowPx(ctx, x1, y1, x2, y2, col, lw = 1.4) {
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 7 * Math.cos(a - 0.4), y2 - 7 * Math.sin(a - 0.4)); ctx.lineTo(x2 - 7 * Math.cos(a + 0.4), y2 - 7 * Math.sin(a + 0.4)); ctx.closePath(); ctx.fill();
+}
+// Eingabe-Embeddings für die einfache Attention ohne Projektionen (Werte 0…1)
+const TR_X = [[0.62, 0.10, 0.08, 0.71], [0.15, 0.88, 0.31, 0.12], [0.22, 0.35, 0.83, 0.18], [0.48, 0.20, 0.27, 0.55], [0.58, 0.12, 0.10, 0.66], [0.10, 0.70, 0.12, 0.24]];

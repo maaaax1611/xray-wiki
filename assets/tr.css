@@ -15,3 +15,10 @@
 .merges .fut { color: var(--muted); opacity: 0.5; }
 input[type="text"] { width: 100%; font-family: var(--font-mono); font-size: 13px; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; }
 .samples { margin-top: 10px; min-height: 1.8em; }
+/* breite Matrix-Abbildungen: auf schmalen Bildschirmen seitlich scrollen statt quetschen */
+.scrollx { overflow-x: auto; }
+@media (max-width: 760px) {
+  .scrollx canvas { min-width: 720px; }
+  .scrollx canvas.c-tr-wide { aspect-ratio: 2.4 / 1; }
+  .scrollx canvas.c-tr-tall { aspect-ratio: 1.35 / 1; }
+}

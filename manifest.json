@@ -353,70 +353,77 @@
    "height": 640
   },
   {
-   "slug": "tr-03-attention-rechner",
+   "slug": "tr-03-attention-ein-token",
    "page": "transformer",
-   "title": "Attention Schritt für Schritt",
+   "title": "Attention für ein Token",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-04-skalierung",
+   "slug": "tr-04-attention-matrizen",
+   "page": "transformer",
+   "title": "Attention in Matrixform",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-05-skalierung",
    "page": "transformer",
    "title": "Warum durch √d_k teilen",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-05-multi-head",
+   "slug": "tr-06-multi-head",
    "page": "transformer",
    "title": "Mehrere Attention-Köpfe",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-06-positionskodierung",
+   "slug": "tr-07-positionskodierung",
    "page": "transformer",
    "title": "Sinus-Positionskodierung",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-07-block",
+   "slug": "tr-08-block",
    "page": "transformer",
    "title": "Aufbau eines Transformer-Blocks",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-08-masken",
+   "slug": "tr-09-masken",
    "page": "transformer",
    "title": "Kausale Maske und Padding-Maske",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-09-sampling",
+   "slug": "tr-10-sampling",
    "page": "transformer",
    "title": "Temperatur, Top-k und Top-p",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-10-aufwand",
+   "slug": "tr-11-aufwand",
    "page": "transformer",
    "title": "Parameter, Rechenaufwand und KV-Cache",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-11-flash-attention",
+   "slug": "tr-12-flash-attention",
    "page": "transformer",
    "title": "Flash Attention und Online-Softmax",
    "interactive": true,
    "height": 640
   },
   {
-   "slug": "tr-12-lora",
+   "slug": "tr-13-lora",
    "page": "transformer",
    "title": "LoRA: Anpassung mit niedrigem Rang",
    "interactive": true,

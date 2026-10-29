@@ -67,6 +67,8 @@ $$
 
 Die Softmax macht alle Werte positiv, normiert sie auf Summe 1 und verstärkt Unterschiede: Ein Wert, der um 2 größer ist als ein anderer, bekommt das $e^2 \approx 7{,}4$-fache Gewicht. Teilt man die Werte vorher durch eine **Temperatur** $T$, wird die Verteilung bei kleinem $T$ spitzer (fast nur das Maximum zählt) und bei großem $T$ flacher (alle zählen gleich).
 
+::: widget tr-03-attention-ein-token
+
 Wichtig ist, was hier *nicht* gelernt wird: Die Gewichte $a_{ij}$ sind keine Parameter, sondern werden für jede Eingabe neu aus den Daten berechnet. Dasselbe Modell achtet in jedem Satz auf andere Stellen.
 
 ## Query, Key, Value {#qkv toc="Query, Key, Value"}
@@ -85,13 +87,13 @@ $$
 
 $QK^\top$ ist eine $n\times n$-Matrix aller Ähnlichkeiten, die Softmax läuft zeilenweise, und das Produkt mit $V$ bildet die gewichteten Mittelwerte. $d_k$ ist die Länge der Query- und Key-Vektoren.
 
-::: widget tr-03-attention-rechner
+::: widget tr-04-attention-matrizen
 
 ### Warum durch $\sqrt{d_k}$ teilen?
 
 Haben die Komponenten von $\mathbf q$ und $\mathbf k$ Mittelwert 0 und Varianz 1 und sind unabhängig, dann hat ihr Skalarprodukt die Varianz $d_k$. Bei $d_k = 64$ streuen die Werte also mit einer Standardabweichung von 8. Die Softmax solcher Werte ist fast immer eine harte Auswahl: Ein Eintrag bekommt nahezu das ganze Gewicht, alle anderen fast nichts. Dann sind auch die Gradienten der übrigen Einträge praktisch null, und das Training kommt kaum voran. Die Division durch $\sqrt{d_k}$ bringt die Varianz zurück auf 1, unabhängig von der Dimension.
 
-::: widget tr-04-skalierung
+::: widget tr-05-skalierung
 
 ### In Code
 
@@ -124,7 +126,7 @@ $$
 
 Die Ergebnisse der Köpfe werden aneinandergehängt und mit $W_O$ zurück auf $d_\text{model}$ projiziert. Weil jeder Kopf nur $d_\text{model}/h$ Dimensionen hat, kostet Multi-Head Attention ungefähr so viel wie eine einzelne Attention in voller Breite. Im ursprünglichen Transformer sind es $h = 8$ Köpfe mit $d_k = 64$ bei $d_\text{model} = 512$.
 
-::: widget tr-05-multi-head
+::: widget tr-06-multi-head
 
 Welche Muster die Köpfe eines trainierten Modells lernen, ist nicht vorgegeben. Man findet oft Köpfe, die auf das vorige Token achten, solche, die grammatische Beziehungen abbilden, und viele, deren Muster sich schwer deuten lässt. Die Köpfe in der Abbildung sind von Hand konstruiert, um die Idee zu zeigen.
 
@@ -157,7 +159,7 @@ $$
 
 Die vorderen Dimensionen schwingen schnell und unterscheiden benachbarte Positionen, die hinteren schwingen langsam und unterscheiden weit entfernte. Jedes Sinus-Kosinus-Paar ist ein Zeiger, der sich mit der Position dreht. Der Vektor für Position $p + k$ entsteht deshalb aus dem für Position $p$ durch eine feste Drehung, die nur von $k$ abhängt. Das Skalarprodukt zweier Positionskodierungen hängt nur vom Abstand ab.
 
-::: widget tr-06-positionskodierung
+::: widget tr-07-positionskodierung
 
 Später setzten sich zwei Alternativen durch:
 
@@ -193,7 +195,7 @@ Um jede Teilschicht liegen zwei Hilfsmittel, ohne die tiefe Transformer nicht tr
 
 Der ursprüngliche Transformer normiert *nach* der Addition (**Post-LN**): $\mathbf x \leftarrow \operatorname{LN}(\mathbf x + f(\mathbf x))$. Fast alle neueren Modelle normieren *vorher* (**Pre-LN**): $\mathbf x \leftarrow \mathbf x + f(\operatorname{LN}(\mathbf x))$. Pre-LN trainiert deutlich stabiler, weil der Residual Stream selbst nie normiert wird und Gradienten ungeschwächt durchlaufen.
 
-::: widget tr-07-block
+::: widget tr-08-block
 
 ```python
 class Block(nn.Module):  # Pre-LN
@@ -224,7 +226,7 @@ Der ursprüngliche Transformer war für Übersetzung gebaut und hat zwei Teile:
 
 Beim Erzeugen darf Position $i$ nur auf Positionen $j \le i$ schauen, die Zukunft kennt das Modell ja noch nicht. Beim Training liegt der ganze Zielsatz aber schon vor, und ohne Vorkehrung könnte das Modell einfach abschreiben. Eine **kausale Maske** setzt deshalb alle Werte oberhalb der Diagonale von $QK^\top$ vor der Softmax auf $-\infty$. Deren Gewicht wird exakt 0. Ähnlich blendet eine **Padding-Maske** Füllzeichen aus, mit denen kürzere Folgen in einem Batch auf gleiche Länge gebracht werden.
 
-::: widget tr-08-masken
+::: widget tr-09-masken
 
 Aus dem ursprünglichen Aufbau sind drei Familien hervorgegangen:
 
@@ -252,7 +254,7 @@ Beim **Erzeugen** läuft das Modell autoregressiv: Es berechnet die Verteilung f
 - **Top-k:** nur die $k$ wahrscheinlichsten Tokens zulassen und neu normieren.
 - **Top-p** (Nucleus Sampling): die kleinste Menge der wahrscheinlichsten Tokens zulassen, deren Wahrscheinlichkeiten zusammen mindestens $p$ ergeben. Passt sich an: Bei einer klaren Verteilung bleiben wenige Kandidaten, bei einer unsicheren viele.
 
-::: widget tr-09-sampling
+::: widget tr-10-sampling
 
 ```python
 @torch.no_grad()
@@ -295,7 +297,7 @@ $$
 
 pro Sequenz (Faktor 2 für Keys und Values). Bei einem Modell mit 32 Blöcken und $d = 4096$ sind das in 16 Bit für 4096 Tokens schon 2 GiB, für jede gleichzeitig bediente Anfrage. Deshalb teilen sich in neueren Modellen mehrere Query-Köpfe dieselben Keys und Values (**Grouped-Query Attention**, im Extrem ein einziger Key-Value-Kopf: Multi-Query Attention). Das verkleinert den Cache um den Faktor der Gruppengröße.
 
-::: widget tr-10-aufwand
+::: widget tr-11-aufwand
 
 > [!abstract] Merke
 > - Parameter $\approx 12Ld^2$, Rechenaufwand $\approx 2N_\text{param}$ pro Token plus $O(n^2 d)$ Attention.
@@ -313,7 +315,7 @@ $$
 
 Am Ende teilt man $O$ durch $\ell$. Das Ergebnis ist **exakt** dasselbe wie bei der naiven Rechnung, keine Näherung. Der Speicherbedarf sinkt von $O(n^2)$ auf $O(n)$, und weil viel weniger Daten durch den langsamen Speicher müssen, wird die Rechnung deutlich schneller. Für die Rückwärtsrechnung beim Training werden die Gewichte bei Bedarf aus Q und K neu berechnet, statt sie zu speichern.
 
-::: widget tr-11-flash-attention
+::: widget tr-12-flash-attention
 
 Flash Attention ändert nichts am Modell, nur an der Implementierung. In PyTorch wählt `scaled_dot_product_attention` automatisch eine solche Implementierung, wenn die Hardware sie unterstützt.
 
@@ -333,7 +335,7 @@ $$
 
 Statt $dk$ Parametern trainiert man nur $r(d + k)$. Bei $d = k = 4096$ und $r = 8$ sind das 65 536 statt knapp 17 Millionen pro Matrix, weniger als ein halbes Prozent. $B$ wird mit Nullen initialisiert, sodass das Modell zu Beginn exakt dem Original entspricht. $\alpha$ ist ein fester Skalierungsfaktor. Üblich ist LoRA auf den Attention-Projektionen, oft auch auf den FFN-Matrizen, mit Rang 4 bis 64.
 
-::: widget tr-12-lora
+::: widget tr-13-lora
 
 Nach dem Training kann man $\frac{\alpha}{r}BA$ einfach zu $W_0$ addieren, dann kostet das angepasste Modell beim Ausführen nichts extra. Oder man behält die kleinen Matrizen getrennt und wechselt je nach Aufgabe zwischen mehreren Adaptern für dasselbe Grundmodell. Kombiniert mit einem auf 4 Bit quantisierten Grundmodell (**QLoRA**) lassen sich so auch große Modelle auf einer einzelnen GPU anpassen.
 

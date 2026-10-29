@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kausale Maske und Padding-Maske</title>
-<!-- Erzeugt von build.py aus src/figures/tr-08-masken.html. Nicht von Hand bearbeiten. -->
+<!-- Erzeugt von build.py aus src/figures/tr-09-masken.html. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -29,7 +29,7 @@ window.MathJax = {
       <option value="none">keine (Encoder)</option><option value="causal" selected>kausal (Decoder)</option><option value="pad">Padding</option><option value="both">kausal + Padding</option></select></div>
   </div>
   <div class="readout" id="mask-read"></div>
-  <figcaption><b>Abb. 8</b> Dieselben Werte wie in der Attention-Abbildung oben, ergänzt um zwei Füllzeichen [PAD], wie sie entstehen, wenn kürzere Folgen in einem Batch auf gleiche Länge gebracht werden. Maskierte Felder bekommen vor der Softmax den Wert \(-\infty\), ihr Gewicht wird exakt 0. Die übrigen Gewichte jeder Zeile werden neu normiert. Mit kausaler Maske bleibt nur das untere Dreieck: Jedes Token sieht sich selbst und alles davor.</figcaption>
+  <figcaption><b>Abb. 9</b> Dieselben Werte wie in der Attention-Abbildung oben, ergänzt um zwei Füllzeichen [PAD], wie sie entstehen, wenn kürzere Folgen in einem Batch auf gleiche Länge gebracht werden. Maskierte Felder bekommen vor der Softmax den Wert \(-\infty\), ihr Gewicht wird exakt 0. Die übrigen Gewichte jeder Zeile werden neu normiert. Mit kausaler Maske bleibt nur das untere Dreieck: Jedes Token sieht sich selbst und alles davor.</figcaption>
 </figure>
 </main>
 <script src="../assets/ui.js"></script>

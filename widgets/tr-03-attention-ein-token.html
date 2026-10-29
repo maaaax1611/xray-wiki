@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attention für ein Token</title>
+<!-- Erzeugt von build.py aus src/figures/tr-03-attention-ein-token.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/tr.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <div class="scrollx"><canvas id="cv-a1" class="c-tr-wide" role="img" aria-label="Datenfluss der Attention für ein Token: jede Zeile der Eingabe wird mit der Query multipliziert, die Werte gehen durch die Softmax, die Gewichte bilden die gewichtete Summe der Zeilen."></canvas></div>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="a1-q">Query-Token</label></div><select id="a1-q" autocomplete="off"></select></div>
+    <button class="btn" type="button" id="a1-prev">Zurück</button>
+    <button class="btn" type="button" id="a1-next">Weiter</button>
+    <button class="btn" type="button" id="a1-play">Abspielen</button>
+  </div>
+  <div class="readout" id="a1-read"></div>
+  <figcaption><b>Abb. 3</b> Die einfachste Form von Attention, noch ohne gelernte Projektionen: Die Query ist das Embedding des gewählten Tokens selbst, \(\mathbf q = \mathbf x_i\). Jede Zeile von \(X\) wird mit ihr skalar multipliziert, die Softmax macht daraus Gewichte, und der Kontextvektor ist die gewichtete Summe der Zeilen. Mit „Weiter“ lässt sich die Rechnung Schritt für Schritt aufbauen. Auffällig: Jedes Token achtet hier am stärksten auf sich selbst oder auf Tokens mit fast gleichem Embedding. Genau das beheben die getrennten Query-, Key- und Value-Projektionen im nächsten Abschnitt.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/tr.js"></script>
+<script>
+/* ---------- Attention für ein Token ---------- */
+(() => {
+  const c = $('#cv-a1'), iq = $('#a1-q'), bplay = $('#a1-play'), n = TR_TOKENS.length, D = 4;
+  iq.innerHTML = TR_TOKENS.map((t, i) => `<option value="${i}">${t}</option>`).join(''); iq.value = 1;
+  let stage = 3, acc = 0;
+  const STAGES = ['Eingabe X und Query q', 'Skalarprodukte xⱼ · q', 'Softmax → Gewichte', 'gewichtete Summe → Kontextvektor'];
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.4) { acc = 0; stage = (stage + 1) % 4; } },
+    draw() {
+      const qi = +iq.value, q = TR_X[qi], s = TR_X.map(x => dotv(x, q)), a = softmax(s), ctxv = q.map((_, k) => TR_X.reduce((t, x, j) => t + a[j] * x[k], 0));
+      const { ctx, w, h } = fit(c), lw = 60, fixed = lw + 64 + 30 + 66 + 30 + 52 + 30 + 34 + 12;
+      const cw = Math.max(16, Math.min(56, (w - fixed) / (2 * D + 2.6))), sw = cw * 1.3, ch = Math.max(16, Math.min(38, (h - 64) / n));
+      const y0 = 40, gy = i => y0 + i * ch + ch / 2;
+      const xX = lw, xS = xX + D * cw + 64, xB = xS + sw + 30, bw = 66, xW = xB + bw + 30, xP = xW + sw + 52, xC = xP + 34 + 12;
+      const accent = tok('--accent'), muted = tok('--muted');
+      // X
+      mgrid(ctx, TR_X, { x: xX, y: y0, cw, ch, rows: TR_TOKENS, hlRow: qi, fill: (v, i) => i === qi ? rgba(tok('--bin2'), 0.18) : tok('--surface') });
+      ctx.fillStyle = tok('--fg'); ctx.font = `italic 600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('X', xX + D * cw / 2, y0 - 14);
+      // · q
+      for (let i = 0; i < n; i++) { const on = stage >= 1; arrowPx(ctx, xX + D * cw + 6, gy(i), xS - 6, gy(i), on ? accent : rgba(muted, 0.4));
+        ctx.fillStyle = on ? accent : muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('· q', xX + D * cw + 32, gy(i) - 6); }
+      // Scores
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'center';
+      ctx.fillText('Scores', xS + sw / 2, y0 - 14); ctx.fillText('Gewichte', xW + sw / 2, y0 - 14); ctx.fillText('Kontext', xC + D * cw / 2, y0 - 14);
+      mgrid(ctx, s.map(v => [stage >= 1 ? v : null]), { x: xS, y: y0, cw: sw, ch, fmt: v => nf(v, 3), dim: () => stage < 1 });
+      // Softmax-Kasten
+      ctx.globalAlpha = stage >= 2 ? 1 : 0.35;
+      for (let i = 0; i < n; i++) { arrowPx(ctx, xS + sw + 4, gy(i), xB - 2, gy(i), muted, 1); arrowPx(ctx, xB + bw + 2, gy(i), xW - 4, gy(i), muted, 1); }
+      ctx.fillStyle = tok('--surface'); ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(xB, y0, bw, n * ch, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = accent; ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('softmax', xB + bw / 2, y0 + n * ch / 2 + 4); ctx.globalAlpha = 1;
+      const amax = Math.max(...a);
+      mgrid(ctx, a.map(v => [stage >= 2 ? v : null]), { x: xW, y: y0, cw: sw, ch, fmt: v => nf(v, 3), dim: () => stage < 2,
+        fill: v => stage >= 2 ? heat(0.12 + 0.78 * v / amax) : tok('--surface'), text: v => textOn(0.12 + 0.78 * v / amax) });
+      // Summe
+      const pcx = xP + 17, pcy = y0 + n * ch / 2;
+      ctx.globalAlpha = stage >= 3 ? 1 : 0.35;
+      for (let i = 0; i < n; i++) { ctx.strokeStyle = rgba(accent, 0.35 + 0.65 * a[i] / amax); ctx.lineWidth = stage >= 3 ? 0.8 + 4 * a[i] / amax : 1; ctx.beginPath(); ctx.moveTo(xW + sw + 4, gy(i)); ctx.lineTo(pcx - 14, pcy); ctx.stroke(); }
+      ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pcx, pcy, 15, 0, 7); ctx.fillStyle = tok('--surface'); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(pcx - 8, pcy); ctx.lineTo(pcx + 8, pcy); ctx.moveTo(pcx, pcy - 8); ctx.lineTo(pcx, pcy + 8); ctx.stroke();
+      ctx.fillStyle = muted; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('Σ aⱼ xⱼ', pcx, pcy + 32);
+      arrowPx(ctx, pcx + 16, pcy, xC - 4, pcy, accent, 1.6); ctx.globalAlpha = 1;
+      mgrid(ctx, [ctxv.map(v => stage >= 3 ? v : null)], { x: xC, y: pcy - ch / 2, cw, ch, dim: () => stage < 3, fill: () => stage >= 3 ? rgba(accent, 0.12) : tok('--surface'), border: stage >= 3 ? accent : undefined });
+      // Fortschritt
+      ctx.fillStyle = muted; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Schritt ${stage + 1}/4 · ${STAGES[stage]}`, 6, h - 6);
+      const top = a.map((v, j) => [v, j]).sort((p, r) => r[0] - p[0]);
+      $('#a1-read').innerHTML = `<span class="k">q = x(${TR_TOKENS[qi]}) =</span> (${q.map(v => nf(v, 2)).join('; ')})` +
+        (stage >= 1 ? `  <span class="k">·</span>  <span class="k">Beispiel:</span> x(${TR_TOKENS[top[1][1]]}) · q = ${TR_X[top[1][1]].map((v, k) => `${nf(v, 2)}·${nf(q[k], 2)}`).join(' + ')} = ${nf(s[top[1][1]], 3)}` : '') +
+        (stage >= 2 ? `<br><span class="k">Größte Gewichte:</span> ${top.slice(0, 3).map(([v, j]) => `${TR_TOKENS[j]} <b>${nf(v, 3)}</b>`).join(', ')}  <span class="k">·</span>  <span class="k">Summe:</span> ${nf(a.reduce((p, v) => p + v, 0), 3)}` : '');
+    } });
+  const go = d => { stage = Math.max(0, Math.min(3, stage + d)); acc = 0; m.draw(); };
+  $('#a1-prev').addEventListener('click', () => go(-1)); $('#a1-next').addEventListener('click', () => { if (stage === 3) stage = 0; else go(1); m.draw(); });
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; if (m.playing) { stage = 0; acc = 0; } });
+  iq.addEventListener('input', () => m.draw());
+})();
+</script>
+</body>
+</html>

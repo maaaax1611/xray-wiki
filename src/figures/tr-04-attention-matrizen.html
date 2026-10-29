@@ -1,0 +1,73 @@
+<!-- title: Attention in Matrixform
+     lib: tr -->
+<figure class="fig">
+  <div class="scrollx"><canvas id="cv-a2" class="c-tr-tall" tabindex="0" role="img" aria-label="Attention in Matrixform: Q mal K transponiert ergibt die Scores, die Softmax ergibt die Gewichte, Gewichte mal V ergibt die Ausgabe. Beim Überfahren eines Feldes werden die beteiligte Zeile und Spalte markiert."></canvas></div>
+  <div class="ctrls">
+    <button class="btn" type="button" id="a2-prev">Zurück</button>
+    <button class="btn" type="button" id="a2-next">Weiter</button>
+    <button class="btn" type="button" id="a2-play">Abspielen</button>
+    <div class="ctrl"><div class="lab"><label for="a2-t">Temperatur</label><output id="a2-t-o"></output></div><input id="a2-t" type="range" min="-2" max="2" step="0.05" value="0" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="a2-read"></div>
+  <figcaption><b>Abb.</b> Dieselbe Rechnung für alle Tokens auf einmal, mit von Hand gewählten Queries, Keys (\(d_k = 4\)) und zweidimensionalen Values. Oben entsteht jedes Feld der Score-Matrix aus einer Zeile von \(Q\) und einer Spalte von \(K^\top\), geteilt durch \(\sqrt{d_k} = 2\). Die Softmax läuft zeilenweise. Unten entsteht jede Zeile der Ausgabe aus einer Zeile der Gewichte und den Spalten von \(V\). Fährt man mit der Maus über ein Feld (oder tippt darauf), werden die beteiligten Zeilen und Spalten markiert und die Rechnung erscheint darunter.</figcaption>
+</figure>
+<script>
+/* ---------- Attention in Matrixform ---------- */
+(() => {
+  const c = $('#cv-a2'), it = $('#a2-t'), bplay = $('#a2-play'), n = TR_TOKENS.length, dk = 4;
+  const KT = transpose(TR_K);
+  let stage = 3, acc = 0, sel = { m: 'S', i: 2, j: 1 }, G = {};
+  const STAGES = ['Q und Kᵀ', 'Scores = QKᵀ/√d_k', 'Gewichte = softmax(Scores)', 'Ausgabe = Gewichte · V'];
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 1.5) { acc = 0; stage = (stage + 1) % 4; } },
+    draw() {
+      const T = Math.pow(2, +it.value); $('#a2-t-o').textContent = nf(T, 2);
+      const S = trScores(true), A = S.map(r => softmax(r, T)), Y = matmul(A, TR_V);
+      const { ctx, w, h } = fit(c), lw = 50, op = 30;
+      const cw = Math.max(16, Math.min(50, (w - lw - 2 * op - 12) / 16)), ch = Math.max(16, Math.min(32, (h - 120) / (2 * n)));
+      const y1 = 36, y2 = y1 + n * ch + 74, smax = Math.max(...S.flat()), amax = Math.max(...A.flat());
+      const xQ = lw, xK = xQ + dk * cw + op, xS = xK + n * cw + op;
+      const xA = lw, xV = xA + n * cw + op, xY = xV + 2 * cw + op;
+      const hl = (mat, i, j) => { const s = sel; if (!s) return false;
+        if (s.m === 'S') return (mat === 'Q' && i === s.i) || (mat === 'K' && j === s.j) || (mat === 'S' && i === s.i && j === s.j);
+        if (s.m === 'A') return (mat === 'S' && i === s.i) || (mat === 'A' && i === s.i);
+        if (s.m === 'Y') return (mat === 'A' && i === s.i) || (mat === 'V' && j === s.j) || (mat === 'Y' && i === s.i && j === s.j);
+        return false; };
+      const mark = (mat, base) => (v, i, j) => hl(mat, i, j) ? rgba(tok('--bin2'), 0.32) : base(v, i, j);
+      const plain = () => tok('--surface');
+      G.Q = mgrid(ctx, TR_Q, { x: xQ, y: y1, cw, ch, rows: TR_TOKENS, fmt: v => nf(v, 1), label: 'Q', fill: mark('Q', plain) });
+      G.K = mgrid(ctx, KT, { x: xK, y: y1, cw, ch, cols: TR_TOKENS, fmt: v => nf(v, 1), label: 'Kᵀ', fill: mark('K', plain) });
+      G.S = mgrid(ctx, S.map(r => r.map(v => stage >= 1 ? v : null)), { x: xS, y: y1, cw, ch, cols: TR_TOKENS, label: 'Scores ÷ √d_k', dim: () => stage < 1,
+        fill: mark('S', v => stage >= 1 ? heat(0.75 * v / smax, tok('--bin2')) : tok('--surface')), text: v => textOn(0.75 * v / smax) });
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center';
+      ctx.fillText('@', xK - op / 2, y1 + n * ch / 2 + 6); ctx.fillText('=', xS - op / 2, y1 + n * ch / 2 + 6);
+            // Softmax-Pfeil von S nach A
+      const sx = xS + n * cw / 2, ay = y2 - 22;
+      ctx.globalAlpha = stage >= 2 ? 1 : 0.35;
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(sx, y1 + n * ch + 24); ctx.lineTo(sx, y1 + n * ch + 40); ctx.lineTo(xA + n * cw / 2, y1 + n * ch + 40); ctx.stroke();
+      arrowPx(ctx, xA + n * cw / 2, y1 + n * ch + 40, xA + n * cw / 2, ay, tok('--accent'), 1.8);
+      ctx.fillStyle = tok('--accent'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('softmax, zeilenweise', (sx + xA + n * cw / 2) / 2, y1 + n * ch + 34); ctx.globalAlpha = 1;
+      G.A = mgrid(ctx, A.map(r => r.map(v => stage >= 2 ? v : null)), { x: xA, y: y2, cw, ch, rows: TR_TOKENS, cols: TR_TOKENS, label: 'Gewichte', dim: () => stage < 2,
+        fill: mark('A', v => stage >= 2 ? heat(0.85 * v / amax) : tok('--surface')), text: v => textOn(0.85 * v / amax) });
+      G.V = mgrid(ctx, TR_V, { x: xV, y: y2, cw, ch, cols: ['1', '2'], fmt: v => nf(v, 1), label: 'V', fill: mark('V', plain) });
+      G.Y = mgrid(ctx, Y.map(r => r.map(v => stage >= 3 ? v : null)), { x: xY, y: y2, cw, ch, cols: ['1', '2'], label: 'Ausgabe', dim: () => stage < 3,
+        fill: mark('Y', () => stage >= 3 ? rgba(tok('--accent'), 0.12) : tok('--surface')), border: stage >= 3 ? tok('--accent') : undefined });
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center';
+      ctx.fillText('@', xV - op / 2, y2 + n * ch / 2 + 6); ctx.fillText('=', xY - op / 2, y2 + n * ch / 2 + 6);
+      ctx.fillStyle = tok('--muted'); ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Schritt ${stage + 1}/4 · ${STAGES[stage]}`, 6, h - 6);
+      // Rechnung zum markierten Feld
+      let txt = '';
+      if (sel.m === 'S') { const q = TR_Q[sel.i], k = TR_K[sel.j];
+        txt = `<span class="k">Score ${TR_TOKENS[sel.i]} → ${TR_TOKENS[sel.j]}:</span> q·k / √d_k = (${q.map((v, x) => `${nf(v, 1)}·${nf(k[x], 1)}`).join(' + ')}) / 2 = <b>${nf(S[sel.i][sel.j], 2)}</b>`; }
+      else if (sel.m === 'A') txt = `<span class="k">Gewicht ${TR_TOKENS[sel.i]} → ${TR_TOKENS[sel.j]}:</span> e^${nf(S[sel.i][sel.j] / T, 2)} / Σ e^(Zeile) = <b>${nf(A[sel.i][sel.j], 3)}</b>  <span class="k">·</span>  <span class="k">Zeilensumme:</span> ${nf(A[sel.i].reduce((p, v) => p + v, 0), 3)}`;
+      else if (sel.m === 'Y') txt = `<span class="k">Ausgabe ${TR_TOKENS[sel.i]}, Komponente ${sel.j + 1}:</span> ${A[sel.i].map((a, x) => `${nf(a, 2)}·${nf(TR_V[x][sel.j], 1)}`).join(' + ')} = <b>${nf(Y[sel.i][sel.j], 3)}</b>`;
+      else txt = '<span class="k">Mit der Maus über ein Feld von Scores, Gewichten oder Ausgabe fahren.</span>';
+      $('#a2-read').innerHTML = txt;
+    } });
+  const pick = e => { const [x, y] = mouse(c, e); for (const k of ['S', 'A', 'Y']) { const hit = G[k] && G[k].hit(x, y); if (hit) { const need = { S: 1, A: 2, Y: 3 }[k]; if (stage < need) stage = need; sel = { m: k, ...hit }; m.draw(); return; } } };
+  c.addEventListener('pointermove', pick); c.addEventListener('click', pick);
+  const go = d => { stage = Math.max(0, Math.min(3, stage + d)); acc = 0; m.draw(); };
+  $('#a2-prev').addEventListener('click', () => go(-1)); $('#a2-next').addEventListener('click', () => { if (stage === 3) stage = 0; else go(1); m.draw(); });
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; if (m.playing) { stage = 0; acc = 0; } });
+  it.addEventListener('input', () => m.draw());
+})();
+</script>

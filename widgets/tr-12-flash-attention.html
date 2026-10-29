@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flash Attention und Online-Softmax</title>
-<!-- Erzeugt von build.py aus src/figures/tr-11-flash-attention.html. Nicht von Hand bearbeiten. -->
+<!-- Erzeugt von build.py aus src/figures/tr-12-flash-attention.html. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -31,7 +31,7 @@ window.MathJax = {
     <button class="btn" type="button" id="fl-re">Neue Werte</button>
   </div>
   <div class="readout" id="fl-read"></div>
-  <figcaption><b>Abb. 11</b> Flash Attention für 16 Queries und 16 Keys in Kacheln zu 4. Gezeigt ist der zweite Query-Block (hervorgehoben). Er wird nacheinander mit jeder Key-Value-Kachel verrechnet, die vollständige 16 × 16-Matrix existiert nie im Speicher. Rechts die Online-Softmax für eine Zeile: Laufendes Maximum \(m\), laufende Summe \(\ell\) und Ausgabe \(o\) (hier eindimensionale Values) werden nach jeder Kachel nachgeführt, „max“ ist das Maximum der neuen Kachel und „Faktor“ \(e^{m_\text{alt} - m}\), mit dem alte Summe und Ausgabe heruntergerechnet werden. Am Ende stimmt \(o/\ell\) exakt mit der normalen Attention überein.</figcaption>
+  <figcaption><b>Abb. 12</b> Flash Attention für 16 Queries und 16 Keys in Kacheln zu 4. Gezeigt ist der zweite Query-Block (hervorgehoben). Er wird nacheinander mit jeder Key-Value-Kachel verrechnet, die vollständige 16 × 16-Matrix existiert nie im Speicher. Rechts die Online-Softmax für eine Zeile: Laufendes Maximum \(m\), laufende Summe \(\ell\) und Ausgabe \(o\) (hier eindimensionale Values) werden nach jeder Kachel nachgeführt, „max“ ist das Maximum der neuen Kachel und „Faktor“ \(e^{m_\text{alt} - m}\), mit dem alte Summe und Ausgabe heruntergerechnet werden. Am Ende stimmt \(o/\ell\) exakt mit der normalen Attention überein.</figcaption>
 </figure>
 </main>
 <script src="../assets/ui.js"></script>
