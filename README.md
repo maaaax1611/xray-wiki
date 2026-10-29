@@ -1,6 +1,34 @@
-# Röntgen-CT-Lernpfad
+# xray-wiki
 
-Drei interaktive Lernseiten (Grundlagen, CT-Rekonstruktion, Photon Counting) plus jede Abbildung als einzelnes Widget zum Einbetten, z. B. in Obsidian.
+Persönliches Nachschlagewerk mit interaktiven Seiten, nach Themengebieten geordnet. Jede Abbildung gibt es zusätzlich als einzelnes Widget zum Einbetten, z. B. in Obsidian.
+
+## Struktur
+
+```
+index.html            Startseite: Themengebiete, Suche, Widget-Liste (aus manifest.json)
+assets/               wiki.css, wiki.js für die Startseite
+grundlagen/           Fachübergreifendes Basiswissen
+  e-technik.html        E-Technik kompakt
+physik/               Röntgenphysik, Detektoren, CT
+  roentgen.html         Vom Photon zum Bild
+  rekonstruktion.html   Vom Sinogramm zum Schnittbild
+  photon-counting.html  Photonen zählen im CT
+ml/                   Machine Learning (noch leer)
+widgets/              Einzelne Abbildungen zum Einbetten (Pfade bleiben stabil)
+manifest.json         Themengebiete, Seiten, Widgets
+```
+
+Geplant in `grundlagen/`: Lineare Algebra, Wahrscheinlichkeit und Statistik, Fourier und Signale.
+
+### Neue Seite hinzufügen
+
+1. HTML-Datei im passenden Ordner anlegen.
+2. Eintrag in `manifest.json` unter `pages` ergänzen (`id`, `category`, `path`, `title`, `desc`, `tags`). Mit `"status": "geplant"` erscheint die Seite ausgegraut.
+3. Neues Themengebiet: Eintrag unter `categories` und gleichnamigen Ordner anlegen.
+
+Die alten Adressen `grundlagen.html`, `rekonstruktion.html` und `photon-counting.html` im Root leiten auf die neuen Pfade weiter.
+
+Die Startseite lädt `manifest.json` per `fetch`. Lokal deshalb über einen Webserver öffnen, z. B. `python -m http.server`.
 
 ## Veröffentlichen mit GitHub Pages
 
@@ -56,4 +84,4 @@ Formeln und Schriften werden von cdnjs bzw. Google Fonts geladen; ohne Internet 
 
 ## Neu bauen
 
-`manifest.json` listet alle Widgets. Die Widgets wurden automatisch aus den drei Seiten erzeugt; wer eine Seite ändert, muss das betroffene Widget entsprechend anpassen.
+`manifest.json` listet alle Widgets mit Seite und Einbettungshöhe. Die Widgets wurden automatisch aus den Seiten in `physik/` erzeugt; wer eine Seite ändert, muss das betroffene Widget entsprechend anpassen. Für `grundlagen/e-technik.html` gibt es noch keine Einzel-Widgets.
