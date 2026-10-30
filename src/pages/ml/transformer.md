@@ -335,7 +335,11 @@ $$
 
 Statt $dk$ Parametern trainiert man nur $r(d + k)$. Bei $d = k = 4096$ und $r = 8$ sind das 65 536 statt knapp 17 Millionen pro Matrix, weniger als ein halbes Prozent. $B$ wird mit Nullen initialisiert, sodass das Modell zu Beginn exakt dem Original entspricht. $\alpha$ ist ein fester Skalierungsfaktor. Üblich ist LoRA auf den Attention-Projektionen, oft auch auf den FFN-Matrizen, mit Rang 4 bis 64.
 
-::: widget tr-13-lora
+::: widget tr-13-lora-aufbau
+
+Wie stark sich eine Gewichtsänderung mit kleinem Rang darstellen lässt, zeigt die nächste Abbildung.
+
+::: widget tr-14-lora-rang
 
 Nach dem Training kann man $\frac{\alpha}{r}BA$ einfach zu $W_0$ addieren, dann kostet das angepasste Modell beim Ausführen nichts extra. Oder man behält die kleinen Matrizen getrennt und wechselt je nach Aufgabe zwischen mehreren Adaptern für dasselbe Grundmodell. Kombiniert mit einem auf 4 Bit quantisierten Grundmodell (**QLoRA**) lassen sich so auch große Modelle auf einer einzelnen GPU anpassen.
 

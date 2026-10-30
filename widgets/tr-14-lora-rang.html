@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LoRA: Anpassung mit niedrigem Rang</title>
-<!-- Erzeugt von build.py aus src/figures/tr-13-lora.html. Nicht von Hand bearbeiten. -->
+<!-- Erzeugt von build.py aus src/figures/tr-14-lora-rang.html. Nicht von Hand bearbeiten. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -30,7 +30,7 @@ window.MathJax = {
     <button class="btn" type="button" id="lora-re">Neue Zieländerung</button>
   </div>
   <div class="readout" id="lora-read"></div>
-  <figcaption><b>Abb. 13</b> Eine ausgedachte Änderung \(\Delta W\) einer 24 × 24-Gewichtsmatrix, wie sie vollständiges Fine-Tuning ergeben würde: im Wesentlichen Rang 3 plus etwas Rauschen. LoRA lernt stattdessen \(BA\) mit Rang \(r\). Gezeigt ist die bestmögliche Näherung dieses Rangs (über die Singulärwertzerlegung) und der Rest. Schon \(r = 3\) erfasst fast alles. Der zweite Regler rechnet die Parameterzahl für eine echte Matrixgröße aus.</figcaption>
+  <figcaption><b>Abb. 14</b> Eine ausgedachte Änderung \(\Delta W\) einer 24 × 24-Gewichtsmatrix, wie sie vollständiges Fine-Tuning ergeben würde: im Wesentlichen Rang 3 plus etwas Rauschen. LoRA lernt stattdessen \(BA\) mit Rang \(r\). Gezeigt ist die bestmögliche Näherung dieses Rangs (über die Singulärwertzerlegung) und der Rest. Schon \(r = 3\) erfasst fast alles. Der zweite Regler rechnet die Parameterzahl für eine echte Matrixgröße aus.</figcaption>
 </figure>
 </main>
 <script src="../assets/ui.js"></script>

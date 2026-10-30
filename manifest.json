@@ -423,7 +423,14 @@
    "height": 640
   },
   {
-   "slug": "tr-13-lora",
+   "slug": "tr-13-lora-aufbau",
+   "page": "transformer",
+   "title": "Wo die LoRA-Adapter sitzen",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "tr-14-lora-rang",
    "page": "transformer",
    "title": "LoRA: Anpassung mit niedrigem Rang",
    "interactive": true,

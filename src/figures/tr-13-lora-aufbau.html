@@ -1,0 +1,121 @@
+<!-- title: Wo die LoRA-Adapter sitzen
+     lib: tr -->
+<figure class="fig">
+  <div class="scrollx"><canvas id="cv-lra" class="c-tr-wide" tabindex="0" role="img" aria-label="Links eine lineare Schicht mit eingefrorener Gewichtsmatrix W0 und dem parallelen LoRA-Zweig aus A und B, deren Ausgaben addiert werden. Rechts ein Transformer-Block mit den Gewichtsmatrizen, an denen Adapter hängen."></canvas></div>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="lra-r">Rang r</label><output id="lra-r-o"></output></div><input id="lra-r" type="range" min="0" max="6" step="1" value="3" autocomplete="off"></div>
+    <div class="ctrl" style="flex:0 1 200px"><div class="lab"><label for="lra-m">Ansicht</label></div><select id="lra-m" autocomplete="off"><option value="train">Training</option><option value="merge">nach dem Einrechnen</option></select></div>
+  </div>
+  <div class="ctrls">
+    <span class="lab" style="font-family:var(--font-display);font-size:14px;color:var(--muted)">Adapter an:</span>
+    <label class="chk"><input id="lra-q" type="checkbox" checked autocomplete="off"> W_Q</label>
+    <label class="chk"><input id="lra-k" type="checkbox" autocomplete="off"> W_K</label>
+    <label class="chk"><input id="lra-v" type="checkbox" checked autocomplete="off"> W_V</label>
+    <label class="chk"><input id="lra-o" type="checkbox" autocomplete="off"> W_O</label>
+    <label class="chk"><input id="lra-f" type="checkbox" autocomplete="off"> FFN (W₁, W₂)</label>
+  </div>
+  <div class="readout" id="lra-read"></div>
+  <figcaption><b>Abb.</b> Links eine einzelne lineare Schicht mit LoRA. Die vortrainierte Matrix \(W_0\) bleibt eingefroren (grau). Parallel dazu läuft der Adapter: \(A\) drückt die Eingabe von \(k\) auf \(r\) Dimensionen zusammen, \(B\) bringt sie zurück auf \(d\). Beide Zweige werden addiert, \(\mathbf h = W_0\mathbf x + \frac{\alpha}{r}BA\mathbf x\). Rechts ein Transformer-Block: An jede gewählte Gewichtsmatrix hängt ein eigener Adapter (blaue Streifen), in jedem der \(L\) Blöcke. Ein Klick auf eine Matrix schaltet ihren Adapter um. In der Ansicht „nach dem Einrechnen“ ist \(\frac{\alpha}{r}BA\) zu \(W_0\) addiert, der Zweig verschwindet. Die Zahlen gelten für ein Modell mit 32 Blöcken und \(d = 4096\).</figcaption>
+</figure>
+<script>
+/* ---------- LoRA-Aufbau ---------- */
+(() => {
+  const c = $('#cv-lra'), ir = $('#lra-r'), im = $('#lra-m');
+  const CK = { Q: $('#lra-q'), K: $('#lra-k'), V: $('#lra-v'), O: $('#lra-o'), F: $('#lra-f') };
+  const L = 32, D = 4096, DFF = 4 * D;
+  let hits = [];
+  function lock(ctx, x, y, col) {
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(x, y - 4, 4, Math.PI, 0); ctx.stroke(); ctx.fillRect(x - 6, y - 4, 12, 9);
+  }
+  function trap(ctx, cx, yb, yt, wb, wt, fill, stroke) {
+    ctx.beginPath(); ctx.moveTo(cx - wb / 2, yb); ctx.lineTo(cx + wb / 2, yb); ctx.lineTo(cx + wt / 2, yt); ctx.lineTo(cx - wt / 2, yt); ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = stroke; ctx.lineWidth = 1.6; ctx.stroke();
+  }
+  function cells(ctx, cx, y, n, sz, col) { const x0 = cx - n * sz / 2; for (let i = 0; i < n; i++) { ctx.fillStyle = col; ctx.fillRect(x0 + i * sz, y - sz / 2, sz - 2, sz); } }
+  const m = reg({ el: c, draw() {
+    const r = Math.pow(2, +ir.value), merged = im.value === 'merge';
+    $('#lra-r-o').textContent = r;
+    const { ctx, w, h } = fit(c), acc = tok('--accent'), mut = tok('--muted'), fg = tok('--fg'), frozen = rgba(mut, 0.2);
+    // ---------- links: eine Schicht ----------
+    const Lw = w * 0.5, cxW = Lw * 0.3, cxR = Lw * 0.74, kw = Lw * 0.3, rw = 8 + 26 * (+ir.value) / 6;
+    const yIn = h - 26, yBot = h * 0.72, yTop = h * 0.3, yPlus = h * 0.17, yOut = 24, cxAll = (cxW + cxR) / 2;
+    ctx.font = `600 13px ${DISP}`; ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText('Eine lineare Schicht', 8, 14);
+    cells(ctx, cxAll, yIn, 8, 13, rgba(mut, 0.55)); ctx.fillStyle = mut; ctx.font = `12px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('x (k)', cxAll + 60, yIn + 4);
+    cells(ctx, cxAll, yOut + 10, 8, 13, merged ? rgba(acc, 0.55) : rgba(acc, 0.45)); ctx.fillStyle = mut; ctx.fillText('h (d)', cxAll + 60, yOut + 14);
+    if (!merged) {
+      // Eingang verzweigt
+      ctx.strokeStyle = mut; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cxAll, yIn - 8); ctx.lineTo(cxAll, yIn - 18); ctx.lineTo(cxW, yIn - 18); ctx.lineTo(cxW, yBot + 2); ctx.moveTo(cxAll, yIn - 18); ctx.lineTo(cxR, yIn - 18); ctx.lineTo(cxR, yBot + 2); ctx.stroke();
+      // W0
+      ctx.fillStyle = frozen; ctx.strokeStyle = mut; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.roundRect(cxW - kw / 2, yTop, kw, yBot - yTop, 4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = fg; ctx.font = `600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('W₀', cxW, (yTop + yBot) / 2 - 4);
+      ctx.fillStyle = mut; ctx.font = `12px ${MONO}`; ctx.fillText('d × k', cxW, (yTop + yBot) / 2 + 14);
+      lock(ctx, cxW, (yTop + yBot) / 2 + 36, mut); ctx.font = `11px ${DISP}`; ctx.fillText('eingefroren', cxW, (yTop + yBot) / 2 + 56);
+      // A und B
+      const yMid = (yTop + yBot) / 2, gap = 12;
+      trap(ctx, cxR, yBot, yMid + gap, kw, rw, rgba(acc, 0.22), acc);
+      trap(ctx, cxR, yMid - gap, yTop, rw, kw, rgba(acc, 0.22), acc);
+      cells(ctx, cxR, yMid, Math.min(r, 8), 7, acc);
+      ctx.fillStyle = fg; ctx.font = `600 15px ${DISP}`; ctx.textAlign = 'center';
+      ctx.fillText('A', cxR, yBot - (yBot - yMid) * 0.38); ctx.fillText('B', cxR, yTop + (yMid - yTop) * 0.45);
+      ctx.font = `12px ${MONO}`; ctx.fillStyle = mut; ctx.textAlign = 'left';
+      ctx.fillText(`r × k`, cxR + kw / 2 + 6, yBot - 6); ctx.fillText(`d × r`, cxR + kw / 2 + 6, yTop + 14);
+      ctx.fillText(`r = ${r}`, cxR + Math.min(r, 8) * 3.5 + 10, yMid + 4);
+      ctx.fillStyle = acc; ctx.font = `11px ${DISP}`; ctx.fillText('B = 0 zu Beginn', cxR + kw / 2 + 6, yTop + 30); ctx.fillText('trainiert', cxR + kw / 2 + 6, yBot - 24);
+      // Zusammenführung
+      ctx.strokeStyle = mut; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cxW, yTop - 2); ctx.lineTo(cxW, yPlus); ctx.lineTo(cxAll - 14, yPlus); ctx.stroke();
+      ctx.strokeStyle = acc; ctx.beginPath(); ctx.moveTo(cxR, yTop - 2); ctx.lineTo(cxR, yPlus); ctx.lineTo(cxAll + 14, yPlus); ctx.stroke();
+      ctx.fillStyle = acc; ctx.font = `italic 12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('× α/r', cxR + 6, (yTop + yPlus) / 2 + 4);
+      ctx.beginPath(); ctx.arc(cxAll, yPlus, 13, 0, 7); ctx.fillStyle = tok('--surface'); ctx.fill(); ctx.strokeStyle = fg; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cxAll - 7, yPlus); ctx.lineTo(cxAll + 7, yPlus); ctx.moveTo(cxAll, yPlus - 7); ctx.lineTo(cxAll, yPlus + 7); ctx.stroke();
+      arrowPx(ctx, cxAll, yPlus - 14, cxAll, yOut + 20, mut, 1.5);
+    } else {
+      arrowPx(ctx, cxAll, yIn - 8, cxAll, yBot + 2, mut, 1.5);
+      const bx = cxW - kw / 2, bw = cxR + kw / 2 - bx;
+      const g = ctx.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, frozen); g.addColorStop(1, rgba(acc, 0.22));
+      ctx.fillStyle = g; ctx.strokeStyle = acc; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.roundRect(bx, yTop, bw, yBot - yTop, 4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = fg; ctx.font = `600 15px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('W = W₀ + (α/r)·BA', cxAll, (yTop + yBot) / 2 - 6);
+      ctx.fillStyle = mut; ctx.font = `12px ${MONO}`; ctx.fillText('d × k, wie vorher', cxAll, (yTop + yBot) / 2 + 14);
+      ctx.font = `11px ${DISP}`; ctx.fillText('kein zusätzlicher Rechenaufwand', cxAll, (yTop + yBot) / 2 + 34);
+      arrowPx(ctx, cxAll, yTop - 2, cxAll, yOut + 20, mut, 1.5);
+    }
+    // ---------- rechts: Block ----------
+    const px = Lw + 24, pw = w - px - 8, sq = Math.min(42, pw / 7.5, h / 7.5);
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Lw + 8, 10); ctx.lineTo(Lw + 8, h - 10); ctx.stroke();
+    ctx.font = `600 13px ${DISP}`; ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText('Ein Transformer-Block (× 32)', px, 14);
+    hits = [];
+    const box = (y, hgt, title, names, keys) => {
+      ctx.fillStyle = rgba(mut, 0.06); ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.roundRect(px, y, pw, hgt, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = mut; ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(title, px + 8, y + 16);
+      const step = pw / names.length;
+      names.forEach((nm, i) => { const cx = px + step * (i + 0.5) - sq * 0.25, cy = y + hgt / 2 + 6, on = CK[keys[i]].checked;
+        ctx.fillStyle = merged && on ? rgba(acc, 0.22) : frozen; ctx.strokeStyle = merged && on ? acc : mut; ctx.lineWidth = 1.4;
+        ctx.fillRect(cx - sq / 2, cy - sq / 2, sq, sq); ctx.strokeRect(cx - sq / 2, cy - sq / 2, sq, sq);
+        ctx.fillStyle = fg; ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(nm, cx, cy + 5);
+        if (on && !merged) { const bw2 = Math.max(4, sq * 0.08 + (+ir.value) * 1.3);
+          ctx.fillStyle = rgba(acc, 0.55); ctx.strokeStyle = acc; ctx.lineWidth = 1;
+          ctx.fillRect(cx + sq / 2 + 4, cy - sq / 2, bw2, sq); ctx.strokeRect(cx + sq / 2 + 4, cy - sq / 2, bw2, sq);
+          ctx.fillRect(cx + sq / 2 + 7 + bw2, cy - sq / 2, bw2, sq); ctx.strokeRect(cx + sq / 2 + 7 + bw2, cy - sq / 2, bw2, sq);
+          ctx.fillStyle = acc; ctx.font = `11px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('B A', cx + sq / 2 + 4, cy + sq / 2 + 13); }
+        hits.push({ x: cx - sq / 2, y: cy - sq / 2, w: sq * 1.6, h: sq, k: keys[i] }); });
+    };
+    const top = 26, gap = 18, bh = (h - top - 3 * gap - 30) / 2;
+    const yF = top + 22, yA = yF + bh + gap + 22;
+    ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left';
+    ctx.fillText('LayerNorm, Residual', px + 8, yA + bh + 14);
+    box(yA, bh, 'Multi-Head Attention', ['W_Q', 'W_K', 'W_V', 'W_O'], ['Q', 'K', 'V', 'O']);
+    ctx.fillStyle = mut; ctx.font = `11px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('LayerNorm, Residual', px + 8, yF + bh + 14);
+    box(yF, bh, 'Feed-Forward-Netz', ['W₁', 'W₂'], ['F', 'F']);
+    arrowPx(ctx, px + pw / 2, yA - 2, px + pw / 2, yF + bh + 20, mut, 1.2);
+    // ---------- Zahlen ----------
+    const per = { Q: 2 * r * D, K: 2 * r * D, V: 2 * r * D, O: 2 * r * D, F: 2 * r * (D + DFF) };
+    const sel = Object.keys(CK).filter(k => CK[k].checked), lp = L * sel.reduce((s, k) => s + per[k], 0), full = 12 * L * D * D;
+    const mb = b => b >= 2 ** 30 ? nf(b / 2 ** 30, 1) + ' GiB' : nf(b / 2 ** 20, b < 10 * 2 ** 20 ? 1 : 0) + ' MiB';
+    $('#lra-read').innerHTML = sel.length === 0 ? '<span class="k">Kein Adapter gewählt: Das Modell bleibt unverändert.</span>' :
+      `<span class="k">Adapter an:</span> ${sel.map(k => k === 'F' ? 'W₁, W₂' : 'W_' + k).join(', ')} in allen ${L} Blöcken  <span class="k">·</span>  <span class="k">trainierbare Parameter:</span> <b>${lp.toLocaleString('de-DE')}</b> (${nf(100 * lp / full, lp / full < 0.01 ? 2 : 1)} % der ${nf(full / 1e9, 1)} Mrd. Blockgewichte)<br>` +
+      `<span class="k">Adapter-Datei in 16 Bit:</span> ${mb(2 * lp)} statt ${mb(2 * full)} für ein vollständig angepasstes Modell` + (merged ? '  <span class="k">·</span>  eingerechnet: keine Extra-Parameter mehr beim Ausführen' : '');
+  } });
+  c.addEventListener('click', e => { const [x, y] = mouse(c, e); const hit = hits.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h); if (hit) { CK[hit.k].checked = !CK[hit.k].checked; m.draw(); } });
+  [ir, im, ...Object.values(CK)].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
