@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filter und Faltung</title>
+<!-- Erzeugt von build.py aus src/pages/bildverarbeitung/filter.md. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/bv.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc" aria-label="Inhalt">
+    <div class="eyebrow">Inhalt</div>
+    <ol>
+      <li class="lv">Grundlagen</li>
+      <li><a href="#nachbarschaft"><span class="n">1</span><span>Nachbarschaftsoperationen</span></a></li>
+      <li><a href="#faltung"><span class="n">2</span><span>Faltung und Korrelation</span></a></li>
+      <li><a href="#raender"><span class="n">3</span><span>Ränder</span></a></li>
+      <li class="lv">Glätten</li>
+      <li><a href="#glaetten"><span class="n">4</span><span>Box- und Gaußfilter</span></a></li>
+      <li><a href="#median"><span class="n">5</span><span>Median und Rangfilter</span></a></li>
+      <li class="lv">Kanten und Schärfe</li>
+      <li><a href="#gradient"><span class="n">6</span><span>Ableitungen, Sobel</span></a></li>
+      <li><a href="#laplace"><span class="n">7</span><span>Laplace, LoG</span></a></li>
+      <li><a href="#canny"><span class="n">8</span><span>Canny-Kantendetektor</span></a></li>
+      <li><a href="#unsharp"><span class="n">9</span><span>Unsharp Masking</span></a></li>
+      <li class="lv">Kantenerhaltend</li>
+      <li><a href="#bilateral"><span class="n">10</span><span>Bilateralfilter</span></a></li>
+      <li class="lv">Anhang</li>
+      <li><a href="#kernel"><span class="n">A</span><span>Kernel-Sammlung</span></a></li>
+      <li><a href="#befehle"><span class="n">B</span><span>Befehle</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header id="ueberblick">
+      <p class="backlink"><a href="../index.html">← Wiki</a> · <a href="../index.html#bildverarbeitung">Bildverarbeitung und Computer Vision</a></p>
+      <div class="topbar"><div class="eyebrow">Bildverarbeitung · Ortsraum</div>
+        <div class="theme" role="group" aria-label="Darstellung"><button type="button" data-t="light">Hell</button><button type="button" data-t="dark">Dunkel</button><button type="button" data-t="system">System</button></div></div>
+      <h1>Filter und Faltung</h1>
+      <p class="lede">Wie man ein Bild glättet, Kanten findet und schärft. Fast alles davon ist dieselbe Operation: Jedes Pixel wird aus seiner Umgebung neu berechnet, meist als gewichtete Summe. Von der Faltung und der Behandlung der Ränder über Gauß- und Medianfilter bis zu Kantendetektoren, Unsharp Masking und kantenerhaltender Glättung.</p>
+      <details class="toc-mobile"><summary>Inhalt</summary><ol><li><a href="#nachbarschaft">Nachbarschaftsoperationen</a></li><li><a href="#faltung">Faltung und Korrelation</a></li><li><a href="#raender">Ränder</a></li><li><a href="#glaetten">Box- und Gaußfilter</a></li><li><a href="#median">Median und Rangfilter</a></li><li><a href="#gradient">Ableitungen, Sobel</a></li><li><a href="#laplace">Laplace, LoG</a></li><li><a href="#canny">Canny-Kantendetektor</a></li><li><a href="#unsharp">Unsharp Masking</a></li><li><a href="#bilateral">Bilateralfilter</a></li><li><a href="#kernel">Kernel-Sammlung</a></li><li><a href="#befehle">Befehle</a></li></ol></details>
+    </header>
+<section id="nachbarschaft">
+<div class="step"><b>1</b><span class="eyebrow">Grundlagen</span></div>
+<h2>Nachbarschaftsoperationen</h2>
+<p>Eine <strong>Punktoperation</strong> berechnet jedes Ausgabepixel nur aus dem Eingabepixel an derselben Stelle, etwa Helligkeit, Kontrast oder Gamma. Ein <strong>Filter</strong> dagegen bezieht die Umgebung mit ein: Das neue Pixel <span class="arithmatex">\(g(x, y)\)</span> hängt von den Pixeln <span class="arithmatex">\(f\)</span> in einem kleinen Fenster um <span class="arithmatex">\((x, y)\)</span> ab.</p>
+<ul class="tight">
+<li><strong>Lineare Filter</strong> bilden eine gewichtete Summe der Nachbarn. Die Gewichte stehen in einer kleinen Matrix, dem <strong>Kernel</strong> (auch Maske oder Filterkern). Glätten, Ableiten und Schärfen sind lineare Filter.</li>
+<li><strong>Nichtlineare Filter</strong> rechnen anders, zum Beispiel sortieren (Median), Maximum und Minimum suchen (Morphologie) oder die Gewichte vom Bildinhalt abhängig machen (Bilateralfilter).</li>
+</ul>
+<p>Lineare Filter haben zwei Eigenschaften, die sie besonders handlich machen. Sie sind <strong>linear</strong>: Das Filtern einer Summe von Bildern ist die Summe der gefilterten Bilder. Und sie sind <strong>verschiebungsinvariant</strong>: Überall im Bild wird derselbe Kernel verwendet, ein verschobenes Bild ergibt ein verschobenes Ergebnis. Jede Operation mit diesen beiden Eigenschaften ist eine Faltung.</p>
+</section>
+<section id="faltung">
+<div class="step"><b>2</b><span class="eyebrow">Grundlagen</span></div>
+<h2>Faltung und Korrelation</h2>
+<p>Bei der <strong>Korrelation</strong> legt man den Kernel <span class="arithmatex">\(h\)</span> mit seiner Mitte auf das Pixel, multipliziert die überlappenden Werte und summiert:</p>
+<div class="eq">\[
+g(x, y) = \sum_{i=-r}^{r}\sum_{j=-r}^{r} h(i, j)\, f(x + i,\, y + j)
+\]</div>
+<p>Die <strong>Faltung</strong> ist dasselbe mit gespiegeltem Kernel, <span class="arithmatex">\(f(x - i, y - j)\)</span> statt <span class="arithmatex">\(f(x + i, y + j)\)</span>:</p>
+<div class="eq">\[
+g = f * h, \qquad g(x, y) = \sum_{i}\sum_{j} h(i, j)\, f(x - i,\, y - j)
+\]</div>
+<p>Für symmetrische Kernel wie Box, Gauß oder Laplace ist beides identisch. Bei Ableitungskernen wie Sobel kehrt sich durch die Spiegelung das Vorzeichen um. In der Praxis wird fast immer die Korrelation berechnet, auch wenn man „Faltung“ sagt: <code>cv2.filter2D</code> rechnet eine Korrelation, <code>scipy.ndimage.convolve</code> eine echte Faltung. In der Theorie ist die Faltung praktischer, weil sie kommutativ und assoziativ ist: Zwei Filter nacheinander sind dasselbe wie ein Filter mit dem gefalteten Kernel, <span class="arithmatex">\((f * h_1) * h_2 = f * (h_1 * h_2)\)</span>.</p>
+<figure class="fig">
+<div class="scrollx"><canvas aria-label="Ein 3×3-Kernel wandert über ein kleines Bild. Für die aktuelle Position werden die neun Produkte aus Bildwert und Kernelgewicht summiert und ergeben ein Pixel des Ausgabebilds." class="c-bv-wide" id="cv-fa" role="img" tabindex="0"></canvas></div>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="fa-k">Kernel</label></div><select autocomplete="off" id="fa-k">
+<option value="box">Box (Mittelwert)</option><option selected="" value="gauss">Gauß 3 × 3</option><option value="sobel">Sobel x</option><option value="lap">Laplace</option><option value="sharp">Schärfen</option></select></div>
+<div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="fa-b">Rand</label></div><select autocomplete="off" id="fa-b">
+<option value="zero">Null</option><option selected="" value="reflect">Spiegeln</option><option value="replicate">Wiederholen</option><option value="wrap">Periodisch</option></select></div>
+<button class="btn" id="fa-prev" type="button">Zurück</button>
+<button class="btn" id="fa-next" type="button">Weiter</button>
+<button class="btn" id="fa-play" type="button">Abspielen</button>
+</div>
+<div class="readout" id="fa-read"></div>
+<figcaption><b>Abb. 1</b> Ein 10 × 10-Bild mit einer senkrechten Kante, einem hellen und einem dunklen Pixel. Der Kernel (Mitte) wird über jede Position gelegt, die neun überlappenden Werte werden mit den Gewichten multipliziert und summiert. Das ergibt ein Pixel des Ausgabebilds (rechts). Der blasse Rahmen links ist der aufgefüllte Rand, je nach Randbehandlung. Ein Klick auf ein Pixel links oder rechts springt an diese Stelle. Glättende Kernel summieren sich zu 1 und erhalten die Helligkeit, Ableitungskernel summieren sich zu 0 und reagieren nur auf Änderungen (rot negativ, blau positiv).</figcaption>
+</figure>
+<p>Im Frequenzraum wird die Faltung zur Multiplikation: <span class="arithmatex">\(\mathcal F\{f * h\} = \mathcal F\{f\}\cdot\mathcal F\{h\}\)</span>. Die Fourier-Transformierte des Kernels heißt <strong>Frequenzgang</strong> und sagt, wie stark jede Ortsfrequenz durchgelassen wird. Große Kernel faltet man deshalb oft über die FFT, das kostet <span class="arithmatex">\(O(N\log N)\)</span> statt <span class="arithmatex">\(O(N k^2)\)</span> für ein Bild mit <span class="arithmatex">\(N\)</span> Pixeln und einen <span class="arithmatex">\(k\times k\)</span>-Kernel.</p>
+<pre><code class="language-python">import numpy as np
+from scipy import ndimage
+import cv2
+
+k = np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype=np.float32) / 16
+g = ndimage.correlate(f, k, mode="reflect")   # oder ndimage.convolve(f, k)
+g = cv2.filter2D(f, -1, k, borderType=cv2.BORDER_REFLECT_101)  # Korrelation
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Lineare, verschiebungsinvariante Filter sind Faltungen mit einem Kernel.</li>
+<li>Korrelation = Faltung mit gespiegeltem Kernel. Bei symmetrischen Kerneln gleich, bei Ableitungen Vorzeichen beachten.</li>
+<li>Faltung im Ortsraum = Multiplikation der Spektren.</li>
+</ul>
+</div>
+</section>
+<section id="raender">
+<div class="step"><b>3</b><span class="eyebrow">Grundlagen</span></div>
+<h2>Ränder</h2>
+<p>Am Bildrand ragt der Kernel über das Bild hinaus. Die fehlenden Werte muss man erfinden, und jede Wahl hinterlässt Spuren:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Methode</th>
+<th>Fortsetzung von <code>a b c d</code></th>
+<th>Wirkung</th>
+<th>SciPy <code>mode</code></th>
+<th>OpenCV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Null</td>
+<td><code>0 0 │ a b c d │ 0 0</code></td>
+<td>Rand wird dunkel</td>
+<td><code>constant</code></td>
+<td><code>BORDER_CONSTANT</code></td>
+</tr>
+<tr>
+<td>Wiederholen</td>
+<td><code>a a │ a b c d │ d d</code></td>
+<td>Randpixel ziehen sich in die Länge</td>
+<td><code>nearest</code></td>
+<td><code>BORDER_REPLICATE</code></td>
+</tr>
+<tr>
+<td>Spiegeln mit Rand</td>
+<td><code>b a │ a b c d │ d c</code></td>
+<td>meist unauffällig</td>
+<td><code>reflect</code> (Standard)</td>
+<td><code>BORDER_REFLECT</code></td>
+</tr>
+<tr>
+<td>Spiegeln ohne Rand</td>
+<td><code>c b │ a b c d │ c b</code></td>
+<td>meist unauffällig</td>
+<td><code>mirror</code></td>
+<td><code>BORDER_REFLECT_101</code> (Standard)</td>
+</tr>
+<tr>
+<td>Periodisch</td>
+<td><code>c d │ a b c d │ a b</code></td>
+<td>gegenüberliegender Rand mischt sich ein</td>
+<td><code>wrap</code></td>
+<td><code>BORDER_WRAP</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Gespiegelte Ränder sind fast immer die beste Wahl, weil sie keine künstliche Kante erzeugen. Periodische Ränder entsprechen genau dem, was eine Faltung über die FFT stillschweigend annimmt. Will man Randeffekte ganz vermeiden, schneidet man das Ergebnis um den Kernelradius kleiner (<code>valid</code> statt <code>same</code>).</p>
+</section>
+<section id="glaetten">
+<div class="step"><b>4</b><span class="eyebrow">Glätten</span></div>
+<h2>Box- und Gaußfilter</h2>
+<p>Der einfachste Glättungsfilter ist der <strong>Boxfilter</strong>: der Mittelwert über ein <span class="arithmatex">\(k\times k\)</span>-Fenster, alle Gewichte <span class="arithmatex">\(1/k^2\)</span>. Er ist schnell, hat aber einen ungünstigen Frequenzgang. Sein Spektrum ist eine sinc-Funktion mit Nebenkeulen, die teilweise negativ sind. Bestimmte feine Muster werden deshalb nicht nur gedämpft, sondern mit umgekehrtem Kontrast durchgelassen, und an Kanten entstehen leichte Treppen.</p>
+<p>Der <strong>Gaußfilter</strong> gewichtet die Nachbarn nach einer Glockenkurve:</p>
+<div class="eq">\[
+G_\sigma(x, y) = \frac{1}{2\pi\sigma^2}\,e^{-\frac{x^2 + y^2}{2\sigma^2}}
+\]</div>
+<p>Die Fourier-Transformierte einer Gaußfunktion ist wieder eine Gaußfunktion, mit Breite <span class="arithmatex">\(1/(2\pi\sigma)\)</span>. Der Gaußfilter dämpft hohe Frequenzen also glatt und ohne Vorzeichenwechsel. <span class="arithmatex">\(\sigma\)</span> legt fest, wie stark geglättet wird. Weil die Glocke nach <span class="arithmatex">\(3\sigma\)</span> praktisch null ist, schneidet man den Kernel dort ab, er hat dann <span class="arithmatex">\(2\lceil 3\sigma\rceil + 1\)</span> Gewichte pro Richtung. Die Gewichte werden auf Summe 1 normiert, damit die mittlere Helligkeit erhalten bleibt.</p>
+<h3>Separierbarkeit</h3>
+<p>Der 2D-Gauß ist ein Produkt zweier 1D-Gaußfunktionen, <span class="arithmatex">\(G_\sigma(x, y) = g_\sigma(x)\,g_\sigma(y)\)</span>. Statt mit einem <span class="arithmatex">\(k\times k\)</span>-Kernel zu falten, faltet man erst alle Zeilen mit <span class="arithmatex">\(g_\sigma\)</span> und danach alle Spalten. Das kostet <span class="arithmatex">\(2k\)</span> statt <span class="arithmatex">\(k^2\)</span> Multiplikationen pro Pixel, bei <span class="arithmatex">\(\sigma = 5\)</span> (<span class="arithmatex">\(k = 31\)</span>) also 62 statt 961. Der Boxfilter ist ebenfalls separierbar und lässt sich mit laufenden Summen sogar unabhängig von <span class="arithmatex">\(k\)</span> berechnen.</p>
+<p>Zwei weitere nützliche Eigenschaften: Zwei Gaußfilter nacheinander ergeben einen Gaußfilter mit <span class="arithmatex">\(\sigma = \sqrt{\sigma_1^2 + \sigma_2^2}\)</span>. Und mehrere Boxfilter nacheinander nähern einen Gaußfilter immer besser an (zentraler Grenzwertsatz). Dreimal Box ist eine gängige schnelle Näherung.</p>
+<figure class="fig">
+<canvas aria-label="Testbild und geglättetes Bild, daneben das Kernelprofil und der Frequenzgang des Filters." class="c-bv" id="cv-gl" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="gl-t">Filter</label></div><select autocomplete="off" id="gl-t"><option value="gauss">Gauß</option><option value="box">Box</option></select></div>
+<div class="ctrl"><div class="lab"><label for="gl-s">σ</label><output id="gl-s-o"></output></div><input autocomplete="off" id="gl-s" max="8" min="0.5" step="0.25" type="range" value="2"/></div>
+<div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="gl-b">Rand</label></div><select autocomplete="off" id="gl-b">
+<option value="reflect">Spiegeln</option><option value="zero">Null</option><option value="replicate">Wiederholen</option><option value="wrap">Periodisch</option></select></div>
+</div>
+<div class="readout" id="gl-read"></div>
+<figcaption><b>Abb. 2</b> Glätten des Testbilds (128 × 128 Pixel). Der Boxfilter hat dieselbe Standardabweichung wie der Gaußfilter, also eine vergleichbare Breite. Rechts oben das Kernelprofil, rechts unten der Frequenzgang \(H(f)\): wie stark eine Schwingung mit \(f\) Perioden pro Pixel durchgelassen wird. Der Gaußfilter dämpft hohe Frequenzen monoton. Der Boxfilter hat Nebenkeulen mit negativem Vorzeichen: Manche feinen Strukturen kehren sich um, im Gitter unten rechts gut zu sehen. Mit Rand „Null“ werden die Ränder dunkel, mit „Periodisch“ mischt sich die gegenüberliegende Seite hinein.</figcaption>
+</figure>
+<pre><code class="language-python">g = ndimage.gaussian_filter(f, sigma=2.0)          # schneidet bei 4 σ ab (truncate=4.0)
+g = ndimage.uniform_filter(f, size=5)              # Box
+g = cv2.GaussianBlur(f, (0, 0), sigmaX=2.0)        # ksize=(0,0): Größe aus σ
+g = cv2.blur(f, (5, 5))
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Box: einfach, aber Nebenkeulen im Spektrum. Gauß: glatter Frequenzgang, Standard zum Glätten.</li>
+<li>Kernel bis <span class="arithmatex">\(3\sigma\)</span>, auf Summe 1 normiert. Separierbar: <span class="arithmatex">\(2k\)</span> statt <span class="arithmatex">\(k^2\)</span> Operationen.</li>
+</ul>
+</div>
+</section>
+<section id="median">
+<div class="step"><b>5</b><span class="eyebrow">Glätten</span></div>
+<h2>Median und Rangfilter</h2>
+<p>Der <strong>Medianfilter</strong> sortiert die Werte im Fenster und nimmt den mittleren. Er ist nichtlinear und hat zwei Eigenschaften, die kein linearer Filter erreicht:</p>
+<ul class="tight">
+<li><strong>Ausreißer verschwinden ganz.</strong> Ein einzelnes schwarzes oder weißes Pixel landet beim Sortieren am Rand und hat keinen Einfluss auf den Median. Gegen Salz-und-Pfeffer-Rauschen, tote Pixel oder einzelne Treffer auf einem Detektor ist der Median deshalb das Mittel der Wahl.</li>
+<li><strong>Kanten bleiben scharf.</strong> An einer Stufe liegt die Mehrheit der Werte im Fenster auf einer Seite, der Median springt mit, statt einen Zwischenwert zu liefern.</li>
+</ul>
+<p>Dafür entfernt er auch echte Strukturen, die schmaler als das halbe Fenster sind (feine Linien, kleine Punkte), rundet Ecken ab und ist bei großem Fenster langsamer, weil sortiert werden muss. Median ist ein Spezialfall der <strong>Rangfilter</strong>: Nimmt man statt des mittleren den größten oder kleinsten Wert, erhält man Maximum- und Minimumfilter, die Grundbausteine der Morphologie.</p>
+<figure class="fig">
+<canvas aria-label="Verrauschtes Testbild, mit Gaußfilter und mit Medianfilter geglättet, nebeneinander." class="c-bv-3" id="cv-md" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl" style="flex:0 1 200px"><div class="lab"><label for="md-n">Rauschen</label></div><select autocomplete="off" id="md-n">
+<option value="sp">Salz und Pfeffer</option><option value="g">Gaußsches Rauschen</option><option value="both">beides</option></select></div>
+<div class="ctrl"><div class="lab"><label for="md-a">Stärke</label><output id="md-a-o"></output></div><input autocomplete="off" id="md-a" max="1" min="0" step="0.05" type="range" value="0.5"/></div>
+<div class="ctrl"><div class="lab"><label for="md-k">Fenster</label><output id="md-k-o"></output></div><input autocomplete="off" id="md-k" max="4" min="1" step="1" type="range" value="1"/></div>
+</div>
+<div class="readout" id="md-read"></div>
+<figcaption><b>Abb. 3</b> Salz-und-Pfeffer-Rauschen setzt einzelne Pixel auf Schwarz oder Weiß. Der Gaußfilter verteilt diese Ausreißer nur auf die Nachbarn, es bleiben graue Flecken. Der Median sortiert die Werte im Fenster und nimmt den mittleren, einzelne Ausreißer fallen dabei ganz heraus, und Kanten bleiben scharf. Feine Linien und Punkte, die schmaler als das halbe Fenster sind, verschwinden aber ebenfalls. Bei Gaußschem Rauschen liegen beide Filter näher beieinander. Der Gaußfilter hat jeweils dieselbe Breite wie das Medianfenster (σ = Fenster / 4). Unter jedem Bild der mittlere Fehler gegenüber dem rauschfreien Original.</figcaption>
+</figure>
+<pre><code class="language-python">g = ndimage.median_filter(f, size=5)
+g = cv2.medianBlur(f, 5)       # float32 nur mit Fenster 3 oder 5, uint8 beliebig
+</code></pre>
+</section>
+<section id="gradient">
+<div class="step"><b>6</b><span class="eyebrow">Kanten und Schärfe</span></div>
+<h2>Ableitungen und Gradient</h2>
+<p>Eine <strong>Kante</strong> ist eine Stelle, an der sich die Helligkeit schnell ändert. Die Änderung misst die Ableitung. Im diskreten Bild nähert man sie durch Differenzen benachbarter Pixel, etwa die zentrale Differenz:</p>
+<div class="eq">\[
+\frac{\partial f}{\partial x} \approx \frac{f(x+1, y) - f(x-1, y)}{2} \qquad\Longleftrightarrow\qquad \text{Kernel } \tfrac12\,[-1,\ 0,\ 1]
+\]</div>
+<p>Ableiten verstärkt hohe Frequenzen, und damit auch Rauschen. Der <strong>Sobel-Operator</strong> kombiniert deshalb die Ableitung in einer Richtung mit einer leichten Glättung quer dazu. Er ist separierbar, als äußeres Produkt aus Glättung <span class="arithmatex">\([1, 2, 1]^\top\)</span> und Ableitung <span class="arithmatex">\([-1, 0, 1]\)</span> (als Korrelation geschrieben):</p>
+<div class="eq">\[
+S_x = \begin{pmatrix} -1 &amp; 0 &amp; 1 \\ -2 &amp; 0 &amp; 2 \\ -1 &amp; 0 &amp; 1 \end{pmatrix} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}\begin{pmatrix} -1 &amp; 0 &amp; 1 \end{pmatrix}, \qquad S_y = S_x^\top
+\]</div>
+<p>Der <strong>Prewitt-Operator</strong> ist dasselbe mit <span class="arithmatex">\([1, 1, 1]\)</span> statt <span class="arithmatex">\([1, 2, 1]\)</span>. Aus den beiden Ableitungen <span class="arithmatex">\(G_x = S_x \star f\)</span> und <span class="arithmatex">\(G_y = S_y \star f\)</span> setzt sich der <strong>Gradient</strong> zusammen, ein Vektor, der in Richtung des steilsten Anstiegs zeigt (siehe <a href="../grundlagen/lineare-algebra.html#kalkuel">Gradient</a>):</p>
+<div class="eq">\[
+\|\nabla f\| = \sqrt{G_x^2 + G_y^2}, \qquad \theta = \operatorname{atan2}(G_y, G_x)
+\]</div>
+<p>Der Betrag ist groß an Kanten, unabhängig von ihrer Richtung. Die Richtung <span class="arithmatex">\(\theta\)</span> steht senkrecht auf der Kante. Für eine glattere, weniger rauschempfindliche Ableitung leitet man eine Gaußfunktion ab (Derivative of Gaussian): Glätten und Ableiten in einem Kernel, mit <span class="arithmatex">\(\sigma\)</span> als Skala, auf der man Kanten sucht.</p>
+<figure class="fig">
+<canvas aria-label="Testbild, horizontale und vertikale Sobel-Ableitung und Gradientenbetrag. An einem gewählten Pixel ist der Gradient als Pfeil eingezeichnet." class="c-bv-4" id="cv-gr" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="gr-s">Vorglättung σ</label><output id="gr-s-o"></output></div><input autocomplete="off" id="gr-s" max="3" min="0" step="0.25" type="range" value="0"/></div>
+<div class="ctrl"><div class="lab"><label for="gr-n">Rauschen</label><output id="gr-n-o"></output></div><input autocomplete="off" id="gr-n" max="0.15" min="0" step="0.01" type="range" value="0"/></div>
+</div>
+<div class="readout" id="gr-read"></div>
+<figcaption><b>Abb. 4</b> Der Sobel-Operator schätzt die Ableitung in x- und y-Richtung (blau positiv, rot negativ). Senkrechte Kanten erscheinen nur in Gx, waagrechte nur in Gy, schräge in beiden. Der Betrag \(\sqrt{G_x^2 + G_y^2}\) ist unabhängig von der Richtung und zeigt alle Kanten. Ein Klick in ein Bild setzt den Messpunkt, der Pfeil zeigt in Richtung des steilsten Anstiegs. Mit Rauschen werden die Ableitungen schnell unbrauchbar, weil Ableiten hohe Frequenzen verstärkt. Vorher zu glätten hilft.</figcaption>
+</figure>
+<pre><code class="language-python">gx = ndimage.sobel(f, axis=1)            # Ableitung entlang x (Spalten)
+gy = ndimage.sobel(f, axis=0)
+mag, ang = np.hypot(gx, gy), np.arctan2(gy, gx)
+gx = cv2.Sobel(f, cv2.CV_32F, 1, 0, ksize=3)
+gy = cv2.Sobel(f, cv2.CV_32F, 0, 1, ksize=3)
+</code></pre>
+</section>
+<section id="laplace">
+<div class="step"><b>7</b><span class="eyebrow">Kanten und Schärfe</span></div>
+<h2>Laplace und LoG</h2>
+<p>Die zweite Ableitung findet Kanten anders: Wo die erste Ableitung ein Maximum hat, hat die zweite einen <strong>Nulldurchgang</strong>. Der <strong>Laplace-Operator</strong> summiert die zweiten Ableitungen in beiden Richtungen und hängt nicht von der Kantenrichtung ab:</p>
+<div class="eq">\[
+\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} \qquad\approx\qquad \begin{pmatrix} 0 &amp; 1 &amp; 0 \\ 1 &amp; -4 &amp; 1 \\ 0 &amp; 1 &amp; 0 \end{pmatrix}
+\]</div>
+<p>Die zweite Ableitung ist noch rauschempfindlicher als die erste. Man glättet deshalb vorher mit einem Gaußfilter. Weil beides linear ist, lässt es sich zu einem einzigen Kernel zusammenfassen, dem <strong>Laplacian of Gaussian</strong> (LoG): <span class="arithmatex">\(\nabla^2(G_\sigma * f) = (\nabla^2 G_\sigma) * f\)</span>. Sein Profil sieht aus wie ein umgedrehter Sombrero. Das Verfahren von Marr und Hildreth sucht die Nulldurchgänge des LoG und verwirft schwache.</p>
+<p>Der LoG ist auch ein <strong>Blob-Detektor</strong>: Er antwortet am stärksten auf runde Flecken mit Radius <span class="arithmatex">\(\sqrt2\,\sigma\)</span>. Er lässt sich gut durch die <strong>Difference of Gaussians</strong> annähern, die Differenz zweier Gaußfilter mit <span class="arithmatex">\(\sigma\)</span> und <span class="arithmatex">\(k\sigma\)</span> (<span class="arithmatex">\(k \approx 1{,}6\)</span>). Das ist die Grundlage von Laplace-Pyramide und SIFT (Seiten <em>Skalenraum und Pyramiden</em> und <em>Merkmale und Matching</em>).</p>
+<figure class="fig">
+<canvas aria-label="Laplace des verrauschten Testbilds, Laplacian of Gaussian und die Nulldurchgänge als Kantenbild." class="c-bv-3" id="cv-lg" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="lg-s">σ</label><output id="lg-s-o"></output></div><input autocomplete="off" id="lg-s" max="4" min="0.5" step="0.25" type="range" value="1.5"/></div>
+<div class="ctrl"><div class="lab"><label for="lg-n">Rauschen</label><output id="lg-n-o"></output></div><input autocomplete="off" id="lg-n" max="0.1" min="0" step="0.01" type="range" value="0.03"/></div>
+<div class="ctrl"><div class="lab"><label for="lg-t">Mindestsprung</label><output id="lg-t-o"></output></div><input autocomplete="off" id="lg-t" max="0.5" min="0" step="0.02" type="range" value="0.1"/></div>
+</div>
+<div class="readout" id="lg-read"></div>
+<figcaption><b>Abb. 5</b> Links der Laplace-Operator direkt auf dem leicht verrauschten Bild: Die zweite Ableitung verstärkt das Rauschen so stark, dass kaum Struktur übrig bleibt. In der Mitte der Laplacian of Gaussian (LoG): erst mit σ glätten, dann Laplace. An jeder Kante entsteht ein Paar aus positivem und negativem Ausschlag. Rechts die Nulldurchgänge dazwischen, also die Kantenorte. Damit nicht jedes kleine Wackeln zählt, muss der Sprung über die Null eine Mindestgröße (relativ zum Maximum) haben. Größeres σ liefert weniger, aber gröbere Kanten.</figcaption>
+</figure>
+<pre><code class="language-python">log = ndimage.gaussian_laplace(f, sigma=1.5)
+lap = cv2.Laplacian(f, cv2.CV_32F, ksize=1)    # ksize=1: der 3×3-Kernel oben
+</code></pre>
+</section>
+<section id="canny">
+<div class="step"><b>8</b><span class="eyebrow">Kanten und Schärfe</span></div>
+<h2>Canny-Kantendetektor</h2>
+<p>Canny (1986) hat Kantendetektion als Optimierungsproblem formuliert: Kanten sollen zuverlässig gefunden, genau lokalisiert und nur einmal gemeldet werden. Das Ergebnis ist bis heute der Standard und besteht aus vier Schritten:</p>
+<ol class="steps">
+<li><strong>Glätten</strong> mit einem Gaußfilter, <span class="arithmatex">\(\sigma\)</span> bestimmt die Skala der gesuchten Kanten.</li>
+<li><strong>Gradient</strong> mit Betrag und Richtung, meist über Sobel.</li>
+<li><strong>Non-Maximum Suppression:</strong> Ein Pixel bleibt nur Kante, wenn sein Gradientenbetrag größer ist als bei den beiden Nachbarn in Gradientenrichtung, also quer zur Kante. Die Richtung wird dazu auf 0°, 45°, 90° und 135° gerundet. Aus breiten Kantenbändern werden ein Pixel dünne Linien.</li>
+<li><strong>Hysterese mit zwei Schwellen:</strong> Pixel über der oberen Schwelle sind sichere Kanten. Pixel zwischen unterer und oberer Schwelle werden nur übernommen, wenn sie mit einer sicheren Kante verbunden sind. Das verhindert, dass eine Kante bei schwankendem Kontrast in Stücke zerfällt, ohne einzelne Rauschpixel mitzunehmen. Canny empfahl ein Verhältnis von oberer zu unterer Schwelle zwischen 2 : 1 und 3 : 1.</li>
+</ol>
+<figure class="fig">
+<canvas aria-label="Die vier Stufen des Canny-Verfahrens: geglättetes Bild, Gradientenbetrag, dünne Kanten nach Non-Maximum Suppression mit zwei Schwellen, und das Ergebnis nach Hysterese." class="c-bv-4" id="cv-cn" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="cn-s">σ</label><output id="cn-s-o"></output></div><input autocomplete="off" id="cn-s" max="3" min="0.5" step="0.25" type="range" value="1.25"/></div>
+<div class="ctrl"><div class="lab"><label for="cn-n">Rauschen</label><output id="cn-n-o"></output></div><input autocomplete="off" id="cn-n" max="0.12" min="0" step="0.01" type="range" value="0.04"/></div>
+</div>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="cn-lo">untere Schwelle</label><output id="cn-lo-o"></output></div><input autocomplete="off" id="cn-lo" max="0.6" min="0.02" step="0.01" type="range" value="0.1"/></div>
+<div class="ctrl"><div class="lab"><label for="cn-hi">obere Schwelle</label><output id="cn-hi-o"></output></div><input autocomplete="off" id="cn-hi" max="0.8" min="0.02" step="0.01" type="range" value="0.25"/></div>
+</div>
+<div class="readout" id="cn-read"></div>
+<figcaption><b>Abb. 6</b> Die vier Stufen von Canny. (1) Mit σ glätten. (2) Gradientenbetrag mit Sobel. (3) Non-Maximum Suppression: Ein Pixel bleibt nur, wenn sein Betrag größer ist als bei beiden Nachbarn quer zur Kante. Aus breiten Kantenbändern werden ein Pixel dünne Linien. Blau sind Pixel über der oberen Schwelle (sichere Kanten), gelb solche zwischen den Schwellen (Kandidaten). (4) Hysterese: Kandidaten bleiben nur, wenn sie über andere Kantenpixel mit einer sicheren Kante verbunden sind. So schließen sich Kanten, ohne dass einzelne Rauschpixel mitkommen. Die Schwellen sind relativ zum größten Gradientenbetrag.</figcaption>
+</figure>
+<pre><code class="language-python">from skimage import feature
+edges = feature.canny(f, sigma=1.25, low_threshold=0.05, high_threshold=0.15)
+edges = cv2.Canny((255 * f).astype(np.uint8), 40, 100)  # Schwellen auf den Gradientenbetrag, ohne Vorglättung
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Erste Ableitung: Kante = Maximum des Gradientenbetrags. Zweite Ableitung: Kante = Nulldurchgang.</li>
+<li>Vor dem Ableiten glätten. <span class="arithmatex">\(\sigma\)</span> wählt die Skala der Kanten.</li>
+<li>Canny: Glätten, Gradient, Non-Maximum Suppression, Hysterese.</li>
+</ul>
+</div>
+</section>
+<section id="unsharp">
+<div class="step"><b>9</b><span class="eyebrow">Kanten und Schärfe</span></div>
+<h2>Unsharp Masking</h2>
+<p>Der Name kommt aus der Dunkelkammer: Man belichtete ein unscharfes Negativ zusammen mit dem Original, um Kanten zu betonen. Digital zieht man vom Bild eine geglättete Kopie ab. Übrig bleibt die <strong>Detailschicht</strong>, die man verstärkt wieder addiert:</p>
+<div class="eq">\[
+g = f + k\,\big(f - G_\sigma * f\big) = (1 + k)\,f - k\,(G_\sigma * f)
+\]</div>
+<p>Das ist wieder eine lineare Faltung mit dem Kernel <span class="arithmatex">\((1 + k)\,\delta - k\,G_\sigma\)</span>. Der Schärfekernel <span class="arithmatex">\([0, -1, 0;\ -1, 5, -1;\ 0, -1, 0]\)</span> aus Abbildung 1 ist eine kleine Version davon. <span class="arithmatex">\(\sigma\)</span> legt fest, welche Strukturgröße betont wird, <span class="arithmatex">\(k\)</span> wie stark.</p>
+<p>Der Preis sind <strong>Halos</strong>: Neben jeder Kante entsteht auf der hellen Seite ein hellerer, auf der dunklen ein dunklerer Saum. Bei kleinem <span class="arithmatex">\(\sigma\)</span> wirkt das als Schärfe, bei großem als sichtbarer Lichthof. Unsharp Masking verstärkt außerdem Rauschen, weil Rauschen ebenfalls in der Detailschicht steckt. Viele Bildketten wenden es deshalb nicht auf einer, sondern auf mehreren Skalen gleichzeitig an (Seite <em>Skalenraum und Pyramiden</em>).</p>
+<figure class="fig">
+<canvas aria-label="Original und geschärftes Testbild, daneben ein Helligkeitsprofil über eine Kante mit Über- und Unterschwinger." class="c-bv" id="cv-us" role="img"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="us-s">σ (Unschärfe)</label><output id="us-s-o"></output></div><input autocomplete="off" id="us-s" max="6" min="0.5" step="0.25" type="range" value="2"/></div>
+<div class="ctrl"><div class="lab"><label for="us-k">Stärke k</label><output id="us-k-o"></output></div><input autocomplete="off" id="us-k" max="3" min="0" step="0.1" type="range" value="1"/></div>
+</div>
+<div class="readout" id="us-read"></div>
+<figcaption><b>Abb. 7</b> Unsharp Masking: Vom Bild wird eine geglättete Kopie abgezogen, übrig bleiben die Details. Diese werden mit dem Faktor \(k\) wieder addiert. Rechts das Profil entlang der gestrichelten Zeile: Kanten werden steiler, aber auf beiden Seiten entstehen ein heller und ein dunkler Saum (Halo). Mit großem σ werden auch gröbere Strukturen verstärkt und die Säume breiter. Werte außerhalb von 0 bis 1 werden in der Darstellung abgeschnitten.</figcaption>
+</figure>
+<pre><code class="language-python">blur = ndimage.gaussian_filter(f, sigma=2.0)
+g = f + 1.0 * (f - blur)
+g = cv2.addWeighted(f, 1 + 1.0, cv2.GaussianBlur(f, (0, 0), 2.0), -1.0, 0)
+</code></pre>
+</section>
+<section id="bilateral">
+<div class="step"><b>10</b><span class="eyebrow">Kantenerhaltend</span></div>
+<h2>Bilateralfilter</h2>
+<p>Lineare Filter glätten Kanten genauso wie Flächen, denn das Gewicht eines Nachbarn hängt nur von seiner Lage ab. Der <strong>Bilateralfilter</strong> (Tomasi und Manduchi, 1998) macht das Gewicht zusätzlich davon abhängig, wie ähnlich die Helligkeit ist:</p>
+<div class="eq">\[
+g(\mathbf p) = \frac{1}{W_\mathbf p}\sum_{\mathbf q} G_{\sigma_s}\!\big(\|\mathbf p - \mathbf q\|\big)\; G_{\sigma_r}\!\big(|f(\mathbf p) - f(\mathbf q)|\big)\; f(\mathbf q)
+\]</div>
+<p><span class="arithmatex">\(W_\mathbf p\)</span> ist die Summe der Gewichte. <span class="arithmatex">\(\sigma_s\)</span> ist die räumliche Reichweite wie beim Gaußfilter, <span class="arithmatex">\(\sigma_r\)</span> die Toleranz in der Helligkeit. Nachbarn jenseits einer Kante unterscheiden sich stark und bekommen fast kein Gewicht. Flächen werden geglättet, Kanten bleiben stehen. Ist <span class="arithmatex">\(\sigma_r\)</span> viel größer als die Kontraste im Bild, wird daraus ein gewöhnlicher Gaußfilter.</p>
+<p>Der Bilateralfilter ist nichtlinear und nicht verschiebungsinvariant, an jeder Stelle gilt ein anderer Kernel. Er ist deshalb deutlich langsamer, es gibt aber schnelle Näherungen. Bei starkem Rauschen hilft er weniger, weil dann auch Pixel derselben Fläche verschieden hell sind. Bei zu kleinem <span class="arithmatex">\(\sigma_r\)</span> entstehen Treppen und Comic-artige Flächen. Die Idee „Gewicht nach Ähnlichkeit“ führen <strong>Non-Local Means</strong> und BM3D weiter: Sie vergleichen nicht einzelne Pixel, sondern ganze Bildausschnitte (Seite <em>Rauschen und Entrauschen</em>).</p>
+<figure class="fig">
+<canvas aria-label="Verrauschtes Testbild, mit Gaußfilter und mit Bilateralfilter geglättet, daneben die Gewichtsmaske des Bilateralfilters an einem gewählten Pixel." class="c-bv-4" id="cv-bl" role="img" tabindex="0"></canvas>
+<div class="ctrls">
+<div class="ctrl"><div class="lab"><label for="bl-n">Rauschen</label><output id="bl-n-o"></output></div><input autocomplete="off" id="bl-n" max="0.15" min="0" step="0.01" type="range" value="0.06"/></div>
+<div class="ctrl"><div class="lab"><label for="bl-s">σ_s (räumlich)</label><output id="bl-s-o"></output></div><input autocomplete="off" id="bl-s" max="4" min="0.5" step="0.25" type="range" value="2"/></div>
+<div class="ctrl"><div class="lab"><label for="bl-r">σ_r (Helligkeit)</label><output id="bl-r-o"></output></div><input autocomplete="off" id="bl-r" max="0.6" min="0.02" step="0.02" type="range" value="0.12"/></div>
+</div>
+<div class="readout" id="bl-read"></div>
+<figcaption><b>Abb. 8</b> Beim Bilateralfilter hängt das Gewicht eines Nachbarn von zwei Dingen ab: wie weit er entfernt ist (σ_s, wie beim Gaußfilter) und wie stark sich seine Helligkeit vom Mittelpixel unterscheidet (σ_r). Nachbarn auf der anderen Seite einer Kante bekommen kaum Gewicht, deshalb bleiben Kanten scharf, während Flächen glatt werden. Rechts die Gewichte am gewählten Pixel (Klick in ein Bild), hier direkt an einer Kante: Die Maske endet an der Kante. Wird σ_r so groß wie der Kontrast der Kanten, verhält sich der Filter wie ein normaler Gaußfilter.</figcaption>
+</figure>
+<pre><code class="language-python">from skimage.restoration import denoise_bilateral
+g = denoise_bilateral(f, sigma_color=0.12, sigma_spatial=2.0)
+g = cv2.bilateralFilter(f, d=9, sigmaColor=0.12, sigmaSpace=2.0)   # float32-Bild in 0…1
+</code></pre>
+<div class="merke">
+<div class="eyebrow">Merke</div>
+<ul>
+<li>Bilateral: Gewicht = räumliche Nähe × Helligkeitsähnlichkeit. Glättet Flächen, erhält Kanten.</li>
+<li><span class="arithmatex">\(\sigma_r\)</span> klein: stark kantenerhaltend, aber Treppen. <span class="arithmatex">\(\sigma_r\)</span> groß: wie Gauß.</li>
+</ul>
+</div>
+</section>
+<section id="kernel">
+<div class="eyebrow">Anhang A</div>
+<h2>Kernel-Sammlung</h2>
+<p>Alle als Korrelation geschrieben, Mittelpunkt in der Mitte.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th>Werte</th>
+<th class="num">Summe</th>
+<th>Zweck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Box 3 × 3</td>
+<td><span class="arithmatex">\(\frac19\begin{pmatrix}1&amp;1&amp;1\\1&amp;1&amp;1\\1&amp;1&amp;1\end{pmatrix}\)</span></td>
+<td class="num">1</td>
+<td>Mittelwert</td>
+</tr>
+<tr>
+<td>Gauß 3 × 3</td>
+<td><span class="arithmatex">\(\frac1{16}\begin{pmatrix}1&amp;2&amp;1\\2&amp;4&amp;2\\1&amp;2&amp;1\end{pmatrix}\)</span></td>
+<td class="num">1</td>
+<td>Glätten, <span class="arithmatex">\(\sigma \approx 0{,}7\)</span></td>
+</tr>
+<tr>
+<td>Gauß 1D, 5 Gewichte</td>
+<td><span class="arithmatex">\(\frac1{16}\,[1,\ 4,\ 6,\ 4,\ 1]\)</span></td>
+<td class="num">1</td>
+<td>Binomial, <span class="arithmatex">\(\sigma = 1\)</span>, Pyramiden</td>
+</tr>
+<tr>
+<td>zentrale Differenz</td>
+<td><span class="arithmatex">\(\frac12\,[-1,\ 0,\ 1]\)</span></td>
+<td class="num">0</td>
+<td>erste Ableitung</td>
+</tr>
+<tr>
+<td>Sobel x</td>
+<td><span class="arithmatex">\(\begin{pmatrix}-1&amp;0&amp;1\\-2&amp;0&amp;2\\-1&amp;0&amp;1\end{pmatrix}\)</span></td>
+<td class="num">0</td>
+<td>Ableitung + Glättung</td>
+</tr>
+<tr>
+<td>Prewitt x</td>
+<td><span class="arithmatex">\(\begin{pmatrix}-1&amp;0&amp;1\\-1&amp;0&amp;1\\-1&amp;0&amp;1\end{pmatrix}\)</span></td>
+<td class="num">0</td>
+<td>Ableitung + Mittelung</td>
+</tr>
+<tr>
+<td>Laplace (4er)</td>
+<td><span class="arithmatex">\(\begin{pmatrix}0&amp;1&amp;0\\1&amp;-4&amp;1\\0&amp;1&amp;0\end{pmatrix}\)</span></td>
+<td class="num">0</td>
+<td>zweite Ableitung</td>
+</tr>
+<tr>
+<td>Laplace (8er)</td>
+<td><span class="arithmatex">\(\begin{pmatrix}1&amp;1&amp;1\\1&amp;-8&amp;1\\1&amp;1&amp;1\end{pmatrix}\)</span></td>
+<td class="num">0</td>
+<td>zweite Ableitung, auch diagonal</td>
+</tr>
+<tr>
+<td>Schärfen</td>
+<td><span class="arithmatex">\(\begin{pmatrix}0&amp;-1&amp;0\\-1&amp;5&amp;-1\\0&amp;-1&amp;0\end{pmatrix}\)</span></td>
+<td class="num">1</td>
+<td>Bild − Laplace</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="befehle">
+<div class="eyebrow">Anhang B</div>
+<h2>Befehle</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Aufgabe</th>
+<th>NumPy / SciPy / scikit-image</th>
+<th>OpenCV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>beliebiger Kernel</td>
+<td><code>ndimage.correlate(f, k)</code>, <code>ndimage.convolve(f, k)</code></td>
+<td><code>cv2.filter2D(f, -1, k)</code> (Korrelation)</td>
+</tr>
+<tr>
+<td>Gauß</td>
+<td><code>ndimage.gaussian_filter(f, sigma)</code></td>
+<td><code>cv2.GaussianBlur(f, (0, 0), sigma)</code></td>
+</tr>
+<tr>
+<td>Box</td>
+<td><code>ndimage.uniform_filter(f, size)</code></td>
+<td><code>cv2.blur(f, (k, k))</code></td>
+</tr>
+<tr>
+<td>separierbar</td>
+<td><code>ndimage.correlate1d(f, k, axis)</code></td>
+<td><code>cv2.sepFilter2D(f, -1, kx, ky)</code></td>
+</tr>
+<tr>
+<td>Median</td>
+<td><code>ndimage.median_filter(f, size)</code></td>
+<td><code>cv2.medianBlur(f, k)</code></td>
+</tr>
+<tr>
+<td>Sobel</td>
+<td><code>ndimage.sobel(f, axis)</code></td>
+<td><code>cv2.Sobel(f, cv2.CV_32F, dx, dy)</code></td>
+</tr>
+<tr>
+<td>Laplace, LoG</td>
+<td><code>ndimage.laplace(f)</code>, <code>ndimage.gaussian_laplace(f, sigma)</code></td>
+<td><code>cv2.Laplacian(f, cv2.CV_32F)</code></td>
+</tr>
+<tr>
+<td>Canny</td>
+<td><code>skimage.feature.canny(f, sigma)</code></td>
+<td><code>cv2.Canny(f8, lo, hi)</code> (uint8)</td>
+</tr>
+<tr>
+<td>Bilateral</td>
+<td><code>skimage.restoration.denoise_bilateral(f)</code></td>
+<td><code>cv2.bilateralFilter(f, d, sc, ss)</code></td>
+</tr>
+<tr>
+<td>Rand</td>
+<td>Argument <code>mode=…</code></td>
+<td>Argument <code>borderType=…</code></td>
+</tr>
+</tbody>
+</table></div>
+</section>
+    <footer>Alle Abbildungen rechnen im Browser auf einem künstlichen Testbild mit 128 × 128 Pixeln und Helligkeiten von 0 bis 1. Code-Beispiele in NumPy/SciPy, darunter jeweils die übliche OpenCV-Variante.</footer>
+  </main>
+</div>
+<script src="../assets/ui.js"></script>
+<script src="../assets/bv.js"></script>
+<script>
+/* ---------- Faltung ---------- */
+(() => {
+  const c = $('#cv-fa'), ik = $('#fa-k'), ib = $('#fa-b'), bplay = $('#fa-play'), n = 10;
+  const KS = { box: [1, 1, 1, 1, 1, 1, 1, 1, 1].map(v => v / 9), gauss: [1, 2, 1, 2, 4, 2, 1, 2, 1].map(v => v / 16), sobel: [-1, 0, 1, -2, 0, 2, -1, 0, 1], lap: [0, 1, 0, 1, -4, 1, 0, 1, 0], sharp: [0, -1, 0, -1, 5, -1, 0, -1, 0] };
+  const KF = { box: '1/9', gauss: '/16', sobel: '', lap: '', sharp: '' };
+  const P = new Float32Array(n * n);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) P[y * n + x] = x < 5 ? 0.2 : 0.8;
+  P[7 * n + 2] = 1; P[2 * n + 7] = 0;
+  let pos = 34, acc = 0, G = null;
+  const gray = v => { const t = Math.round(Math.max(0, Math.min(1, v)) * 255); return `rgb(${t},${t},${t})`; };
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 0.35) { acc = 0; pos = (pos + 1) % (n * n); } },
+    draw() {
+      const K = KS[ik.value], mode = ib.value, O = correlate(P, n, K, 3, 3, mode), signed = Math.abs(K.reduce((a, b) => a + b, 0)) < 1e-9;
+      const omax = Math.max(...Array.from(O).map(Math.abs)) || 1, ocol = v => signed ? div(v / omax) : gray(v);
+      const { ctx, w, h } = fit(c), gap = 46;
+      const cs = Math.floor(Math.min((w - 2 * gap - 8) / (12 + 3 * 1.6 + 10), (h - 44) / 12)), kc = Math.round(cs * 1.6);
+      const x0 = 4, y0 = 26, xk = x0 + 12 * cs + gap, xo = xk + 3 * kc + gap, cx = pos % n, cy = Math.floor(pos / n);
+      // Eingabe mit Rand
+      for (let j = -1; j <= n; j++) for (let i = -1; i <= n; i++) {
+        const yy = bidx(j, n, mode), xx = bidx(i, n, mode), v = yy < 0 || xx < 0 ? 0 : P[yy * n + xx], pad = i < 0 || j < 0 || i >= n || j >= n;
+        ctx.globalAlpha = pad ? 0.45 : 1; ctx.fillStyle = gray(v); ctx.fillRect(x0 + (i + 1) * cs, y0 + (j + 1) * cs, cs - 1, cs - 1); ctx.globalAlpha = 1;
+        if (Math.abs(i - cx) <= 1 && Math.abs(j - cy) <= 1 && cs >= 24) { ctx.fillStyle = v > 0.5 ? '#111' : '#fff'; ctx.font = `${Math.min(11, cs * 0.34)}px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nf(v, 1), x0 + (i + 1.5) * cs, y0 + (j + 1.5) * cs); ctx.textBaseline = 'alphabetic'; }
+      }
+      ctx.strokeStyle = tok('--rule'); ctx.setLineDash([3, 3]); ctx.strokeRect(x0 + cs - 0.5, y0 + cs - 0.5, n * cs, n * cs); ctx.setLineDash([]);
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 3; ctx.strokeRect(x0 + cx * cs, y0 + cy * cs, 3 * cs - 1, 3 * cs - 1);
+      // Kernel
+      const ky = y0 + (cy + 0) * cs + (3 * cs - 3 * kc) / 2, kyc = Math.max(y0, Math.min(y0 + 12 * cs - 3 * kc, ky));
+      const kmax = Math.max(...K.map(Math.abs));
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) { const v = K[j * 3 + i];
+        ctx.fillStyle = div(0.7 * v / kmax); ctx.fillRect(xk + i * kc, kyc + j * kc, kc - 2, kc - 2);
+        ctx.fillStyle = tok('--fg'); ctx.font = `${Math.min(13, kc * 0.3)}px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ik.value === 'gauss' ? String(v * 16) : ik.value === 'box' ? '1' : String(v), xk + (i + 0.5) * kc, kyc + (j + 0.5) * kc); ctx.textBaseline = 'alphabetic'; }
+      if (KF[ik.value]) { ctx.fillStyle = tok('--muted'); ctx.font = `12px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(ik.value === 'box' ? '· 1/9' : '· 1/16', xk + 3 * kc + 4, kyc + 3 * kc - 4); }
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('⊙', xk - gap / 2, kyc + 1.5 * kc + 6); ctx.fillText('→', xo - gap / 2, kyc + 1.5 * kc + 6);
+      // Ausgabe
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i, done = k <= pos;
+        ctx.fillStyle = done ? ocol(O[k]) : tok('--surface'); ctx.fillRect(xo + i * cs, y0 + cs + j * cs, cs - 1, cs - 1);
+        if (!done) { ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1; ctx.strokeRect(xo + i * cs + 0.5, y0 + cs + j * cs + 0.5, cs - 2, cs - 2); } }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 3; ctx.strokeRect(xo + cx * cs, y0 + cs + cy * cs, cs - 1, cs - 1);
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left';
+      ctx.fillText('Eingabe (mit Rand)', x0, 16); ctx.fillText('Kernel', xk, 16); ctx.fillText('Ausgabe', xo, 16);
+      G = { x0, y0, xo, cs };
+      // Rechnung
+      const terms = []; let sum = 0;
+      for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const yy = bidx(cy + j, n, mode), xx = bidx(cx + i, n, mode), v = yy < 0 || xx < 0 ? 0 : P[yy * n + xx], kv = K[(j + 1) * 3 + i + 1];
+        if (kv !== 0) terms.push(`${nf(kv, 2)}·${nf(v, 1)}`); sum += kv * v; }
+      $('#fa-read').innerHTML = `<span class="k">Position (x, y) = (${cx}, ${cy}):</span> ${terms.join(' + ').replace(/\+ -/g, '− ')} = <b>${nf(sum, 3)}</b>` +
+        `<br><span class="k">Summe der Gewichte:</span> ${nf(K.reduce((a, b) => a + b, 0), 2)}  <span class="k">·</span>  ${signed ? 'reagiert nur auf Änderungen, auf glatten Flächen 0' : 'erhält die mittlere Helligkeit'}`;
+    } });
+  c.addEventListener('click', e => { if (!G) return; const [x, y] = mouse(c, e), { x0, y0, xo, cs } = G;
+    let i = Math.floor((x - x0) / cs) - 1, j = Math.floor((y - y0) / cs) - 1;
+    if (x >= xo) { i = Math.floor((x - xo) / cs); j = Math.floor((y - y0 - cs) / cs); }
+    if (i >= 0 && j >= 0 && i < n && j < n) { pos = j * n + i; m.draw(); } });
+  const go = d => { pos = (pos + d + n * n) % (n * n); acc = 0; m.draw(); };
+  $('#fa-prev').addEventListener('click', () => go(-1)); $('#fa-next').addEventListener('click', () => go(1));
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; if (m.playing && pos >= n * n - 1) pos = 0; });
+  [ik, ib].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+<script>
+/* ---------- Glätten ---------- */
+(() => {
+  const c = $('#cv-gl'), it = $('#gl-t'), is = $('#gl-s'), ib = $('#gl-b'), n = BV_N;
+  let key = '', out = null, kern = null;
+  const kernel = () => { const s = +is.value; if (it.value === 'gauss') return gaussK(s); let wd = Math.round(Math.sqrt(12 * s * s + 1)); if (wd % 2 === 0) wd++; return boxK(wd); };
+  const m = reg({ el: c, draw() {
+    const s = +is.value; $('#gl-s-o').textContent = nf(s, 2) + ' px';
+    const k = `${it.value}|${s}|${ib.value}`; if (k !== key) { key = k; kern = kernel(); out = sepFilter(BV_PH, n, kern, ib.value); }
+    const { ctx, w, h } = fit(c), narrow = w < 560;
+    const L = narrow ? imgLayout(w, h * 0.55, 2) : imgLayout(w * 0.62, h, 2);
+    drawImg(ctx, BV_PH, n, L[0].x, L[0].y, L[0].size, { title: 'Original' });
+    drawImg(ctx, out, n, L[1].x, L[1].y, L[1].size, { title: it.value === 'gauss' ? `Gauß, σ = ${nf(s, 2)}` : `Box ${kern.length} × ${kern.length}` });
+    const px = narrow ? 0 : w * 0.62 + 18, pw = narrow ? w : w - px, py = narrow ? h * 0.57 : 0, ph = narrow ? h - py : h;
+    const r = kern.length >> 1, R = Math.max(r, 12);
+    const f1 = frame(ctx, px, py, pw, ph * 0.46, { x0: -R - 0.5, x1: R + 0.5, y0: 0, y1: Math.max(...kern) * 1.15, xt: [-R, 0, R].map(v => Math.round(v)), yt: [0], yf: () => '0', xl: 'Kernel (Pixel)', l: 22, b: 30, t: 8 });
+    const bw = f1.bw / (2 * R + 1);
+    kern.forEach((v, i) => { const x = f1.X(i - r), y = f1.Y(v); ctx.fillStyle = tok('--accent'); ctx.fillRect(x - bw * 0.4, y, bw * 0.8, f1.by + f1.bh - y); });
+    const H = f => kern.reduce((a, v, i) => a + v * Math.cos(2 * Math.PI * f * (i - r)), 0);
+    const f2 = frame(ctx, px, py + ph * 0.5, pw, ph * 0.5, { x0: 0, x1: 0.5, y0: -0.3, y1: 1.05, xt: [0, 0.1, 0.2, 0.3, 0.4, 0.5], xf: v => nf(v, 1), yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'Frequenz f (Perioden pro Pixel)', yl: 'H(f)', l: 36, b: 38, t: 6 });
+    ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f2.X(0), f2.Y(0)); ctx.lineTo(f2.X(0.5), f2.Y(0)); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.rect(f2.bx, f2.by, f2.bw, f2.bh); ctx.clip();
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath(); for (let i = 0; i <= 200; i++) { const f = 0.5 * i / 200; i ? ctx.lineTo(f2.X(f), f2.Y(H(f))) : ctx.moveTo(f2.X(f), f2.Y(H(f))); } ctx.stroke(); ctx.restore();
+    let fmin = 0, hmin = 1; for (let i = 0; i <= 500; i++) { const f = 0.5 * i / 500, v = H(f); if (v < hmin) { hmin = v; fmin = f; } }
+    const kw = kern.length;
+    $('#gl-read').innerHTML = `<span class="k">Kernel:</span> ${kw} × ${kw} Pixel  <span class="k">·</span>  <span class="k">Multiplikationen pro Pixel:</span> ${kw * kw} als 2D-Kernel, <b>${2 * kw}</b> separierbar` +
+      `<br><span class="k">Kleinstes H(f):</span> ${nf(hmin, 3)}${hmin < -0.01 ? ` bei f = ${nf(fmin, 2)}: Struktur dieser Frequenz wird mit umgekehrtem Kontrast durchgelassen` : ' (keine Vorzeichenumkehr)'}`;
+  } });
+  [it, is, ib].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- Median ---------- */
+(() => {
+  const c = $('#cv-md'), inz = $('#md-n'), ia = $('#md-a'), ik = $('#md-k'), n = BV_N;
+  let key = '', R = null;
+  const rmse = (A, B) => { let s = 0; for (let k = 0; k < A.length; k++) s += (A[k] - B[k]) ** 2; return Math.sqrt(s / A.length); };
+  const m = reg({ el: c, draw() {
+    const a = +ia.value, size = 2 * +ik.value + 1, t = inz.value;
+    $('#md-a-o').textContent = nf(a * 100, 0) + ' %'; $('#md-k-o').textContent = `${size} × ${size}`;
+    const k = `${t}|${a}|${size}`;
+    if (k !== key) { key = k;
+      const N = addNoise(BV_PH, t === 'sp' ? 0 : 0.12 * a, t === 'g' ? 0 : 0.2 * a);
+      R = { N, G: gaussBlur(N, n, size / 4), M: medianFilter(N, n, size) };
+      R.e = [rmse(R.N, BV_PH), rmse(R.G, BV_PH), rmse(R.M, BV_PH)]; }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h - 18, 3);
+    [['verrauscht', R.N], [`Gauß, σ = ${nf(size / 4, 2)}`, R.G], [`Median ${size} × ${size}`, R.M]].forEach(([tt, I], i) => {
+      drawImg(ctx, I, n, L[i].x, L[i].y, L[i].size, { title: tt });
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Fehler ${nf(R.e[i], 3)}`, L[i].x, L[i].y + L[i].size + 15); });
+    const better = R.e[2] < R.e[1] ? 'Median' : 'Gauß';
+    $('#md-read').innerHTML = `<span class="k">Mittlerer Fehler (RMS) zum Original:</span> verrauscht ${nf(R.e[0], 3)}, Gauß ${nf(R.e[1], 3)}, Median ${nf(R.e[2], 3)}  <span class="k">·</span>  <b>${better}</b> liegt näher am Original`;
+  } });
+  [inz, ia, ik].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- Gradient ---------- */
+(() => {
+  const c = $('#cv-gr'), is = $('#gr-s'), inz = $('#gr-n'), n = BV_N;
+  let key = '', R = null, L = null, probe = [54, 22];
+  const m = reg({ el: c, draw() {
+    const s = +is.value, a = +inz.value; $('#gr-s-o').textContent = nf(s, 2) + ' px'; $('#gr-n-o').textContent = nf(a, 2);
+    const k = `${s}|${a}`;
+    if (k !== key) { key = k; const I = gaussBlur(addNoise(BV_PH, a), n, s), { gx, gy } = sobel(I, n), mag = new Float32Array(n * n);
+      for (let q = 0; q < n * n; q++) mag[q] = Math.hypot(gx[q], gy[q]); R = { I, gx, gy, mag, max: Math.max(...mag) }; }
+    const { ctx, w, h } = fit(c); L = imgLayout(w, h, 4);
+    drawImg(ctx, R.I, n, L[0].x, L[0].y, L[0].size, { title: 'Bild' });
+    drawImg(ctx, R.gx, n, L[1].x, L[1].y, L[1].size, { title: 'Gx', sym: true, hi: R.max * 0.7 });
+    drawImg(ctx, R.gy, n, L[2].x, L[2].y, L[2].size, { title: 'Gy', sym: true, hi: R.max * 0.7 });
+    drawImg(ctx, R.mag, n, L[3].x, L[3].y, L[3].size, { title: 'Betrag', hi: R.max * 0.8 });
+    const [px, py] = probe, q = py * n + px, gx = R.gx[q], gy = R.gy[q], mg = R.mag[q];
+    L.forEach(l => { const sc = l.size / n, x = l.x + (px + 0.5) * sc, y = l.y + (py + 0.5) * sc;
+      ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.stroke();
+      if (mg > 1e-3) { const len = Math.min(l.size * 0.25, 10 + 60 * mg / R.max); arrowPx(ctx, x, y, x + gx / mg * len, y + gy / mg * len, tok('--bin2'), 2); } });
+    const ang = (Math.atan2(-gy, gx) * 180 / Math.PI + 360) % 360;
+    $('#gr-read').innerHTML = `<span class="k">Pixel (${px}, ${py}):</span> Gx = ${nf(gx, 3)}, Gy = ${nf(gy, 3)}  <span class="k">·</span>  <span class="k">Betrag:</span> <b>${nf(mg, 3)}</b>  <span class="k">·</span>  <span class="k">Richtung:</span> ${mg > 1e-3 ? nf(ang, 0) + '° (0° = nach rechts, gegen den Uhrzeigersinn)' : 'keine, flache Stelle'}`;
+  } });
+  c.addEventListener('click', e => { if (!L) return; const [x, y] = mouse(c, e);
+    for (const l of L) if (x >= l.x && x < l.x + l.size && y >= l.y && y < l.y + l.size) { probe = [Math.floor((x - l.x) / l.size * n), Math.floor((y - l.y) / l.size * n)]; m.draw(); return; } });
+  [is, inz].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- LoG ---------- */
+(() => {
+  const c = $('#cv-lg'), is = $('#lg-s'), inz = $('#lg-n'), it = $('#lg-t'), n = BV_N, LAP = [0, 1, 0, 1, -4, 1, 0, 1, 0];
+  let key = '', R = null;
+  const m = reg({ el: c, draw() {
+    const s = +is.value, a = +inz.value, t = +it.value;
+    $('#lg-s-o').textContent = nf(s, 2) + ' px'; $('#lg-n-o').textContent = nf(a, 2); $('#lg-t-o').textContent = nf(t * 100, 0) + ' %';
+    const k = `${s}|${a}`;
+    if (k !== key) { key = k; const N = addNoise(BV_PH, a);
+      R = { L0: correlate(N, n, LAP, 3, 3), L1: correlate(gaussBlur(N, n, s), n, LAP, 3, 3) };
+      R.m0 = Math.max(...Array.from(R.L0).map(Math.abs)); R.m1 = Math.max(...Array.from(R.L1).map(Math.abs)); }
+    const Z = new Float32Array(n * n), thr = t * R.m1; let cnt = 0;
+    for (let y = 0; y < n - 1; y++) for (let x = 0; x < n - 1; x++) { const v = R.L1[y * n + x], r = R.L1[y * n + x + 1], d = R.L1[(y + 1) * n + x];
+      if ((v * r < 0 && Math.abs(v - r) > thr) || (v * d < 0 && Math.abs(v - d) > thr)) { Z[y * n + x] = 1; cnt++; } }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h, 3);
+    drawImg(ctx, R.L0, n, L[0].x, L[0].y, L[0].size, { title: 'Laplace ohne Glättung', sym: true, hi: R.m0 * 0.5 });
+    drawImg(ctx, R.L1, n, L[1].x, L[1].y, L[1].size, { title: `LoG, σ = ${nf(s, 2)}`, sym: true, hi: R.m1 * 0.6 });
+    drawImg(ctx, Z, n, L[2].x, L[2].y, L[2].size, { title: 'Nulldurchgänge', mask: true });
+    $('#lg-read').innerHTML = `<span class="k">Kantenpixel:</span> <b>${cnt}</b> von ${n * n}  <span class="k">·</span>  <span class="k">größter Ausschlag:</span> ohne Glättung ${nf(R.m0, 2)}, mit LoG ${nf(R.m1, 3)}`;
+  } });
+  [is, inz, it].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- Canny ---------- */
+(() => {
+  const c = $('#cv-cn'), is = $('#cn-s'), inz = $('#cn-n'), ilo = $('#cn-lo'), ihi = $('#cn-hi'), n = BV_N;
+  let key = '', R = null;
+  function nms(mag, gx, gy) {
+    const O = new Float32Array(n * n);
+    for (let y = 1; y < n - 1; y++) for (let x = 1; x < n - 1; x++) {
+      const q = y * n + x, a = (Math.atan2(gy[q], gx[q]) * 180 / Math.PI + 180) % 180;
+      let d1, d2;
+      if (a < 22.5 || a >= 157.5) { d1 = q - 1; d2 = q + 1; }
+      else if (a < 67.5) { d1 = q - n - 1; d2 = q + n + 1; }
+      else if (a < 112.5) { d1 = q - n; d2 = q + n; }
+      else { d1 = q - n + 1; d2 = q + n - 1; }
+      if (mag[q] >= mag[d1] && mag[q] >= mag[d2]) O[q] = mag[q];
+    }
+    return O;
+  }
+  const m = reg({ el: c, draw() {
+    const s = +is.value, a = +inz.value; let lo = +ilo.value, hi = +ihi.value; if (lo > hi) { lo = hi; ilo.value = hi; }
+    $('#cn-s-o').textContent = nf(s, 2) + ' px'; $('#cn-n-o').textContent = nf(a, 2); $('#cn-lo-o').textContent = nf(lo * 100, 0) + ' %'; $('#cn-hi-o').textContent = nf(hi * 100, 0) + ' %';
+    const k = `${s}|${a}`;
+    if (k !== key) { key = k; const I = gaussBlur(addNoise(BV_PH, a), n, s), { gx, gy } = sobel(I, n), mag = new Float32Array(n * n);
+      for (let q = 0; q < n * n; q++) mag[q] = Math.hypot(gx[q], gy[q]); const max = Math.max(...mag); R = { I, mag, max, N: nms(mag, gx, gy) }; }
+    const tl = lo * R.max, th = hi * R.max, E = new Float32Array(n * n), stack = [];
+    for (let q = 0; q < n * n; q++) if (R.N[q] >= th) { E[q] = 1; stack.push(q); }
+    while (stack.length) { const q = stack.pop(), x = q % n, y = (q / n) | 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= n || yy >= n) continue; const r = yy * n + xx;
+        if (!E[r] && R.N[r] >= tl) { E[r] = 1; stack.push(r); } } }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h, 4);
+    drawImg(ctx, R.I, n, L[0].x, L[0].y, L[0].size, { title: '1 · geglättet' });
+    drawImg(ctx, R.mag, n, L[1].x, L[1].y, L[1].size, { title: '2 · Gradientenbetrag', hi: R.max * 0.8 });
+    // NMS mit Schwellen farbig
+    const off = document.createElement('canvas'); off.width = n; off.height = n; const oc = off.getContext('2d'), id = oc.createImageData(n, n);
+    const A = rgb(tok('--accent')), Y = rgb(tok('--bin2')); let ns = 0, nw = 0;
+    for (let q = 0; q < n * n; q++) { const v = R.N[q]; let col;
+      if (v >= th) { col = A; ns++; } else if (v >= tl) { col = Y; nw++; } else { const g = Math.min(255, 255 * v / th * 0.5); col = [g, g, g]; }
+      id.data.set([col[0], col[1], col[2], 255], 4 * q); }
+    oc.putImageData(id, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(off, L[2].x, L[2].y, L[2].size, L[2].size);
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('3 · dünne Kanten (NMS)', L[2].x, L[2].y - 6);
+    drawImg(ctx, E, n, L[3].x, L[3].y, L[3].size, { title: '4 · nach Hysterese', mask: true });
+    const ne = E.reduce((p, v) => p + v, 0);
+    $('#cn-read').innerHTML = `<span class="k">Sichere Kantenpixel:</span> ${ns}  <span class="k">·</span>  <span class="k">Kandidaten:</span> ${nw}, davon übernommen ${ne - ns}  <span class="k">·</span>  <span class="k">Kantenpixel gesamt:</span> <b>${ne}</b>`;
+  } });
+  [is, inz, ilo, ihi].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- Unsharp Masking ---------- */
+(() => {
+  const c = $('#cv-us'), is = $('#us-s'), ik = $('#us-k'), n = BV_N, row = Math.round(0.22 * (n - 1));
+  let key = '', B = null;
+  const m = reg({ el: c, draw() {
+    const s = +is.value, kk = +ik.value; $('#us-s-o').textContent = nf(s, 2) + ' px'; $('#us-k-o').textContent = nf(kk, 1);
+    if (key !== String(s)) { key = String(s); B = gaussBlur(BV_PH, n, s); }
+    const S = new Float32Array(n * n); for (let q = 0; q < n * n; q++) S[q] = BV_PH[q] + kk * (BV_PH[q] - B[q]);
+    const { ctx, w, h } = fit(c), narrow = w < 560, L = narrow ? imgLayout(w, h * 0.55, 2) : imgLayout(w * 0.6, h, 2);
+    drawImg(ctx, BV_PH, n, L[0].x, L[0].y, L[0].size, { title: 'Original' });
+    drawImg(ctx, S, n, L[1].x, L[1].y, L[1].size, { title: `geschärft, k = ${nf(kk, 1)}` });
+    L.forEach(l => { const y = l.y + (row + 0.5) * l.size / n; ctx.strokeStyle = tok('--bin2'); ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(l.x, y); ctx.lineTo(l.x + l.size, y); ctx.stroke(); ctx.setLineDash([]); });
+    const px = narrow ? 0 : w * 0.6 + 18, py = narrow ? h * 0.58 : 10, pw = narrow ? w : w - px, ph = narrow ? h - py : h - 10;
+    const p0 = rowProfile(BV_PH, n, row), p1 = rowProfile(S, n, row), ymin = Math.min(-0.1, ...p1), ymax = Math.max(1.1, ...p1);
+    const f = frame(ctx, px, py, pw, ph, { x0: 0, x1: n - 1, y0: ymin, y1: ymax, xt: [0, 32, 64, 96, 127], yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'x (Pixel) entlang der Zeile', yl: 'Helligkeit', l: 38, b: 32, t: 24 });
+    ctx.fillStyle = rgba(tok('--muted'), 0.12); ctx.fillRect(f.bx, f.Y(1), f.bw, f.Y(0) - f.Y(1));
+    [[p0, tok('--muted'), 1.6], [p1, tok('--accent'), 2.2]].forEach(([p, col, lw]) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); p.forEach((v, x) => x ? ctx.lineTo(f.X(x), f.Y(v)) : ctx.moveTo(f.X(x), f.Y(v))); ctx.stroke(); });
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--muted'); ctx.fillText('— Original', f.bx, f.by - 8); ctx.fillStyle = tok('--accent'); ctx.fillText('— geschärft', f.bx + 80, f.by - 8);
+    let over = 0; for (let q = 0; q < n * n; q++) if (S[q] > 1 || S[q] < 0) over++;
+    $('#us-read').innerHTML = `<span class="k">Formel:</span> g = f + ${nf(kk, 1)} · (f − G<sub>σ</sub> * f)  <span class="k">·</span>  <span class="k">größter Überschwinger im Profil:</span> ${nf(Math.max(...p1) - Math.max(...p0), 2)}  <span class="k">·</span>  <span class="k">Pixel außerhalb 0…1:</span> ${nf(100 * over / (n * n), 1)} %`;
+  } });
+  [is, ik].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+<script>
+/* ---------- Bilateral ---------- */
+(() => {
+  const c = $('#cv-bl'), inz = $('#bl-n'), iss = $('#bl-s'), isr = $('#bl-r'), n = BV_N;
+  let key = '', R = null, L = null, probe = [54, 22];
+  function bilateral(I, ss, sr) {
+    const r = Math.ceil(2 * ss), O = new Float32Array(n * n), ws = [];
+    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) ws.push(Math.exp(-(i * i + j * j) / (2 * ss * ss)));
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const c0 = I[y * n + x]; let s = 0, W = 0, k = 0;
+      for (let j = -r; j <= r; j++) { const yy = bidx(y + j, n, 'reflect'); for (let i = -r; i <= r; i++, k++) { const v = I[yy * n + bidx(x + i, n, 'reflect')], d = v - c0, wgt = ws[k] * Math.exp(-d * d / (2 * sr * sr)); s += wgt * v; W += wgt; } }
+      O[y * n + x] = s / W; }
+    return O;
+  }
+  const rmse = (A, B) => { let s = 0; for (let k = 0; k < A.length; k++) s += (A[k] - B[k]) ** 2; return Math.sqrt(s / A.length); };
+  const m = reg({ el: c, draw() {
+    const a = +inz.value, ss = +iss.value, sr = +isr.value;
+    $('#bl-n-o').textContent = nf(a, 2); $('#bl-s-o').textContent = nf(ss, 2) + ' px'; $('#bl-r-o').textContent = nf(sr, 2);
+    const k = `${a}|${ss}|${sr}`;
+    if (k !== key) { key = k; const N = addNoise(BV_PH, a); R = { N, G: gaussBlur(N, n, ss), B: bilateral(N, ss, sr) }; R.eG = rmse(R.G, BV_PH); R.eB = rmse(R.B, BV_PH); }
+    const { ctx, w, h } = fit(c); L = imgLayout(w, h, 4);
+    drawImg(ctx, R.N, n, L[0].x, L[0].y, L[0].size, { title: 'verrauscht' });
+    drawImg(ctx, R.G, n, L[1].x, L[1].y, L[1].size, { title: `Gauß, σ = ${nf(ss, 2)}` });
+    drawImg(ctx, R.B, n, L[2].x, L[2].y, L[2].size, { title: 'bilateral' });
+    // Gewichtsmaske
+    const [px, py] = probe, r = Math.ceil(2 * ss), d = 2 * r + 1, c0 = R.N[py * n + px], M = L[3], cs = M.size / d;
+    let wmax = 0; const W = [];
+    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const v = R.N[bidx(py + j, n, 'reflect') * n + bidx(px + i, n, 'reflect')], q = Math.exp(-(i * i + j * j) / (2 * ss * ss)) * Math.exp(-((v - c0) ** 2) / (2 * sr * sr)); W.push(q); wmax = Math.max(wmax, q); }
+    W.forEach((q, k2) => { const i = k2 % d, j = (k2 / d) | 0; ctx.fillStyle = heat(q / wmax); ctx.fillRect(M.x + i * cs, M.y + j * cs, Math.ceil(cs), Math.ceil(cs)); });
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.strokeRect(M.x + r * cs, M.y + r * cs, cs, cs);
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(M.x + 0.5, M.y + 0.5, M.size - 1, M.size - 1);
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(`Gewichte (${d} × ${d})`, M.x, M.y - 6);
+    L.slice(0, 3).forEach(l => { const sc = l.size / n; ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 1.5; ctx.strokeRect(l.x + (px - r) * sc, l.y + (py - r) * sc, d * sc, d * sc); });
+    $('#bl-read').innerHTML = `<span class="k">Mittlerer Fehler zum Original:</span> Gauß ${nf(R.eG, 3)}, bilateral <b>${nf(R.eB, 3)}</b>  <span class="k">·</span>  <span class="k">Fenster:</span> ${d} × ${d} um Pixel (${px}, ${py})`;
+  } });
+  c.addEventListener('click', e => { if (!L) return; const [x, y] = mouse(c, e);
+    for (const l of L.slice(0, 3)) if (x >= l.x && x < l.x + l.size && y >= l.y && y < l.y + l.size) { probe = [Math.floor((x - l.x) / l.size * n), Math.floor((y - l.y) / l.size * n)]; m.draw(); return; } });
+  [inz, iss, isr].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+</body>
+</html>

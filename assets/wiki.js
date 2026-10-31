@@ -14,8 +14,12 @@
   };
   document.getElementById('cats').innerHTML = m.categories.map(c => {
     const pages = m.pages.filter(p => p.category === c.id);
+    // Optional: Untergruppen innerhalb eines Themengebiets (c.groups = [{id, title}], Seite mit p.group)
+    const body = c.groups
+      ? c.groups.map(g => { const ps = pages.filter(p => p.group === g.id); return ps.length ? `<h3 class="grp">${esc(g.title)}</h3><div class="cards">${ps.map(card).join('')}</div>` : ''; }).join('')
+      : (pages.length ? `<div class="cards">${pages.map(card).join('')}</div>` : '');
     return `<section class="cat" id="${esc(c.id)}"><h2>${esc(c.title)}</h2><p>${esc(c.desc)}</p>
-      ${pages.length ? `<div class="cards">${pages.map(card).join('')}</div>` : '<p class="empty">Noch keine Seiten.</p>'}</section>`;
+      ${body || '<p class="empty">Noch keine Seiten.</p>'}</section>`;
   }).join('');
 
   // Suche über Titel, Beschreibung und Tags

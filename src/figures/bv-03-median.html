@@ -1,0 +1,37 @@
+<!-- title: Gaußfilter gegen Medianfilter
+     lib: bv -->
+<figure class="fig">
+  <canvas id="cv-md" class="c-bv-3" role="img" aria-label="Verrauschtes Testbild, mit Gaußfilter und mit Medianfilter geglättet, nebeneinander."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 200px"><div class="lab"><label for="md-n">Rauschen</label></div><select id="md-n" autocomplete="off">
+      <option value="sp">Salz und Pfeffer</option><option value="g">Gaußsches Rauschen</option><option value="both">beides</option></select></div>
+    <div class="ctrl"><div class="lab"><label for="md-a">Stärke</label><output id="md-a-o"></output></div><input id="md-a" type="range" min="0" max="1" step="0.05" value="0.5" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="md-k">Fenster</label><output id="md-k-o"></output></div><input id="md-k" type="range" min="1" max="4" step="1" value="1" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="md-read"></div>
+  <figcaption><b>Abb.</b> Salz-und-Pfeffer-Rauschen setzt einzelne Pixel auf Schwarz oder Weiß. Der Gaußfilter verteilt diese Ausreißer nur auf die Nachbarn, es bleiben graue Flecken. Der Median sortiert die Werte im Fenster und nimmt den mittleren, einzelne Ausreißer fallen dabei ganz heraus, und Kanten bleiben scharf. Feine Linien und Punkte, die schmaler als das halbe Fenster sind, verschwinden aber ebenfalls. Bei Gaußschem Rauschen liegen beide Filter näher beieinander. Der Gaußfilter hat jeweils dieselbe Breite wie das Medianfenster (σ = Fenster / 4). Unter jedem Bild der mittlere Fehler gegenüber dem rauschfreien Original.</figcaption>
+</figure>
+<script>
+/* ---------- Median ---------- */
+(() => {
+  const c = $('#cv-md'), inz = $('#md-n'), ia = $('#md-a'), ik = $('#md-k'), n = BV_N;
+  let key = '', R = null;
+  const rmse = (A, B) => { let s = 0; for (let k = 0; k < A.length; k++) s += (A[k] - B[k]) ** 2; return Math.sqrt(s / A.length); };
+  const m = reg({ el: c, draw() {
+    const a = +ia.value, size = 2 * +ik.value + 1, t = inz.value;
+    $('#md-a-o').textContent = nf(a * 100, 0) + ' %'; $('#md-k-o').textContent = `${size} × ${size}`;
+    const k = `${t}|${a}|${size}`;
+    if (k !== key) { key = k;
+      const N = addNoise(BV_PH, t === 'sp' ? 0 : 0.12 * a, t === 'g' ? 0 : 0.2 * a);
+      R = { N, G: gaussBlur(N, n, size / 4), M: medianFilter(N, n, size) };
+      R.e = [rmse(R.N, BV_PH), rmse(R.G, BV_PH), rmse(R.M, BV_PH)]; }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h - 18, 3);
+    [['verrauscht', R.N], [`Gauß, σ = ${nf(size / 4, 2)}`, R.G], [`Median ${size} × ${size}`, R.M]].forEach(([tt, I], i) => {
+      drawImg(ctx, I, n, L[i].x, L[i].y, L[i].size, { title: tt });
+      ctx.fillStyle = tok('--muted'); ctx.font = `12px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(`Fehler ${nf(R.e[i], 3)}`, L[i].x, L[i].y + L[i].size + 15); });
+    const better = R.e[2] < R.e[1] ? 'Median' : 'Gauß';
+    $('#md-read').innerHTML = `<span class="k">Mittlerer Fehler (RMS) zum Original:</span> verrauscht ${nf(R.e[0], 3)}, Gauß ${nf(R.e[1], 3)}, Median ${nf(R.e[2], 3)}  <span class="k">·</span>  <b>${better}</b> liegt näher am Original`;
+  } });
+  [inz, ia, ik].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>

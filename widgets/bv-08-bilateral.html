@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bilateralfilter</title>
+<!-- Erzeugt von build.py aus src/figures/bv-08-bilateral.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/bv.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-bl" class="c-bv-4" tabindex="0" role="img" aria-label="Verrauschtes Testbild, mit Gaußfilter und mit Bilateralfilter geglättet, daneben die Gewichtsmaske des Bilateralfilters an einem gewählten Pixel."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="bl-n">Rauschen</label><output id="bl-n-o"></output></div><input id="bl-n" type="range" min="0" max="0.15" step="0.01" value="0.06" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="bl-s">σ_s (räumlich)</label><output id="bl-s-o"></output></div><input id="bl-s" type="range" min="0.5" max="4" step="0.25" value="2" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="bl-r">σ_r (Helligkeit)</label><output id="bl-r-o"></output></div><input id="bl-r" type="range" min="0.02" max="0.6" step="0.02" value="0.12" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="bl-read"></div>
+  <figcaption><b>Abb. 8</b> Beim Bilateralfilter hängt das Gewicht eines Nachbarn von zwei Dingen ab: wie weit er entfernt ist (σ_s, wie beim Gaußfilter) und wie stark sich seine Helligkeit vom Mittelpixel unterscheidet (σ_r). Nachbarn auf der anderen Seite einer Kante bekommen kaum Gewicht, deshalb bleiben Kanten scharf, während Flächen glatt werden. Rechts die Gewichte am gewählten Pixel (Klick in ein Bild), hier direkt an einer Kante: Die Maske endet an der Kante. Wird σ_r so groß wie der Kontrast der Kanten, verhält sich der Filter wie ein normaler Gaußfilter.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/bv.js"></script>
+<script>
+/* ---------- Bilateral ---------- */
+(() => {
+  const c = $('#cv-bl'), inz = $('#bl-n'), iss = $('#bl-s'), isr = $('#bl-r'), n = BV_N;
+  let key = '', R = null, L = null, probe = [54, 22];
+  function bilateral(I, ss, sr) {
+    const r = Math.ceil(2 * ss), O = new Float32Array(n * n), ws = [];
+    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) ws.push(Math.exp(-(i * i + j * j) / (2 * ss * ss)));
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const c0 = I[y * n + x]; let s = 0, W = 0, k = 0;
+      for (let j = -r; j <= r; j++) { const yy = bidx(y + j, n, 'reflect'); for (let i = -r; i <= r; i++, k++) { const v = I[yy * n + bidx(x + i, n, 'reflect')], d = v - c0, wgt = ws[k] * Math.exp(-d * d / (2 * sr * sr)); s += wgt * v; W += wgt; } }
+      O[y * n + x] = s / W; }
+    return O;
+  }
+  const rmse = (A, B) => { let s = 0; for (let k = 0; k < A.length; k++) s += (A[k] - B[k]) ** 2; return Math.sqrt(s / A.length); };
+  const m = reg({ el: c, draw() {
+    const a = +inz.value, ss = +iss.value, sr = +isr.value;
+    $('#bl-n-o').textContent = nf(a, 2); $('#bl-s-o').textContent = nf(ss, 2) + ' px'; $('#bl-r-o').textContent = nf(sr, 2);
+    const k = `${a}|${ss}|${sr}`;
+    if (k !== key) { key = k; const N = addNoise(BV_PH, a); R = { N, G: gaussBlur(N, n, ss), B: bilateral(N, ss, sr) }; R.eG = rmse(R.G, BV_PH); R.eB = rmse(R.B, BV_PH); }
+    const { ctx, w, h } = fit(c); L = imgLayout(w, h, 4);
+    drawImg(ctx, R.N, n, L[0].x, L[0].y, L[0].size, { title: 'verrauscht' });
+    drawImg(ctx, R.G, n, L[1].x, L[1].y, L[1].size, { title: `Gauß, σ = ${nf(ss, 2)}` });
+    drawImg(ctx, R.B, n, L[2].x, L[2].y, L[2].size, { title: 'bilateral' });
+    // Gewichtsmaske
+    const [px, py] = probe, r = Math.ceil(2 * ss), d = 2 * r + 1, c0 = R.N[py * n + px], M = L[3], cs = M.size / d;
+    let wmax = 0; const W = [];
+    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const v = R.N[bidx(py + j, n, 'reflect') * n + bidx(px + i, n, 'reflect')], q = Math.exp(-(i * i + j * j) / (2 * ss * ss)) * Math.exp(-((v - c0) ** 2) / (2 * sr * sr)); W.push(q); wmax = Math.max(wmax, q); }
+    W.forEach((q, k2) => { const i = k2 % d, j = (k2 / d) | 0; ctx.fillStyle = heat(q / wmax); ctx.fillRect(M.x + i * cs, M.y + j * cs, Math.ceil(cs), Math.ceil(cs)); });
+    ctx.strokeStyle = tok('--fg'); ctx.lineWidth = 1.5; ctx.strokeRect(M.x + r * cs, M.y + r * cs, cs, cs);
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(M.x + 0.5, M.y + 0.5, M.size - 1, M.size - 1);
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText(`Gewichte (${d} × ${d})`, M.x, M.y - 6);
+    L.slice(0, 3).forEach(l => { const sc = l.size / n; ctx.strokeStyle = tok('--bin2'); ctx.lineWidth = 1.5; ctx.strokeRect(l.x + (px - r) * sc, l.y + (py - r) * sc, d * sc, d * sc); });
+    $('#bl-read').innerHTML = `<span class="k">Mittlerer Fehler zum Original:</span> Gauß ${nf(R.eG, 3)}, bilateral <b>${nf(R.eB, 3)}</b>  <span class="k">·</span>  <span class="k">Fenster:</span> ${d} × ${d} um Pixel (${px}, ${py})`;
+  } });
+  c.addEventListener('click', e => { if (!L) return; const [x, y] = mouse(c, e);
+    for (const l of L.slice(0, 3)) if (x >= l.x && x < l.x + l.size && y >= l.y && y < l.y + l.size) { probe = [Math.floor((x - l.x) / l.size * n), Math.floor((y - l.y) / l.size * n)]; m.draw(); return; } });
+  [inz, iss, isr].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+</body>
+</html>

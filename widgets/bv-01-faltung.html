@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faltung Schritt für Schritt</title>
+<!-- Erzeugt von build.py aus src/figures/bv-01-faltung.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/bv.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <div class="scrollx"><canvas id="cv-fa" class="c-bv-wide" tabindex="0" role="img" aria-label="Ein 3×3-Kernel wandert über ein kleines Bild. Für die aktuelle Position werden die neun Produkte aus Bildwert und Kernelgewicht summiert und ergeben ein Pixel des Ausgabebilds."></canvas></div>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="fa-k">Kernel</label></div><select id="fa-k" autocomplete="off">
+      <option value="box">Box (Mittelwert)</option><option value="gauss" selected>Gauß 3 × 3</option><option value="sobel">Sobel x</option><option value="lap">Laplace</option><option value="sharp">Schärfen</option></select></div>
+    <div class="ctrl" style="flex:0 1 190px"><div class="lab"><label for="fa-b">Rand</label></div><select id="fa-b" autocomplete="off">
+      <option value="zero">Null</option><option value="reflect" selected>Spiegeln</option><option value="replicate">Wiederholen</option><option value="wrap">Periodisch</option></select></div>
+    <button class="btn" type="button" id="fa-prev">Zurück</button>
+    <button class="btn" type="button" id="fa-next">Weiter</button>
+    <button class="btn" type="button" id="fa-play">Abspielen</button>
+  </div>
+  <div class="readout" id="fa-read"></div>
+  <figcaption><b>Abb. 1</b> Ein 10 × 10-Bild mit einer senkrechten Kante, einem hellen und einem dunklen Pixel. Der Kernel (Mitte) wird über jede Position gelegt, die neun überlappenden Werte werden mit den Gewichten multipliziert und summiert. Das ergibt ein Pixel des Ausgabebilds (rechts). Der blasse Rahmen links ist der aufgefüllte Rand, je nach Randbehandlung. Ein Klick auf ein Pixel links oder rechts springt an diese Stelle. Glättende Kernel summieren sich zu 1 und erhalten die Helligkeit, Ableitungskernel summieren sich zu 0 und reagieren nur auf Änderungen (rot negativ, blau positiv).</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/bv.js"></script>
+<script>
+/* ---------- Faltung ---------- */
+(() => {
+  const c = $('#cv-fa'), ik = $('#fa-k'), ib = $('#fa-b'), bplay = $('#fa-play'), n = 10;
+  const KS = { box: [1, 1, 1, 1, 1, 1, 1, 1, 1].map(v => v / 9), gauss: [1, 2, 1, 2, 4, 2, 1, 2, 1].map(v => v / 16), sobel: [-1, 0, 1, -2, 0, 2, -1, 0, 1], lap: [0, 1, 0, 1, -4, 1, 0, 1, 0], sharp: [0, -1, 0, -1, 5, -1, 0, -1, 0] };
+  const KF = { box: '1/9', gauss: '/16', sobel: '', lap: '', sharp: '' };
+  const P = new Float32Array(n * n);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) P[y * n + x] = x < 5 ? 0.2 : 0.8;
+  P[7 * n + 2] = 1; P[2 * n + 7] = 0;
+  let pos = 34, acc = 0, G = null;
+  const gray = v => { const t = Math.round(Math.max(0, Math.min(1, v)) * 255); return `rgb(${t},${t},${t})`; };
+  const m = reg({ el: c, anim: true, playing: false, step(dt) { acc += dt; if (acc > 0.35) { acc = 0; pos = (pos + 1) % (n * n); } },
+    draw() {
+      const K = KS[ik.value], mode = ib.value, O = correlate(P, n, K, 3, 3, mode), signed = Math.abs(K.reduce((a, b) => a + b, 0)) < 1e-9;
+      const omax = Math.max(...Array.from(O).map(Math.abs)) || 1, ocol = v => signed ? div(v / omax) : gray(v);
+      const { ctx, w, h } = fit(c), gap = 46;
+      const cs = Math.floor(Math.min((w - 2 * gap - 8) / (12 + 3 * 1.6 + 10), (h - 44) / 12)), kc = Math.round(cs * 1.6);
+      const x0 = 4, y0 = 26, xk = x0 + 12 * cs + gap, xo = xk + 3 * kc + gap, cx = pos % n, cy = Math.floor(pos / n);
+      // Eingabe mit Rand
+      for (let j = -1; j <= n; j++) for (let i = -1; i <= n; i++) {
+        const yy = bidx(j, n, mode), xx = bidx(i, n, mode), v = yy < 0 || xx < 0 ? 0 : P[yy * n + xx], pad = i < 0 || j < 0 || i >= n || j >= n;
+        ctx.globalAlpha = pad ? 0.45 : 1; ctx.fillStyle = gray(v); ctx.fillRect(x0 + (i + 1) * cs, y0 + (j + 1) * cs, cs - 1, cs - 1); ctx.globalAlpha = 1;
+        if (Math.abs(i - cx) <= 1 && Math.abs(j - cy) <= 1 && cs >= 24) { ctx.fillStyle = v > 0.5 ? '#111' : '#fff'; ctx.font = `${Math.min(11, cs * 0.34)}px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nf(v, 1), x0 + (i + 1.5) * cs, y0 + (j + 1.5) * cs); ctx.textBaseline = 'alphabetic'; }
+      }
+      ctx.strokeStyle = tok('--rule'); ctx.setLineDash([3, 3]); ctx.strokeRect(x0 + cs - 0.5, y0 + cs - 0.5, n * cs, n * cs); ctx.setLineDash([]);
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 3; ctx.strokeRect(x0 + cx * cs, y0 + cy * cs, 3 * cs - 1, 3 * cs - 1);
+      // Kernel
+      const ky = y0 + (cy + 0) * cs + (3 * cs - 3 * kc) / 2, kyc = Math.max(y0, Math.min(y0 + 12 * cs - 3 * kc, ky));
+      const kmax = Math.max(...K.map(Math.abs));
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) { const v = K[j * 3 + i];
+        ctx.fillStyle = div(0.7 * v / kmax); ctx.fillRect(xk + i * kc, kyc + j * kc, kc - 2, kc - 2);
+        ctx.fillStyle = tok('--fg'); ctx.font = `${Math.min(13, kc * 0.3)}px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ik.value === 'gauss' ? String(v * 16) : ik.value === 'box' ? '1' : String(v), xk + (i + 0.5) * kc, kyc + (j + 0.5) * kc); ctx.textBaseline = 'alphabetic'; }
+      if (KF[ik.value]) { ctx.fillStyle = tok('--muted'); ctx.font = `12px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText(ik.value === 'box' ? '· 1/9' : '· 1/16', xk + 3 * kc + 4, kyc + 3 * kc - 4); }
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 18px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('⊙', xk - gap / 2, kyc + 1.5 * kc + 6); ctx.fillText('→', xo - gap / 2, kyc + 1.5 * kc + 6);
+      // Ausgabe
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i, done = k <= pos;
+        ctx.fillStyle = done ? ocol(O[k]) : tok('--surface'); ctx.fillRect(xo + i * cs, y0 + cs + j * cs, cs - 1, cs - 1);
+        if (!done) { ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1; ctx.strokeRect(xo + i * cs + 0.5, y0 + cs + j * cs + 0.5, cs - 2, cs - 2); } }
+      ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 3; ctx.strokeRect(xo + cx * cs, y0 + cs + cy * cs, cs - 1, cs - 1);
+      ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left';
+      ctx.fillText('Eingabe (mit Rand)', x0, 16); ctx.fillText('Kernel', xk, 16); ctx.fillText('Ausgabe', xo, 16);
+      G = { x0, y0, xo, cs };
+      // Rechnung
+      const terms = []; let sum = 0;
+      for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const yy = bidx(cy + j, n, mode), xx = bidx(cx + i, n, mode), v = yy < 0 || xx < 0 ? 0 : P[yy * n + xx], kv = K[(j + 1) * 3 + i + 1];
+        if (kv !== 0) terms.push(`${nf(kv, 2)}·${nf(v, 1)}`); sum += kv * v; }
+      $('#fa-read').innerHTML = `<span class="k">Position (x, y) = (${cx}, ${cy}):</span> ${terms.join(' + ').replace(/\+ -/g, '− ')} = <b>${nf(sum, 3)}</b>` +
+        `<br><span class="k">Summe der Gewichte:</span> ${nf(K.reduce((a, b) => a + b, 0), 2)}  <span class="k">·</span>  ${signed ? 'reagiert nur auf Änderungen, auf glatten Flächen 0' : 'erhält die mittlere Helligkeit'}`;
+    } });
+  c.addEventListener('click', e => { if (!G) return; const [x, y] = mouse(c, e), { x0, y0, xo, cs } = G;
+    let i = Math.floor((x - x0) / cs) - 1, j = Math.floor((y - y0) / cs) - 1;
+    if (x >= xo) { i = Math.floor((x - xo) / cs); j = Math.floor((y - y0 - cs) / cs); }
+    if (i >= 0 && j >= 0 && i < n && j < n) { pos = j * n + i; m.draw(); } });
+  const go = d => { pos = (pos + d + n * n) % (n * n); acc = 0; m.draw(); };
+  $('#fa-prev').addEventListener('click', () => go(-1)); $('#fa-next').addEventListener('click', () => go(1));
+  bplay.addEventListener('click', () => { m.playing = !m.playing; bplay.textContent = m.playing ? 'Pause' : 'Abspielen'; if (m.playing && pos >= n * n - 1) pos = 0; });
+  [ik, ib].forEach(e => e.addEventListener('input', () => m.draw()));
+})();
+</script>
+</body>
+</html>

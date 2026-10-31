@@ -1,0 +1,5 @@
+/* Zusatzstile der Seite Filter und Faltung */
+.c-bv { aspect-ratio: 2 / 1; } .c-bv-wide { aspect-ratio: 2.5 / 1; } .c-bv-3 { aspect-ratio: 3 / 1.12; } .c-bv-4 { aspect-ratio: 4 / 1.15; } .c-bv-sq { aspect-ratio: 1.5 / 1; }
+@media (max-width: 560px) { .c-bv, .c-bv-sq { aspect-ratio: 1 / 1; } .c-bv-3, .c-bv-4 { aspect-ratio: 1 / 1.1; } }
+.scrollx { overflow-x: auto; }
+@media (max-width: 760px) { .scrollx canvas { min-width: 720px; } .scrollx canvas.c-bv-wide { aspect-ratio: 2.5 / 1; } }

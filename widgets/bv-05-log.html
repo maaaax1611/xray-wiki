@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laplace und Laplacian of Gaussian</title>
+<!-- Erzeugt von build.py aus src/figures/bv-05-log.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/bv.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-lg" class="c-bv-3" role="img" aria-label="Laplace des verrauschten Testbilds, Laplacian of Gaussian und die Nulldurchgänge als Kantenbild."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="lg-s">σ</label><output id="lg-s-o"></output></div><input id="lg-s" type="range" min="0.5" max="4" step="0.25" value="1.5" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="lg-n">Rauschen</label><output id="lg-n-o"></output></div><input id="lg-n" type="range" min="0" max="0.1" step="0.01" value="0.03" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="lg-t">Mindestsprung</label><output id="lg-t-o"></output></div><input id="lg-t" type="range" min="0" max="0.5" step="0.02" value="0.1" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="lg-read"></div>
+  <figcaption><b>Abb. 5</b> Links der Laplace-Operator direkt auf dem leicht verrauschten Bild: Die zweite Ableitung verstärkt das Rauschen so stark, dass kaum Struktur übrig bleibt. In der Mitte der Laplacian of Gaussian (LoG): erst mit σ glätten, dann Laplace. An jeder Kante entsteht ein Paar aus positivem und negativem Ausschlag. Rechts die Nulldurchgänge dazwischen, also die Kantenorte. Damit nicht jedes kleine Wackeln zählt, muss der Sprung über die Null eine Mindestgröße (relativ zum Maximum) haben. Größeres σ liefert weniger, aber gröbere Kanten.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/bv.js"></script>
+<script>
+/* ---------- LoG ---------- */
+(() => {
+  const c = $('#cv-lg'), is = $('#lg-s'), inz = $('#lg-n'), it = $('#lg-t'), n = BV_N, LAP = [0, 1, 0, 1, -4, 1, 0, 1, 0];
+  let key = '', R = null;
+  const m = reg({ el: c, draw() {
+    const s = +is.value, a = +inz.value, t = +it.value;
+    $('#lg-s-o').textContent = nf(s, 2) + ' px'; $('#lg-n-o').textContent = nf(a, 2); $('#lg-t-o').textContent = nf(t * 100, 0) + ' %';
+    const k = `${s}|${a}`;
+    if (k !== key) { key = k; const N = addNoise(BV_PH, a);
+      R = { L0: correlate(N, n, LAP, 3, 3), L1: correlate(gaussBlur(N, n, s), n, LAP, 3, 3) };
+      R.m0 = Math.max(...Array.from(R.L0).map(Math.abs)); R.m1 = Math.max(...Array.from(R.L1).map(Math.abs)); }
+    const Z = new Float32Array(n * n), thr = t * R.m1; let cnt = 0;
+    for (let y = 0; y < n - 1; y++) for (let x = 0; x < n - 1; x++) { const v = R.L1[y * n + x], r = R.L1[y * n + x + 1], d = R.L1[(y + 1) * n + x];
+      if ((v * r < 0 && Math.abs(v - r) > thr) || (v * d < 0 && Math.abs(v - d) > thr)) { Z[y * n + x] = 1; cnt++; } }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h, 3);
+    drawImg(ctx, R.L0, n, L[0].x, L[0].y, L[0].size, { title: 'Laplace ohne Glättung', sym: true, hi: R.m0 * 0.5 });
+    drawImg(ctx, R.L1, n, L[1].x, L[1].y, L[1].size, { title: `LoG, σ = ${nf(s, 2)}`, sym: true, hi: R.m1 * 0.6 });
+    drawImg(ctx, Z, n, L[2].x, L[2].y, L[2].size, { title: 'Nulldurchgänge', mask: true });
+    $('#lg-read').innerHTML = `<span class="k">Kantenpixel:</span> <b>${cnt}</b> von ${n * n}  <span class="k">·</span>  <span class="k">größter Ausschlag:</span> ohne Glättung ${nf(R.m0, 2)}, mit LoG ${nf(R.m1, 3)}`;
+  } });
+  [is, inz, it].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+</body>
+</html>

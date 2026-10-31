@@ -1,0 +1,36 @@
+<!-- title: Unsharp Masking
+     lib: bv -->
+<figure class="fig">
+  <canvas id="cv-us" class="c-bv" role="img" aria-label="Original und geschärftes Testbild, daneben ein Helligkeitsprofil über eine Kante mit Über- und Unterschwinger."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="us-s">σ (Unschärfe)</label><output id="us-s-o"></output></div><input id="us-s" type="range" min="0.5" max="6" step="0.25" value="2" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="us-k">Stärke k</label><output id="us-k-o"></output></div><input id="us-k" type="range" min="0" max="3" step="0.1" value="1" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="us-read"></div>
+  <figcaption><b>Abb.</b> Unsharp Masking: Vom Bild wird eine geglättete Kopie abgezogen, übrig bleiben die Details. Diese werden mit dem Faktor \(k\) wieder addiert. Rechts das Profil entlang der gestrichelten Zeile: Kanten werden steiler, aber auf beiden Seiten entstehen ein heller und ein dunkler Saum (Halo). Mit großem σ werden auch gröbere Strukturen verstärkt und die Säume breiter. Werte außerhalb von 0 bis 1 werden in der Darstellung abgeschnitten.</figcaption>
+</figure>
+<script>
+/* ---------- Unsharp Masking ---------- */
+(() => {
+  const c = $('#cv-us'), is = $('#us-s'), ik = $('#us-k'), n = BV_N, row = Math.round(0.22 * (n - 1));
+  let key = '', B = null;
+  const m = reg({ el: c, draw() {
+    const s = +is.value, kk = +ik.value; $('#us-s-o').textContent = nf(s, 2) + ' px'; $('#us-k-o').textContent = nf(kk, 1);
+    if (key !== String(s)) { key = String(s); B = gaussBlur(BV_PH, n, s); }
+    const S = new Float32Array(n * n); for (let q = 0; q < n * n; q++) S[q] = BV_PH[q] + kk * (BV_PH[q] - B[q]);
+    const { ctx, w, h } = fit(c), narrow = w < 560, L = narrow ? imgLayout(w, h * 0.55, 2) : imgLayout(w * 0.6, h, 2);
+    drawImg(ctx, BV_PH, n, L[0].x, L[0].y, L[0].size, { title: 'Original' });
+    drawImg(ctx, S, n, L[1].x, L[1].y, L[1].size, { title: `geschärft, k = ${nf(kk, 1)}` });
+    L.forEach(l => { const y = l.y + (row + 0.5) * l.size / n; ctx.strokeStyle = tok('--bin2'); ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(l.x, y); ctx.lineTo(l.x + l.size, y); ctx.stroke(); ctx.setLineDash([]); });
+    const px = narrow ? 0 : w * 0.6 + 18, py = narrow ? h * 0.58 : 10, pw = narrow ? w : w - px, ph = narrow ? h - py : h - 10;
+    const p0 = rowProfile(BV_PH, n, row), p1 = rowProfile(S, n, row), ymin = Math.min(-0.1, ...p1), ymax = Math.max(1.1, ...p1);
+    const f = frame(ctx, px, py, pw, ph, { x0: 0, x1: n - 1, y0: ymin, y1: ymax, xt: [0, 32, 64, 96, 127], yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'x (Pixel) entlang der Zeile', yl: 'Helligkeit', l: 38, b: 32, t: 24 });
+    ctx.fillStyle = rgba(tok('--muted'), 0.12); ctx.fillRect(f.bx, f.Y(1), f.bw, f.Y(0) - f.Y(1));
+    [[p0, tok('--muted'), 1.6], [p1, tok('--accent'), 2.2]].forEach(([p, col, lw]) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); p.forEach((v, x) => x ? ctx.lineTo(f.X(x), f.Y(v)) : ctx.moveTo(f.X(x), f.Y(v))); ctx.stroke(); });
+    ctx.font = `12px ${DISP}`; ctx.textAlign = 'left'; ctx.fillStyle = tok('--muted'); ctx.fillText('— Original', f.bx, f.by - 8); ctx.fillStyle = tok('--accent'); ctx.fillText('— geschärft', f.bx + 80, f.by - 8);
+    let over = 0; for (let q = 0; q < n * n; q++) if (S[q] > 1 || S[q] < 0) over++;
+    $('#us-read').innerHTML = `<span class="k">Formel:</span> g = f + ${nf(kk, 1)} · (f − G<sub>σ</sub> * f)  <span class="k">·</span>  <span class="k">größter Überschwinger im Profil:</span> ${nf(Math.max(...p1) - Math.max(...p0), 2)}  <span class="k">·</span>  <span class="k">Pixel außerhalb 0…1:</span> ${nf(100 * over / (n * n), 1)} %`;
+  } });
+  [is, ik].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>

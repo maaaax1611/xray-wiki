@@ -11,6 +11,21 @@
    "desc": "Röntgenphysik, Detektoren und CT-Rekonstruktion."
   },
   {
+   "id": "bildverarbeitung",
+   "title": "Bildverarbeitung und Computer Vision",
+   "desc": "Vom Filtern und Zerlegen von Bildern bis zum Erkennen von Strukturen, Merkmalen und Geometrie.",
+   "groups": [
+    {
+     "id": "bv",
+     "title": "Bildverarbeitung"
+    },
+    {
+     "id": "cv",
+     "title": "Computer Vision"
+    }
+   ]
+  },
+  {
    "id": "ml",
    "title": "Machine Learning",
    "desc": "Methoden und Modelle des maschinellen Lernens."
@@ -145,6 +160,167 @@
    ]
   },
   {
+   "id": "punktoperationen",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/punktoperationen.html",
+   "title": "Digitale Bilder und Punktoperationen",
+   "desc": "Abtastung, Quantisierung, Histogramm, Fensterung, Gamma, LUTs, Histogrammausgleich und CLAHE.",
+   "tags": [
+    "Histogramm",
+    "Fensterung",
+    "Gamma",
+    "CLAHE"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "filter",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/filter.html",
+   "title": "Filter und Faltung",
+   "desc": "Faltung, Ränder, Box- und Gaußfilter, Median, Ableitungen, Laplace, Canny, Unsharp Masking und Bilateralfilter.",
+   "tags": [
+    "Faltung",
+    "Gauß",
+    "Median",
+    "Sobel",
+    "Canny",
+    "Unsharp Masking",
+    "Bilateral"
+   ]
+  },
+  {
+   "id": "frequenzraum",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/frequenzraum.html",
+   "title": "Frequenzraum",
+   "desc": "2D-Fourier-Transformation, Filtern im Spektrum, Aliasing und Moiré.",
+   "tags": [
+    "Fourier",
+    "Spektrum",
+    "Aliasing"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "pyramiden",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/pyramiden.html",
+   "title": "Skalenraum und Pyramiden",
+   "desc": "Gauß-Skalenraum, Gaußsche und Laplace-Pyramide, Difference of Gaussians, Wavelets, Multiskalen-Kontrast und Blending.",
+   "tags": [
+    "Pyramide",
+    "Laplace-Pyramide",
+    "DoG",
+    "Wavelets",
+    "Multiskalen"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "entrauschen",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/entrauschen.html",
+   "title": "Rauschen und Entrauschen",
+   "desc": "Rauschmodelle, Varianzstabilisierung, Non-Local Means, BM3D und lernbasierte Verfahren.",
+   "tags": [
+    "Rauschen",
+    "Poisson",
+    "NLM",
+    "BM3D"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "geometrie",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/geometrie.html",
+   "title": "Interpolation und Geometrie",
+   "desc": "Resampling, Interpolationsverfahren, affine Transformationen und Homographien.",
+   "tags": [
+    "Interpolation",
+    "Resampling",
+    "Homographie"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "morphologie",
+   "category": "bildverarbeitung",
+   "group": "bv",
+   "path": "bildverarbeitung/morphologie.html",
+   "title": "Morphologie",
+   "desc": "Erosion, Dilatation, Öffnen, Schließen und morphologische Gradienten.",
+   "tags": [
+    "Morphologie",
+    "Erosion",
+    "Dilatation"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "merkmale",
+   "category": "bildverarbeitung",
+   "group": "cv",
+   "path": "bildverarbeitung/merkmale.html",
+   "title": "Merkmale und Matching",
+   "desc": "Harris-Ecken, SIFT, Deskriptoren, Matching und RANSAC.",
+   "tags": [
+    "Harris",
+    "SIFT",
+    "Deskriptor",
+    "RANSAC"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "segmentierung",
+   "category": "bildverarbeitung",
+   "group": "cv",
+   "path": "bildverarbeitung/segmentierung.html",
+   "title": "Segmentierung",
+   "desc": "Schwellwerte und Otsu, Region Growing, Watershed und Graph Cuts.",
+   "tags": [
+    "Otsu",
+    "Watershed",
+    "Graph Cut"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "kamera-3d",
+   "category": "bildverarbeitung",
+   "group": "cv",
+   "path": "bildverarbeitung/kamera-3d.html",
+   "title": "Kamera und 3D",
+   "desc": "Lochkameramodell, Kalibrierung, Epipolargeometrie und Stereo.",
+   "tags": [
+    "Kamera",
+    "Kalibrierung",
+    "Stereo"
+   ],
+   "status": "geplant"
+  },
+  {
+   "id": "bewegung-registrierung",
+   "category": "bildverarbeitung",
+   "group": "cv",
+   "path": "bildverarbeitung/bewegung-registrierung.html",
+   "title": "Bewegung und Registrierung",
+   "desc": "Optischer Fluss und Bildregistrierung.",
+   "tags": [
+    "Optischer Fluss",
+    "Registrierung"
+   ],
+   "status": "geplant"
+  },
+  {
    "id": "transformer",
    "category": "ml",
    "path": "ml/transformer.html",
@@ -163,6 +339,62 @@
   }
  ],
  "widgets": [
+  {
+   "slug": "bv-01-faltung",
+   "page": "filter",
+   "title": "Faltung Schritt für Schritt",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-02-glaetten",
+   "page": "filter",
+   "title": "Box- und Gaußfilter",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-03-median",
+   "page": "filter",
+   "title": "Gaußfilter gegen Medianfilter",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-04-gradient",
+   "page": "filter",
+   "title": "Sobel-Gradient",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-05-log",
+   "page": "filter",
+   "title": "Laplace und Laplacian of Gaussian",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-06-canny",
+   "page": "filter",
+   "title": "Canny-Kantendetektor",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-07-unsharp",
+   "page": "filter",
+   "title": "Unsharp Masking",
+   "interactive": true,
+   "height": 640
+  },
+  {
+   "slug": "bv-08-bilateral",
+   "page": "filter",
+   "title": "Bilateralfilter",
+   "interactive": true,
+   "height": 640
+  },
   {
    "slug": "et-01-spannungsteiler",
    "page": "e-technik",

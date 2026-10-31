@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Box- und Gaußfilter</title>
+<!-- Erzeugt von build.py aus src/figures/bv-02-glaetten.html. Nicht von Hand bearbeiten. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'canvas', 'svg'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<link rel="stylesheet" href="../assets/page.css">
+<link rel="stylesheet" href="../assets/bv.css">
+<script>try{var p=new URLSearchParams(location.search),t=p.get("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(p.get("frame")==="0")document.documentElement.classList.add("noframe");}catch(e){}</script>
+</head>
+<body>
+<main class="widget">
+<figure class="fig">
+  <canvas id="cv-gl" class="c-bv" role="img" aria-label="Testbild und geglättetes Bild, daneben das Kernelprofil und der Frequenzgang des Filters."></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="flex:0 1 150px"><div class="lab"><label for="gl-t">Filter</label></div><select id="gl-t" autocomplete="off"><option value="gauss">Gauß</option><option value="box">Box</option></select></div>
+    <div class="ctrl"><div class="lab"><label for="gl-s">σ</label><output id="gl-s-o"></output></div><input id="gl-s" type="range" min="0.5" max="8" step="0.25" value="2" autocomplete="off"></div>
+    <div class="ctrl" style="flex:0 1 170px"><div class="lab"><label for="gl-b">Rand</label></div><select id="gl-b" autocomplete="off">
+      <option value="reflect">Spiegeln</option><option value="zero">Null</option><option value="replicate">Wiederholen</option><option value="wrap">Periodisch</option></select></div>
+  </div>
+  <div class="readout" id="gl-read"></div>
+  <figcaption><b>Abb. 2</b> Glätten des Testbilds (128 × 128 Pixel). Der Boxfilter hat dieselbe Standardabweichung wie der Gaußfilter, also eine vergleichbare Breite. Rechts oben das Kernelprofil, rechts unten der Frequenzgang \(H(f)\): wie stark eine Schwingung mit \(f\) Perioden pro Pixel durchgelassen wird. Der Gaußfilter dämpft hohe Frequenzen monoton. Der Boxfilter hat Nebenkeulen mit negativem Vorzeichen: Manche feinen Strukturen kehren sich um, im Gitter unten rechts gut zu sehen. Mit Rand „Null“ werden die Ränder dunkel, mit „Periodisch“ mischt sich die gegenüberliegende Seite hinein.</figcaption>
+</figure>
+</main>
+<script src="../assets/ui.js"></script>
+<script src="../assets/bv.js"></script>
+<script>
+/* ---------- Glätten ---------- */
+(() => {
+  const c = $('#cv-gl'), it = $('#gl-t'), is = $('#gl-s'), ib = $('#gl-b'), n = BV_N;
+  let key = '', out = null, kern = null;
+  const kernel = () => { const s = +is.value; if (it.value === 'gauss') return gaussK(s); let wd = Math.round(Math.sqrt(12 * s * s + 1)); if (wd % 2 === 0) wd++; return boxK(wd); };
+  const m = reg({ el: c, draw() {
+    const s = +is.value; $('#gl-s-o').textContent = nf(s, 2) + ' px';
+    const k = `${it.value}|${s}|${ib.value}`; if (k !== key) { key = k; kern = kernel(); out = sepFilter(BV_PH, n, kern, ib.value); }
+    const { ctx, w, h } = fit(c), narrow = w < 560;
+    const L = narrow ? imgLayout(w, h * 0.55, 2) : imgLayout(w * 0.62, h, 2);
+    drawImg(ctx, BV_PH, n, L[0].x, L[0].y, L[0].size, { title: 'Original' });
+    drawImg(ctx, out, n, L[1].x, L[1].y, L[1].size, { title: it.value === 'gauss' ? `Gauß, σ = ${nf(s, 2)}` : `Box ${kern.length} × ${kern.length}` });
+    const px = narrow ? 0 : w * 0.62 + 18, pw = narrow ? w : w - px, py = narrow ? h * 0.57 : 0, ph = narrow ? h - py : h;
+    const r = kern.length >> 1, R = Math.max(r, 12);
+    const f1 = frame(ctx, px, py, pw, ph * 0.46, { x0: -R - 0.5, x1: R + 0.5, y0: 0, y1: Math.max(...kern) * 1.15, xt: [-R, 0, R].map(v => Math.round(v)), yt: [0], yf: () => '0', xl: 'Kernel (Pixel)', l: 22, b: 30, t: 8 });
+    const bw = f1.bw / (2 * R + 1);
+    kern.forEach((v, i) => { const x = f1.X(i - r), y = f1.Y(v); ctx.fillStyle = tok('--accent'); ctx.fillRect(x - bw * 0.4, y, bw * 0.8, f1.by + f1.bh - y); });
+    const H = f => kern.reduce((a, v, i) => a + v * Math.cos(2 * Math.PI * f * (i - r)), 0);
+    const f2 = frame(ctx, px, py + ph * 0.5, pw, ph * 0.5, { x0: 0, x1: 0.5, y0: -0.3, y1: 1.05, xt: [0, 0.1, 0.2, 0.3, 0.4, 0.5], xf: v => nf(v, 1), yt: [0, 0.5, 1], yf: v => nf(v, 1), xl: 'Frequenz f (Perioden pro Pixel)', yl: 'H(f)', l: 36, b: 38, t: 6 });
+    ctx.strokeStyle = tok('--muted'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(f2.X(0), f2.Y(0)); ctx.lineTo(f2.X(0.5), f2.Y(0)); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.rect(f2.bx, f2.by, f2.bw, f2.bh); ctx.clip();
+    ctx.strokeStyle = tok('--accent'); ctx.lineWidth = 2.2; ctx.beginPath(); for (let i = 0; i <= 200; i++) { const f = 0.5 * i / 200; i ? ctx.lineTo(f2.X(f), f2.Y(H(f))) : ctx.moveTo(f2.X(f), f2.Y(H(f))); } ctx.stroke(); ctx.restore();
+    let fmin = 0, hmin = 1; for (let i = 0; i <= 500; i++) { const f = 0.5 * i / 500, v = H(f); if (v < hmin) { hmin = v; fmin = f; } }
+    const kw = kern.length;
+    $('#gl-read').innerHTML = `<span class="k">Kernel:</span> ${kw} × ${kw} Pixel  <span class="k">·</span>  <span class="k">Multiplikationen pro Pixel:</span> ${kw * kw} als 2D-Kernel, <b>${2 * kw}</b> separierbar` +
+      `<br><span class="k">Kleinstes H(f):</span> ${nf(hmin, 3)}${hmin < -0.01 ? ` bei f = ${nf(fmin, 2)}: Struktur dieser Frequenz wird mit umgekehrtem Kontrast durchgelassen` : ' (keine Vorzeichenumkehr)'}`;
+  } });
+  [it, is, ib].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
+</body>
+</html>

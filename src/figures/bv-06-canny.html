@@ -1,0 +1,62 @@
+<!-- title: Canny-Kantendetektor
+     lib: bv -->
+<figure class="fig">
+  <canvas id="cv-cn" class="c-bv-4" role="img" aria-label="Die vier Stufen des Canny-Verfahrens: geglättetes Bild, Gradientenbetrag, dünne Kanten nach Non-Maximum Suppression mit zwei Schwellen, und das Ergebnis nach Hysterese."></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="cn-s">σ</label><output id="cn-s-o"></output></div><input id="cn-s" type="range" min="0.5" max="3" step="0.25" value="1.25" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="cn-n">Rauschen</label><output id="cn-n-o"></output></div><input id="cn-n" type="range" min="0" max="0.12" step="0.01" value="0.04" autocomplete="off"></div>
+  </div>
+  <div class="ctrls">
+    <div class="ctrl"><div class="lab"><label for="cn-lo">untere Schwelle</label><output id="cn-lo-o"></output></div><input id="cn-lo" type="range" min="0.02" max="0.6" step="0.01" value="0.1" autocomplete="off"></div>
+    <div class="ctrl"><div class="lab"><label for="cn-hi">obere Schwelle</label><output id="cn-hi-o"></output></div><input id="cn-hi" type="range" min="0.02" max="0.8" step="0.01" value="0.25" autocomplete="off"></div>
+  </div>
+  <div class="readout" id="cn-read"></div>
+  <figcaption><b>Abb.</b> Die vier Stufen von Canny. (1) Mit σ glätten. (2) Gradientenbetrag mit Sobel. (3) Non-Maximum Suppression: Ein Pixel bleibt nur, wenn sein Betrag größer ist als bei beiden Nachbarn quer zur Kante. Aus breiten Kantenbändern werden ein Pixel dünne Linien. Blau sind Pixel über der oberen Schwelle (sichere Kanten), gelb solche zwischen den Schwellen (Kandidaten). (4) Hysterese: Kandidaten bleiben nur, wenn sie über andere Kantenpixel mit einer sicheren Kante verbunden sind. So schließen sich Kanten, ohne dass einzelne Rauschpixel mitkommen. Die Schwellen sind relativ zum größten Gradientenbetrag.</figcaption>
+</figure>
+<script>
+/* ---------- Canny ---------- */
+(() => {
+  const c = $('#cv-cn'), is = $('#cn-s'), inz = $('#cn-n'), ilo = $('#cn-lo'), ihi = $('#cn-hi'), n = BV_N;
+  let key = '', R = null;
+  function nms(mag, gx, gy) {
+    const O = new Float32Array(n * n);
+    for (let y = 1; y < n - 1; y++) for (let x = 1; x < n - 1; x++) {
+      const q = y * n + x, a = (Math.atan2(gy[q], gx[q]) * 180 / Math.PI + 180) % 180;
+      let d1, d2;
+      if (a < 22.5 || a >= 157.5) { d1 = q - 1; d2 = q + 1; }
+      else if (a < 67.5) { d1 = q - n - 1; d2 = q + n + 1; }
+      else if (a < 112.5) { d1 = q - n; d2 = q + n; }
+      else { d1 = q - n + 1; d2 = q + n - 1; }
+      if (mag[q] >= mag[d1] && mag[q] >= mag[d2]) O[q] = mag[q];
+    }
+    return O;
+  }
+  const m = reg({ el: c, draw() {
+    const s = +is.value, a = +inz.value; let lo = +ilo.value, hi = +ihi.value; if (lo > hi) { lo = hi; ilo.value = hi; }
+    $('#cn-s-o').textContent = nf(s, 2) + ' px'; $('#cn-n-o').textContent = nf(a, 2); $('#cn-lo-o').textContent = nf(lo * 100, 0) + ' %'; $('#cn-hi-o').textContent = nf(hi * 100, 0) + ' %';
+    const k = `${s}|${a}`;
+    if (k !== key) { key = k; const I = gaussBlur(addNoise(BV_PH, a), n, s), { gx, gy } = sobel(I, n), mag = new Float32Array(n * n);
+      for (let q = 0; q < n * n; q++) mag[q] = Math.hypot(gx[q], gy[q]); const max = Math.max(...mag); R = { I, mag, max, N: nms(mag, gx, gy) }; }
+    const tl = lo * R.max, th = hi * R.max, E = new Float32Array(n * n), stack = [];
+    for (let q = 0; q < n * n; q++) if (R.N[q] >= th) { E[q] = 1; stack.push(q); }
+    while (stack.length) { const q = stack.pop(), x = q % n, y = (q / n) | 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= n || yy >= n) continue; const r = yy * n + xx;
+        if (!E[r] && R.N[r] >= tl) { E[r] = 1; stack.push(r); } } }
+    const { ctx, w, h } = fit(c), L = imgLayout(w, h, 4);
+    drawImg(ctx, R.I, n, L[0].x, L[0].y, L[0].size, { title: '1 · geglättet' });
+    drawImg(ctx, R.mag, n, L[1].x, L[1].y, L[1].size, { title: '2 · Gradientenbetrag', hi: R.max * 0.8 });
+    // NMS mit Schwellen farbig
+    const off = document.createElement('canvas'); off.width = n; off.height = n; const oc = off.getContext('2d'), id = oc.createImageData(n, n);
+    const A = rgb(tok('--accent')), Y = rgb(tok('--bin2')); let ns = 0, nw = 0;
+    for (let q = 0; q < n * n; q++) { const v = R.N[q]; let col;
+      if (v >= th) { col = A; ns++; } else if (v >= tl) { col = Y; nw++; } else { const g = Math.min(255, 255 * v / th * 0.5); col = [g, g, g]; }
+      id.data.set([col[0], col[1], col[2], 255], 4 * q); }
+    oc.putImageData(id, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(off, L[2].x, L[2].y, L[2].size, L[2].size);
+    ctx.fillStyle = tok('--fg'); ctx.font = `600 13px ${DISP}`; ctx.textAlign = 'left'; ctx.fillText('3 · dünne Kanten (NMS)', L[2].x, L[2].y - 6);
+    drawImg(ctx, E, n, L[3].x, L[3].y, L[3].size, { title: '4 · nach Hysterese', mask: true });
+    const ne = E.reduce((p, v) => p + v, 0);
+    $('#cn-read').innerHTML = `<span class="k">Sichere Kantenpixel:</span> ${ns}  <span class="k">·</span>  <span class="k">Kandidaten:</span> ${nw}, davon übernommen ${ne - ns}  <span class="k">·</span>  <span class="k">Kantenpixel gesamt:</span> <b>${ne}</b>`;
+  } });
+  [is, inz, ilo, ihi].forEach(e => e.addEventListener('input', rafDebounce(() => m.draw())));
+})();
+</script>
